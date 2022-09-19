@@ -60,7 +60,7 @@ func (o *object) buffer(data any) *bytes.Buffer { //todo replaced as stream pkg
 	}
 	return bytes.NewBufferString("error file data type " + fmt.Sprintf("%t", data))
 }
-func (o *object) GetTimeNowString() string { return time.Now().Format("2006-01-02 15:04:05 ") }
+func (o *object) GetTimeNowString() string { return time.Now().Format("2006-01-02 15:04:05") }
 
 const (
 	android = `android`

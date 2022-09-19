@@ -148,7 +148,7 @@ func (o *object) do() (ok bool) {
 		}
 	}
 	//2021-05-08 08:42:51 [STRC]                             | struct { a int; b string; c []uint8 }{a:89, b:"jhjsbdd", c:[]uint8{0x11, 0x22, 0x33, 0x44}}
-	indentTitle := o.GetTimeNowString() + o.level() + indent.New().Left(o.title)
+	indentTitle := o.level() + `[` + o.GetTimeNowString() + `]` + indent.New().Left(o.title)
 	o.cleanMessageStyle()
 	if o.msg == "" {
 		o.msg = `""`
@@ -208,7 +208,7 @@ func (o *object) printColorBody() {
 		fmt.Println(ColorBody)
 	}
 }
-func (o *object) level() string { return `[` + strings.ToUpper(o.tag)[0:4] + `]` }
+func (o *object) level() string { return strings.ToUpper(o.tag)[0:4] }
 
 const (
 	tagHex     = `hex `
