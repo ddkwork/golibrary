@@ -1,0 +1,23 @@
+syntax = "proto2";
+
+option go_package = ".;session";
+
+message session {
+    optional group Group1 = 1 {//只有类型是group的才是group kind
+        optional string binary1 = 1;
+        optional nested msg2 = 2;//message kind,不是group
+        optional uint64 varint3 = 3;
+        optional string binary4 = 4;
+        optional uint64 varint5 = 5;
+    };
+}
+
+message nested {
+    repeated group Packed2 = 2 {//slice is bytes kind
+        optional uint64 varint1 = 1;
+        optional string binary2 = 2;
+        optional string binary3 = 3;
+        optional string binary4 = 4;
+    };
+    optional string binary3 = 3;
+}

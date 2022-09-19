@@ -1,0 +1,4 @@
+[Details]
+  Icon = "data/Icon.png"
+  Name = "FyneTerm"
+  ID = "io.fyne.terminal"

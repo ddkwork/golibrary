@@ -1,0 +1,13 @@
+[http]
+	sslCAInfo = C:\\Users\\Admin\\Desktop\\.mitmproxy\\mitmproxy-ca-cert.pem
+	postBuffer = 524288000
+[user]
+	name = Admin
+	email = 2762713521@qq.com
+[https]
+	sslCAInfo = C:\\Users\\Admin\\Desktop\\.mitmproxy\\mitmproxy-ca-cert.pem
+
+[http "https://github.com"]
+	proxy = http://127.0.0.1:9080
+[https "https://github.com"]
+	proxy = http://127.0.0.1:9080

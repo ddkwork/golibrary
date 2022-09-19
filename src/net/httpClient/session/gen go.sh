@@ -1,0 +1,1 @@
+goprotoc --go_out=. session.proto
