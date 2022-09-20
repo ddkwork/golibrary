@@ -137,7 +137,7 @@ func (o *object) WriteGoCode(name string, data any) (ok bool) {
 }
 func (o *object) WriteBinary(name string, data any) (ok bool) { return o.WriteTruncate(name, data) }
 func (o *object) ToLines(data any) (lines []string, ok bool) {
-	return toLines(o.buffer(data).String()), true
+	//return toLines(o.buffer(data).String()), true
 	newReader := bufio.NewReader(o.buffer(data))
 	for {
 		line, _, err := newReader.ReadLine()
