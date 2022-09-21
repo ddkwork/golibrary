@@ -148,7 +148,7 @@ func (o *object) do() (ok bool) {
 		}
 	}
 	//2021-05-08 08:42:51 [STRC]                             | struct { a int; b string; c []uint8 }{a:89, b:"jhjsbdd", c:[]uint8{0x11, 0x22, 0x33, 0x44}}
-	indentTitle := o.level() + `[` + o.GetTimeNowString() + `] ` + indent.New().Left(o.title)
+	indentTitle := o.level() + ` [` + o.GetTimeNowString() + `] ` + indent.New().Left(o.title)
 	o.cleanMessageStyle()
 	if o.msg == "" {
 		o.msg = `""`
@@ -208,16 +208,35 @@ func (o *object) printColorBody() {
 		fmt.Println(ColorBody)
 	}
 }
-func (o *object) level() string { return strings.ToUpper(o.tag)[0:4] }
+func (o *object) level() string {
+	return o.tag
+	return strings.ToUpper(o.tag)[0:4]
+}
 
+// ERROR
+// WARN
+// INFO
 const (
-	tagHex     = `hexValue `
-	tagHexDump = `dump`
-	tagJson    = `json`
-	tagStruct  = `struct`
-	tagInfo    = `info`
-	tagTrace   = `trace`
-	tagError   = `error`
-	tagWarning = `warning`
-	tagSuccess = `success`
+	tagHex     = "INFO hex    "
+	tagHexDump = "INFO hexdump"
+	tagJson    = "INFO json   "
+	tagStruct  = "INFO struct "
+	tagInfo    = "INFO        "
+	tagTrace   = "INFO  Trace "
+	tagError   = "ERROR       "
+	tagWarning = "WARN        "
+	tagSuccess = "INFO Success"
 )
+
+//https://github.com/JetBrains/ideolog/wiki/Custom-Log-Formats
+//goland 默认安装的日志高亮插件，迎合它的level
+//C:\Users\Admin\Downloads\ideolog-master\src\main\kotlin\com\intellij\ideolog\highlighting\LogEvent.kt
+//    level = when (rawLevel.toUpperCase()) {
+//      "E" -> "ERROR"
+//      "W" -> "WARN"
+//      "I" -> "INFO"
+//      "V" -> "VERBOSE"
+//      "D" -> "DEBUG"
+//      "T" -> "TRACE"
+//      else -> rawLevel.toUpperCase()
+//    }
