@@ -35,84 +35,84 @@ func (o *object) Error2(_ any, err error) bool {
 }
 func (o *object) error(title string, err any) bool {
 	*o = object{
-		tag:   tagError,
+		kind:  ErrorKind,
 		title: title,
 		msg:   Reason(err),
 		body:  "",
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 	return false
 }
 func (o *object) HexDump(title string, msg any) {
 	*o = object{
-		tag:   tagHexDump,
+		kind:  HexDumpKind,
 		title: title,
 		msg:   hex.Dump(msg.([]byte)),
 		body:  "",
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 }
 
 func (o *object) Hex(title string, msg any) {
 	*o = object{
-		tag:   tagHex,
+		kind:  HexKind,
 		title: title,
 		msg:   fmt.Sprintf("%#x", msg),
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 }
 
 func (o *object) Info(title string, msg ...any) {
 	*o = object{
-		tag:   tagInfo,
+		kind:  InfoKind,
 		title: title,
 		msg:   fmt.Sprint(msg...),
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 }
 
 func (o *object) Trace(title string, msg ...any) {
 	*o = object{
-		tag:   tagTrace,
+		kind:  TraceKind,
 		title: title,
 		msg:   fmt.Sprint(msg...),
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 }
 
 func (o *object) Warning(title string, msg ...any) {
 	*o = object{
-		tag:   tagWarning,
+		kind:  WarningKind,
 		title: title,
 		msg:   fmt.Sprint(msg...),
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 }
 
 func (o *object) Json(title string, msg ...any) {
 	*o = object{
-		tag:   tagJson,
+		kind:  JsonKind,
 		title: title,
 		msg:   fmt.Sprint(msg...),
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 }
 
 func (o *object) Success(title string, msg ...any) {
 	*o = object{
-		tag:   tagSuccess,
+		kind:  SuccessKind,
 		title: title,
 		msg:   fmt.Sprint(msg...),
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 }
 
 func (o *object) Struct(msg any) {
@@ -122,13 +122,13 @@ func (o *object) Struct(msg any) {
 		return
 	}
 	*o = object{
-		tag:   tagStruct,
+		kind:  StructKind,
 		title: "",
 		//msg:   fmt.Sprintf("%#v", msg),
 		msg:   string(marshalIndent),
 		debug: o.debug,
 	}
-	o.do()
+	o.printAndWrite()
 }
 func isTermux() bool {
 	dir, err := os.UserHomeDir()
@@ -137,7 +137,7 @@ func isTermux() bool {
 	}
 	return strings.Contains(dir, "termux")
 }
-func (o *object) do() (ok bool) {
+func (o *object) printAndWrite() {
 	///data/data/com.termux/files/home/
 	if IsAndroid() {
 		//go run .                --> Android
@@ -147,23 +147,21 @@ func (o *object) do() (ok bool) {
 			return
 		}
 	}
-	//2021-05-08 08:42:51 [STRC]                             | struct { a int; b string; c []uint8 }{a:89, b:"jhjsbdd", c:[]uint8{0x11, 0x22, 0x33, 0x44}}
-	indentTitle := o.level() + ` [` + o.GetTimeNowString() + `] ` + indent.New().Left(o.title)
+	indentTitle := o.kind.String() + ` [` + o.GetTimeNowString() + `] ` + indent.New().Left(o.title)
 	o.cleanMessageStyle()
 	if o.msg == "" {
 		o.msg = `""`
 	}
 	caller := " //" + Caller()
-	switch o.tag {
-	case tagJson, tagHexDump, tagStruct:
+	switch o.kind {
+	case JsonKind, HexDumpKind, StructKind:
 		indentTitle += caller + "\n"
 		o.body = indentTitle + o.msg
 	default:
 		o.body = indentTitle + o.msg + caller
 	}
 	o.printColorBody()
-	//todo set apk path as log path
-	return o.WriteAppend("log.log", o.body)
+	o.WriteAppend("log.log", o.body) //todo set apk path as log path
 }
 
 func (o *object) cleanMessageStyle() {
@@ -184,49 +182,81 @@ const (
 
 func (o *object) printColorBody() {
 	ColorBody := ""
-	switch o.tag {
-	case tagHex:
+	switch o.kind {
+	case HexKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiBlue, o.body)
-	case tagHexDump:
+	case HexDumpKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiBlue, o.body)
-	case tagJson:
+	case JsonKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiBlue, o.body)
-	case tagStruct:
+	case StructKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiBlue, o.body)
-	case tagInfo:
+	case InfoKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiCyan, o.body)
-	case tagTrace:
+	case TraceKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiMagenta, o.body)
-	case tagError:
+	case ErrorKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiRed, o.body)
-	case tagWarning:
+	case WarningKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiYellow, o.body)
-	case tagSuccess:
+	case SuccessKind:
 		ColorBody = fmt.Sprintf(colorFormat, color.FgHiGreen, o.body)
 	}
 	if o.debug {
 		fmt.Println(ColorBody)
 	}
 }
-func (o *object) level() string {
-	return o.tag
-	return strings.ToUpper(o.tag)[0:4]
-}
 
-// ERROR
-// WARN
-// INFO
+type kind int
+
+var nameKind kind
+
 const (
-	tagHex     = "INFO hex    "
-	tagHexDump = "INFO hexdump"
-	tagJson    = "INFO json   "
-	tagStruct  = "INFO struct "
-	tagInfo    = "INFO        "
-	tagTrace   = "INFO  Trace "
-	tagError   = "ERROR       "
-	tagWarning = "WARN        "
-	tagSuccess = "INFO Success"
+	HexKind kind = iota
+	HexDumpKind
+	JsonKind
+	StructKind
+	InfoKind
+	TraceKind
+	SuccessKind
+	WarningKind
+	ErrorKind
 )
+
+func (k kind) String() string {
+	const (
+		Hex     = "INFO hex    "
+		HexDump = "INFO hexDump"
+		Json    = "INFO json   "
+		Struct  = "INFO struct "
+		Info    = "INFO        "
+		Trace   = "INFO trace  "
+		Success = "INFO Success"
+		Warning = "WARN Warning"
+		Error   = "ERROR       "
+	)
+	switch k {
+	case HexKind:
+		return Hex
+	case HexDumpKind:
+		return HexDump
+	case JsonKind:
+		return Json
+	case StructKind:
+		return Struct
+	case InfoKind:
+		return Info
+	case TraceKind:
+		return Trace
+	case SuccessKind:
+		return Success
+	case WarningKind:
+		return Warning
+	case ErrorKind:
+		return Error
+	}
+	return ""
+}
 
 //https://github.com/JetBrains/ideolog/wiki/Custom-Log-Formats
 //goland 默认安装的日志高亮插件，迎合它的level

@@ -24,7 +24,7 @@ type (
 		SetDebug(debug bool)
 	}
 	object struct {
-		tag   string
+		kind  kind
 		title string
 		msg   string
 		body  string
@@ -46,7 +46,7 @@ func (o *object) Body() string        { return o.body }
 
 func New() Interface {
 	return &object{
-		tag:   "",
+		kind:  -1,
 		title: "",
 		msg:   "",
 		body:  "",
