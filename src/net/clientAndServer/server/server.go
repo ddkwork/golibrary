@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/src/net/clientAndServer/internal/packet"
 	"github.com/ddkwork/golibrary/src/stream"
 	"net"
 )
@@ -16,7 +15,7 @@ type (
 		Replay(data string) bool
 	}
 	object struct {
-		data packet.Interface
+		data *stream.Stream
 		l    net.Listener
 		conn net.Conn
 		err  error
@@ -70,7 +69,7 @@ func (o *object) Server() {
 
 func New() Interface {
 	return &object{
-		data: packet.New(),
+		data: stream.New(),
 	}
 }
 

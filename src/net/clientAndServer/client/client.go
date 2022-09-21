@@ -2,9 +2,7 @@ package client
 
 import (
 	"encoding/json"
-
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/src/net/clientAndServer/internal/packet"
 	"github.com/ddkwork/golibrary/src/stream"
 	"net"
 )
@@ -23,12 +21,22 @@ type (
 	}
 	object struct {
 		conn    net.Conn
-		data    packet.Interface
+		data    *stream.Stream
 		err     error
 		address string
 		ok      bool
 	}
 )
+
+func New() Interface {
+	return &object{
+		conn: nil,
+		data: stream.New(),
+		err:  nil,
+	}
+}
+
+var Default = New()
 
 func (o *object) MarshalIndent(objectPtr any) *stream.Stream {
 	send, err := json.MarshalIndent(objectPtr, " ", " ")
@@ -103,13 +111,3 @@ func (o *object) Send(s *stream.Stream) (ok bool) {
 	}()
 	return true
 }
-
-func New() Interface {
-	return &object{
-		conn: nil,
-		data: packet.New(),
-		err:  nil,
-	}
-}
-
-var Default = New()
