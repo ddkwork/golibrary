@@ -137,7 +137,6 @@ func (o *object) WriteGoCode(name string, data any) (ok bool) {
 }
 func (o *object) WriteBinary(name string, data any) (ok bool) { return o.WriteTruncate(name, data) }
 func (o *object) ToLines(data any) (lines []string, ok bool) {
-	//return toLines(o.buffer(data).String()), true
 	newReader := bufio.NewReader(o.buffer(data))
 	for {
 		line, _, err := newReader.ReadLine()
@@ -154,8 +153,8 @@ func (o *object) ToLines(data any) (lines []string, ok bool) {
 }
 
 func toLines(output string) []string {
-	lines := strings.TrimSuffix(output, "\r\n")
-	return strings.Split(lines, "\r\n")
+	lines := strings.TrimSuffix(output, "\n")
+	return strings.Split(lines, "\n")
 }
 func (o *object) WriteJson(name string, Obj any) (ok bool) {
 	var oo any
