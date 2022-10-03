@@ -6,7 +6,7 @@ import (
 
 func TestName(t *testing.T) {
 	//d := driver.New()
-	//assert := mycheck.Assert(t)
+	//assert := mylog.Assert(t)
 	//assert.True(d.Load("winpmem_x64.sys"))
 	//assert.True(d.Unload())
 	//mylog.Hex("SMART_RCV_DRIVE_DATA", driver.SMART_RCV_DRIVE_DATA)

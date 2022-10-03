@@ -1,6 +1,7 @@
 package hardwareIndo
 
 import (
+	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/src/cpp2go"
 	"github.com/ddkwork/golibrary/src/cpp2go/delete/myc2go/windef"
 
@@ -9,7 +10,7 @@ import (
 
 func TestName(t *testing.T) {
 	return
-	mycheck.Assert(t).True(windef.Creat(name, true))
+	mylog.Assert(t).True(windef.Creat(name, true))
 	path := "./windefTest/windef.c"
 	cpp2go.New().TranslateCFile(path, "hardwareIndo")
 }

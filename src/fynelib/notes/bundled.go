@@ -8,10 +8,10 @@ import (
 	"fyne.io/fyne/v2"
 )
 
-//go:embed  HarmonyOS_Sans_SC_Bold.ttf
-var ttfBody []byte
+// go:embed  HarmonyOS_Sans_SC_Bold.ttf
+//var ttfBody []byte
 
 var resourceGochiHandTtf = &fyne.StaticResource{
 	StaticName:    "GochiHand.ttf",
-	StaticContent: ttfBody,
+	StaticContent: nil,
 }

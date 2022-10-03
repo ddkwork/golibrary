@@ -13,7 +13,7 @@ package myc2go_test
 //
 //func TestUnsafe(t *testing.T) {
 //	sizeofUINT32 := unsafe.Sizeof(uint32(0))
-//	mycheck.Assert(t).Equal(uint32(sizeofUINT32), uint32(4))
+//	mylog.Assert(t).Equal(uint32(sizeofUINT32), uint32(4))
 //}
 //func Test3(t *testing.T) {
 //	dir := filepath.Dir("back\\HyperDbgDev\\hyperdbg\\include\\SDK\\Headers\\Constants.h.back")

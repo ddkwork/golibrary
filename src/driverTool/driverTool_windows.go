@@ -4,6 +4,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/src/driverTool/driver"
 	"github.com/ddkwork/golibrary/src/fynelib/canvasobjectapi"
 
@@ -107,9 +108,10 @@ func (o *object) CanvasObject(window fyne.Window) fyne.CanvasObject {
 		container.NewGridWithColumns(2, load, unload),
 		container.NewGridWithColumns(2, loadVmm, unloadVmm),
 	)
-	split := container.NewHSplit(form, mycheck.CanvasObject(window))
-	split.Offset = 0.4
-	return split
+	return form
+	//split := container.NewHSplit(form, mylog.CanvasObject(window))
+	//split.Offset = 0.4
+	//return split
 }
 
 func (o *object) WalkAllDriverPath(root string) bool {
