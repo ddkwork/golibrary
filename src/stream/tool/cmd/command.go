@@ -24,6 +24,7 @@ type Session struct {
 	logWriter  io.Writer
 }
 
+func UpdateGolibrary() { Run("go get -v -d github.com/ddkwork/golibrary@master") }
 func MakeArg(arg ...string) string {
 	args := make([]string, 0)
 	args = append(args, arg...)

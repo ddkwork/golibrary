@@ -2,10 +2,11 @@ package httpClient
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"errors"
-
 	"github.com/ddkwork/golibrary/mylog"
+	"github.com/hupe1980/socks"
 	"io"
 	"net"
 	"net/http"
@@ -169,8 +170,32 @@ func (o *Object) setProxy(protocol, hostPort string) *Object {
 		proxyURLFunc func(*http.Request) (*url.URL, error)
 	}
 	switch protocol {
-	case ProtoName.Socks4(), ProtoName.Socks5():
-		ObjTransport.dialFunc = SDial(protocol + "://" + hostPort + "?timeout=20s")
+	case ProtoName.Socks4():
+		//ObjTransport.dialFunc = SDial(protocol + "://" + hostPort + "?timeout=20s")
+		o.client.Transport = &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				d := socks.NewSocks4Dialer("tcp", "localhost:1080")
+				return d.DialContext(ctx, network, addr)
+			},
+		}
+	case ProtoName.Socks5():
+		o.client.Transport = &http.Transport{
+			//DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			//	d := socks.NewSocks5Dialer("tcp", "localhost:1080", func(o *socks.Socks5DialerOptions) {
+			//		o.AuthMethods = []socks.AuthMethod{socks.AuthMethodUsernamePassword}
+			//		o.Authenticate = userPassServerAuthenticateFuncGen("user", "wrong")
+			//	})
+			//
+			//	return d.DialContext(ctx, network, addr)
+			//},
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				d := socks.NewSocks5Dialer("tcp", "localhost:1080")
+				return d.DialContext(ctx, network, addr)
+			},
+			//Proxy: func(request *http.Request) (*url.URL, error) {
+			//	return url.Parse("socks5://localhost:1080")
+			//},
+		}
 	case ProtoName.Http(), ProtoName.Https():
 		URL, err := url.Parse(ProtoName.Http() + "://" + host + ":" + port)
 		if !mylog.Error(err) {

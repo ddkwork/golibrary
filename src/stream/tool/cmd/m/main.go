@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	//cmd.UpdateGolibrary()
 	//b, err := cmd.Run("C:\\Windows\\System32\\PING.EXE www.baidu.com -t ")
 	b, err := cmd.Run("ping www.baidu.com -t ")
 	if !mylog.Error(err) {

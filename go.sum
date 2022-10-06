@@ -285,6 +285,10 @@ github.com/hjson/hjson-go v3.3.0+incompatible h1:Rqr+Ya+0aCJMjaE4s8E9YKvuJLuLVpE
 github.com/hjson/hjson-go v3.3.0+incompatible/go.mod h1:qsetwF8NlsTsOTwZTApNlTCerV+b2GjYRRcIk4JMFio=
 github.com/hooklift/assert v0.1.0 h1:UZzFxx5dSb9aBtvMHTtnPuvFnBvcEhHTPb9+0+jpEjs=
 github.com/hooklift/assert v0.1.0/go.mod h1:pfexfvIHnKCdjh6CkkIZv5ic6dQ6aU2jhKghBlXuwwY=
+github.com/hupe1980/golog v0.0.2 h1:8RjRAUPKwAg+wb6cCgD1t+wSOdx50sICMTNu2x/RrLc=
+github.com/hupe1980/golog v0.0.2/go.mod h1:5BZpZIKIo0cVuhx9rWyrZkUiQATAbOlpXr2tsjfaJlE=
+github.com/hupe1980/socks v0.0.9 h1:pIGJK2t5KRrB0nDBdIpxyG6DEhTSqvHaXglYGS5Zc5g=
+github.com/hupe1980/socks v0.0.9/go.mod h1:fH74hTycnw6p7psijYXlobeDUl3ApGuFuI8GDrO03Tw=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=

@@ -121,11 +121,14 @@ func (o *object) Struct(msg any) {
 	if !o.Error(err) {
 		return
 	}
+	body := string(marshalIndent)
+	if body == "{}" {
+		body = fmt.Sprintf("%#v", msg) //not export
+	}
 	*o = object{
 		kind:  StructKind,
 		title: "",
-		//msg:   fmt.Sprintf("%#v", msg),
-		msg:   string(marshalIndent),
+		msg:   body,
 		debug: o.debug,
 	}
 	o.printAndWrite()

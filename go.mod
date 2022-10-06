@@ -23,6 +23,7 @@ require (
 	github.com/goplus/c2go v0.7.10
 	github.com/goplus/gox v1.11.22
 	github.com/hjson/hjson-go v3.3.0+incompatible
+	github.com/hupe1980/socks v0.0.9
 	github.com/intel-go/cpuid v0.0.0-20220614022739-219e067757cb
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/nicksnyder/go-i18n/v2 v2.2.0
@@ -56,6 +57,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/goplus/mod v0.9.12 // indirect
+	github.com/hupe1980/golog v0.0.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
