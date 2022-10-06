@@ -122,7 +122,7 @@ func (o *object) Struct(msg any) {
 		return
 	}
 	body := string(marshalIndent)
-	if body == "{}" {
+	if body == "{}" ||reflect.TypeOf(msg).Kind()==reflect.Slice{
 		body = fmt.Sprintf("%#v", msg) //not export
 	}
 	*o = object{
