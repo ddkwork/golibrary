@@ -14,7 +14,7 @@ import (
 )
 
 func Gbk2Utf8All(dir string) {
-	filepath.Walk("cmake", func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		ext := filepath.Ext(path)
 		switch ext {
 		case ".h", ".cpp":
