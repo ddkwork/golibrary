@@ -15,23 +15,23 @@ import (
 
 func Gbk2Utf8All(dir string) {
 	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
-		ext := filepath.Ext(path)
-		switch ext {
-		case ".h", ".cpp":
-			b, err := os.ReadFile(path)
-			if !mylog.Error(err) {
-				return err
-			}
-			if isUtf8(b) {
-				return nil
-			}
-			mylog.Info("gdk", path)
-			utf8, err := gbkToUtf8(b)
-			if !mylog.Error(err) {
-				return err
-			}
-			tool.File().WriteTruncate(path, utf8)
+		//ext := filepath.Ext(path)
+		//switch ext {
+		//case ".h", ".cpp":
+		b, err := os.ReadFile(path)
+		if !mylog.Error(err) {
+			return err
 		}
+		if isUtf8(b) {
+			return nil
+		}
+		mylog.Info("gdk", path)
+		utf8, err := gbkToUtf8(b)
+		if !mylog.Error(err) {
+			return err
+		}
+		tool.File().WriteTruncate(path, utf8)
+		//}
 		return nil
 	})
 }
