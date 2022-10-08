@@ -18,6 +18,13 @@ func Gbk2Utf8All(dir string) {
 		//ext := filepath.Ext(path)
 		//switch ext {
 		//case ".h", ".cpp":
+		stat, err := os.Stat(path)
+		if !mylog.Error(err) {
+			return err
+		}
+		if stat.IsDir() {
+			return nil
+		}
 		b, err := os.ReadFile(path)
 		if !mylog.Error(err) {
 			return err
