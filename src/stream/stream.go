@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/src/stream"
 	"io"
 	"math/big"
 	"os"
@@ -61,7 +60,7 @@ func (s *Stream) LinesToString(lines []string) string {
 }
 func NewHexDump(hexdump string) (buf []byte) {
 	defer func() {
-		s := stream.New()
+		s := New()
 		s.WriteStringLn("buf:=" + fmt.Sprintf("%#v", buf))
 		cut := `[]byte`
 		cxx := fmt.Sprintf("%#v", buf)
