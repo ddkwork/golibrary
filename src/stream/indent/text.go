@@ -42,6 +42,4 @@ func (o *object) width(s string) (w int) {
 	return
 }
 
-func (o *object) NewLine(src *bytes.Buffer) error {
-	return src.WriteByte('\n')
-}
+func (o *object) NewLine(src *bytes.Buffer) error { return src.WriteByte('\n') }
