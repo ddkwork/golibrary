@@ -8,15 +8,15 @@ require (
 	github.com/ActiveState/termtest/conpty v0.5.0
 	github.com/aquasecurity/table v1.8.0
 	github.com/blockpane/prettyfyne v0.0.0-20210324022404-4f2d209f9b43
-	github.com/c4milo/unpackit v0.1.0
+	github.com/c4milo/unpackit v1.0.0
 	github.com/charmbracelet/bubbles v0.14.0
 	github.com/charmbracelet/bubbletea v0.22.1
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/creack/pty v1.1.18
 	github.com/dc0d/caseconv v0.5.0
-	github.com/dop251/goja v0.0.0-20220906144433-c4d370b87b45
+	github.com/dop251/goja v0.0.0-20221019153710-09250e0eba20
 	github.com/drognisep/fynehelpers v0.0.0-20220612030159-a59fafbc482d
-	github.com/fatih/color v1.7.0
+	github.com/fatih/color v1.13.0
 	github.com/fpabl0/sparky-go v0.0.0-20220803072144-1a0971955531
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
@@ -29,8 +29,8 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.2.0
 	github.com/spyre-project/spyre v1.2.5
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/sys v0.0.0-20220909162455-aba9fc2a8ff2
-	golang.org/x/text v0.3.7
+	golang.org/x/sys v0.1.0
+	golang.org/x/text v0.4.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -64,7 +64,7 @@ require (
 	github.com/klauspost/cpuid v1.2.0 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-colorable v0.0.9 // indirect
+	github.com/mattn/go-colorable v0.1.9 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
