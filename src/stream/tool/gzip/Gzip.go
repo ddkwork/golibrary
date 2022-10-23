@@ -16,7 +16,7 @@ type (
 	object struct{ s *stream.Stream }
 )
 
-func New() Interface { return &object{s: stream.NewNil()} }
+func New() Interface { return &object{s: stream.New()} }
 
 func (o *object) Decode(in []byte) *stream.Stream {
 	reader, err := gzip.NewReader(bytes.NewReader(in))
@@ -32,7 +32,7 @@ func (o *object) Decode(in []byte) *stream.Stream {
 	}()
 	all, err2 := ioutil.ReadAll(reader)
 	if !mylog.Error(err2) {
-		return stream.NewErrorInfo(err2.Error())
+		return stream.NewString(err2.Error())
 	}
 	return stream.NewBytes(all)
 }
