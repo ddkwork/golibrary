@@ -26,6 +26,7 @@ func New() *Stream                        { return &Stream{Buffer: &bytes.Buffer
 func NewBytes(b []byte) *Stream           { return &Stream{bytes.NewBuffer(b)} }
 func NewBuffer(buf *bytes.Buffer) *Stream { return &Stream{buf} }
 func NewString(ss string) *Stream         { return &Stream{Buffer: bytes.NewBufferString(ss)} }
+
 func NewHexString(ss string) (b *Stream) {
 	b = New()
 	decodeString, err := hex.DecodeString(ss)
@@ -36,6 +37,7 @@ func NewHexString(ss string) (b *Stream) {
 	b.Write(decodeString)
 	return
 }
+
 func NewHexStringOrBytes(data any) (b *Stream) {
 	switch data.(type) {
 	case string:
@@ -45,6 +47,7 @@ func NewHexStringOrBytes(data any) (b *Stream) {
 	}
 	return NewString(fmt.Sprintf("%t\t", data))
 }
+
 func NewReadFile(path string) *Stream {
 	b, err := os.ReadFile(path)
 	if !mylog.Error(err) {
@@ -52,13 +55,21 @@ func NewReadFile(path string) *Stream {
 	}
 	return &Stream{bytes.NewBuffer(b)}
 }
+
 func (s *Stream) LinesToString(lines []string) string {
 	for _, line := range lines {
 		s.WriteStringLn(line)
 	}
 	return s.String()
 }
+
 func NewHexDump(hexdump string) (buf []byte) {
+	const (
+		address    = "00000000  "
+		sep        = "|"
+		newLine    = "\n"
+		addressLen = len(address)
+	)
 	defer func() {
 		s := New()
 		s.WriteStringLn("buf:=" + fmt.Sprintf("%#v", buf))
@@ -66,10 +77,11 @@ func NewHexDump(hexdump string) (buf []byte) {
 		cxx := fmt.Sprintf("%#v", buf)
 		cxx = cxx[len(cut):]
 		s.WriteStringLn("char buf[] = " + cxx + ";")
-		mylog.Json("gen", s.String())
-		mylog.HexDump("recovery", buf)
+		mylog.Json("gen go and c++ code", s.String())
+		mylog.HexDump("recovery go buffer", buf)
 	}()
-	if !strings.Contains(hexdump, `|`) {
+	hexdump = strings.TrimSuffix(hexdump, newLine)
+	if !strings.Contains(hexdump, address) && !strings.Contains(hexdump, sep) {
 		hexdump = strings.ReplaceAll(hexdump, " ", "")
 		decodeString, err := hex.DecodeString(hexdump)
 		if !mylog.Error(err) {
@@ -78,16 +90,15 @@ func NewHexDump(hexdump string) (buf []byte) {
 		buf = decodeString
 		return
 	}
-	suffix := strings.TrimSuffix(hexdump, "\n")
-	split := strings.Split(suffix, "\n")
+	split := strings.Split(hexdump, newLine)
 	noAddres := make([]string, len(split))
-	const (
-		addressLen = len("00000010  ")
-		dataLen    = len("7e 15 00 80 0b 00 00 00  09 25 ce f7 3d 01 00 10")
-	)
+
 	hexString := new(bytes.Buffer)
 	for i, s := range split {
-		noAddres[i] = s[addressLen : addressLen+dataLen]
+		if s == "" {
+			continue
+		}
+		noAddres[i] = s[addressLen:strings.Index(s, sep)]
 		noAddres[i] = strings.ReplaceAll(noAddres[i], " ", "")
 		hexString.WriteString(noAddres[i])
 	}
@@ -98,6 +109,7 @@ func NewHexDump(hexdump string) (buf []byte) {
 	buf = decodeString
 	return
 }
+
 func (s *Stream) buffer(data any) *bytes.Buffer { //todo replaced as stream pkg
 	switch data.(type) {
 	case string:
@@ -107,6 +119,7 @@ func (s *Stream) buffer(data any) *bytes.Buffer { //todo replaced as stream pkg
 	}
 	return bytes.NewBufferString("error file data type " + fmt.Sprintf("%t", data))
 }
+
 func (s *Stream) ToLines(data any) (lines []string, ok bool) {
 	newReader := bufio.NewReader(s.buffer(data))
 	for {
@@ -122,6 +135,7 @@ func (s *Stream) ToLines(data any) (lines []string, ok bool) {
 		lines = append(lines, string(line))
 	}
 }
+
 func (s *Stream) ReadToLines(path string) (lines []string, ok bool) {
 	file, err := os.ReadFile(path)
 	if !mylog.Error(err) {
