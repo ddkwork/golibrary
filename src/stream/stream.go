@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/src/mybinary"
 	"io"
 	"math/big"
 	"os"
@@ -165,6 +166,18 @@ func (s *Stream) NewLine() *Stream {
 }
 func (s *Stream) QuoteWith(ss string) *Stream {
 	s.WriteString(ss)
+	return s
+}
+func (s *Stream) WriteAny(order mybinary.ByteOrder, data any) *Stream {
+	if !mylog.Error(mybinary.Write(s, order, data)) {
+		return nil
+	}
+	return s
+}
+func (s *Stream) ReadAny(order mybinary.ByteOrder) (data any) {
+	if !mylog.Error(mybinary.Read(s, order, data)) {
+		return nil
+	}
 	return s
 }
 func (s *Stream) WriteBytesLn(p []byte) *Stream {
