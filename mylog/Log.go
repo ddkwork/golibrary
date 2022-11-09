@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/ddkwork/golibrary/src/stream"
 	"github.com/ddkwork/golibrary/src/stream/indent"
 	"github.com/fatih/color"
 	"net/http"
@@ -119,27 +118,27 @@ func (o *object) Success(title string, msg ...any) {
 }
 
 const (
-	inHttp  = "--------------------------->"
-	outHttp = "<---------------------------"
-	endHttp = "----------------------------------------------------------------------------------------------------------------------------------------"
+	inHttp  = "--------------------------->\n"
+	outHttp = "<---------------------------\n"
+	endHttp = "----------------------------------------------------------------------------------------------------------------------------------------\n"
 )
 
 func (o *object) DumpRequest(Request *http.Request, body bool) {
-	dumpRequest, err := httputil.DumpRequest(Request, false)
+	dumpRequest, err := httputil.DumpRequest(Request, body)
 	if !o.Error(err) {
 		return
 	}
-	s := stream.NewString(inHttp)
-	s.NewLine()
-	s.WriteBytesLn(dumpRequest)
-	s.WriteString(Request.Method)
-	s.Indent(1)
-	s.WriteStringLn(Request.URL.String())
-	s.WriteStringLn(endHttp)
+	s := inHttp + string(dumpRequest)
+	s += "\n"
+	s += Request.Method
+	s += ""
+	s += Request.URL.String()
+	s += "\n"
+	s += endHttp
 	*o = object{
 		kind:   JsonKind,
 		title:  "",
-		msg:    s.String(),
+		msg:    s,
 		body:   "",
 		debug:  o.debug,
 		isHttp: true,
@@ -151,18 +150,17 @@ func (o *object) DumpResponse(Response *http.Response, body bool) {
 	if Response == nil {
 		return
 	}
-	dumpResponse, err := httputil.DumpResponse(Response, false)
+	dumpResponse, err := httputil.DumpResponse(Response, body)
 	if !o.Error(err) {
 		return
 	}
-	s := stream.NewString(outHttp)
-	s.NewLine()
-	s.WriteBytesLn(dumpResponse)
-	s.WriteStringLn(endHttp)
+	s := outHttp + string(dumpResponse)
+	s += "\n"
+	s += endHttp
 	*o = object{
 		kind:   JsonKind,
 		title:  "",
-		msg:    s.String(),
+		msg:    s,
 		body:   "",
 		debug:  o.debug,
 		isHttp: true,
