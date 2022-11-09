@@ -3,11 +3,14 @@ package mylog
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"net/http"
 	"testing"
 )
 
 type (
 	Interface interface {
+		DumpRequest(req *http.Request, body bool)
+		DumpResponse(resp *http.Response, body bool)
 		Error(err any) bool
 		Error2(_ any, err error) bool
 		HexDump(title string, msg any)     //hex buf todo support fn return []byte
@@ -24,11 +27,12 @@ type (
 		SetDebug(debug bool)
 	}
 	object struct {
-		kind  kind
-		title string
-		msg   string
-		body  string
-		debug bool
+		kind   kind
+		title  string
+		msg    string
+		body   string
+		debug  bool
+		isHttp bool //not use time and line number
 	}
 )
 
@@ -46,11 +50,12 @@ func (o *object) Body() string        { return o.body }
 
 func New() Interface {
 	return &object{
-		kind:  -1,
-		title: "",
-		msg:   "",
-		body:  "",
-		debug: true,
+		kind:   -1,
+		title:  "",
+		msg:    "",
+		body:   "",
+		debug:  true,
+		isHttp: false,
 	}
 }
 func init() {
@@ -59,18 +64,20 @@ func init() {
 
 var Default = New()
 
-func Assert(t *testing.T) *assert.Assertions { return assert.New(t) }
-func Error(err any) bool                     { return Default.Error(err) }
-func Error2(_ any, err error) bool           { return Default.Error2(nil, err) }
-func HexDump(title string, msg any)          { Default.HexDump(title, msg) }
-func Hex(title string, msg any)              { Default.Hex(title, msg) }
-func Info(title string, msg ...any)          { Default.Info(title, msg) }
-func Trace(title string, msg ...any)         { Default.Trace(title, msg) }
-func Warning(title string, msg ...any)       { Default.Warning(title, msg) }
-func MarshalJson(title string, msg any)      { Default.MarshalJson(title, msg) }
-func Json(title string, msg ...any)          { Default.Json(title, msg) }
-func Success(title string, msg ...any)       { Default.Success(title, msg) }
-func Struct(msg any)                         { Default.Struct(msg) }
-func Body() string                           { return Default.Body() }
-func Msg() string                            { return Default.Msg() }
-func SetDebug(debug bool)                    { Default.SetDebug(debug) }
+func DumpRequest(req *http.Request, body bool)    { Default.DumpRequest(req, body) }
+func DumpResponse(resp *http.Response, body bool) { Default.DumpResponse(resp, body) }
+func Assert(t *testing.T) *assert.Assertions      { return assert.New(t) }
+func Error(err any) bool                          { return Default.Error(err) }
+func Error2(_ any, err error) bool                { return Default.Error2(nil, err) }
+func HexDump(title string, msg any)               { Default.HexDump(title, msg) }
+func Hex(title string, msg any)                   { Default.Hex(title, msg) }
+func Info(title string, msg ...any)               { Default.Info(title, msg) }
+func Trace(title string, msg ...any)              { Default.Trace(title, msg) }
+func Warning(title string, msg ...any)            { Default.Warning(title, msg) }
+func MarshalJson(title string, msg any)           { Default.MarshalJson(title, msg) }
+func Json(title string, msg ...any)               { Default.Json(title, msg) }
+func Success(title string, msg ...any)            { Default.Success(title, msg) }
+func Struct(msg any)                              { Default.Struct(msg) }
+func Body() string                                { return Default.Body() }
+func Msg() string                                 { return Default.Msg() }
+func SetDebug(debug bool)                         { Default.SetDebug(debug) }

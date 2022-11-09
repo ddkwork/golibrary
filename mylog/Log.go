@@ -4,8 +4,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/ddkwork/golibrary/src/stream"
 	"github.com/ddkwork/golibrary/src/stream/indent"
 	"github.com/fatih/color"
+	"net/http"
+	"net/http/httputil"
 	"os"
 	"reflect"
 	"strings"
@@ -115,6 +118,58 @@ func (o *object) Success(title string, msg ...any) {
 	o.printAndWrite()
 }
 
+const (
+	inHttp  = "--------------------------->"
+	outHttp = "<---------------------------"
+	endHttp = "----------------------------------------------------------------------------------------------------------------------------------------"
+)
+
+func (o *object) DumpRequest(Request *http.Request, body bool) {
+	dumpRequest, err := httputil.DumpRequest(Request, false)
+	if !o.Error(err) {
+		return
+	}
+	s := stream.NewString(inHttp)
+	s.NewLine()
+	s.WriteBytesLn(dumpRequest)
+	s.WriteString(Request.Method)
+	s.Indent(1)
+	s.WriteStringLn(Request.URL.String())
+	s.WriteStringLn(endHttp)
+	*o = object{
+		kind:   JsonKind,
+		title:  "",
+		msg:    s.String(),
+		body:   "",
+		debug:  o.debug,
+		isHttp: true,
+	}
+	o.printAndWrite()
+}
+
+func (o *object) DumpResponse(Response *http.Response, body bool) {
+	if Response == nil {
+		return
+	}
+	dumpResponse, err := httputil.DumpResponse(Response, false)
+	if !o.Error(err) {
+		return
+	}
+	s := stream.NewString(outHttp)
+	s.NewLine()
+	s.WriteBytesLn(dumpResponse)
+	s.WriteStringLn(endHttp)
+	*o = object{
+		kind:   JsonKind,
+		title:  "",
+		msg:    s.String(),
+		body:   "",
+		debug:  o.debug,
+		isHttp: true,
+	}
+	o.printAndWrite()
+}
+
 func (o *object) Struct(msg any) {
 	msg = reflect.Indirect(reflect.ValueOf(msg)).Interface()
 	marshalIndent, err := json.MarshalIndent(msg, "", " ")
@@ -122,7 +177,7 @@ func (o *object) Struct(msg any) {
 		return
 	}
 	body := string(marshalIndent)
-	if body == "{}" ||reflect.TypeOf(msg).Kind()==reflect.Slice{
+	if body == "{}" || reflect.TypeOf(msg).Kind() == reflect.Slice {
 		body = fmt.Sprintf("%#v", msg) //not export
 	}
 	*o = object{
@@ -162,6 +217,9 @@ func (o *object) printAndWrite() {
 		o.body = indentTitle + o.msg
 	default:
 		o.body = indentTitle + o.msg + caller
+	}
+	if o.isHttp {
+		o.body = o.msg
 	}
 	o.printColorBody()
 	o.WriteAppend("log.log", o.body) //todo set apk path as log path
