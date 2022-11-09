@@ -9,8 +9,8 @@ import (
 
 type (
 	Interface interface {
-		DumpRequest(req *http.Request, body bool)
-		DumpResponse(resp *http.Response, body bool)
+		DumpRequest(req *http.Request, body bool) string
+		DumpResponse(resp *http.Response, body bool) string
 		Error(err any) bool
 		Error2(_ any, err error) bool
 		HexDump(title string, msg any)     //hex buf todo support fn return []byte

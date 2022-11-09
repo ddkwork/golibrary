@@ -123,10 +123,10 @@ const (
 	endHttp = "----------------------------------------------------------------------------------------------------------------------------------------\n"
 )
 
-func (o *object) DumpRequest(Request *http.Request, body bool) {
+func (o *object) DumpRequest(Request *http.Request, body bool) string {
 	dumpRequest, err := httputil.DumpRequest(Request, body)
 	if !o.Error(err) {
-		return
+		return ""
 	}
 	s := inHttp + Request.URL.String() + "\n"
 	s += strings.TrimSuffix(string(dumpRequest), "\n")
@@ -140,15 +140,16 @@ func (o *object) DumpRequest(Request *http.Request, body bool) {
 		isHttp: true,
 	}
 	o.printAndWrite()
+	return s
 }
 
-func (o *object) DumpResponse(Response *http.Response, body bool) {
+func (o *object) DumpResponse(Response *http.Response, body bool) string {
 	if Response == nil {
-		return
+		return ""
 	}
 	dumpResponse, err := httputil.DumpResponse(Response, body)
 	if !o.Error(err) {
-		return
+		return ""
 	}
 	s := outHttp + strings.TrimSuffix(string(dumpResponse), "\n")
 	s += endHttp
@@ -161,6 +162,7 @@ func (o *object) DumpResponse(Response *http.Response, body bool) {
 		isHttp: true,
 	}
 	o.printAndWrite()
+	return s
 }
 
 func (o *object) Struct(msg any) {
