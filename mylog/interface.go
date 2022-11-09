@@ -64,20 +64,20 @@ func init() {
 
 var Default = New()
 
-func DumpRequest(req *http.Request, body bool)    { Default.DumpRequest(req, body) }
-func DumpResponse(resp *http.Response, body bool) { Default.DumpResponse(resp, body) }
-func Assert(t *testing.T) *assert.Assertions      { return assert.New(t) }
-func Error(err any) bool                          { return Default.Error(err) }
-func Error2(_ any, err error) bool                { return Default.Error2(nil, err) }
-func HexDump(title string, msg any)               { Default.HexDump(title, msg) }
-func Hex(title string, msg any)                   { Default.Hex(title, msg) }
-func Info(title string, msg ...any)               { Default.Info(title, msg) }
-func Trace(title string, msg ...any)              { Default.Trace(title, msg) }
-func Warning(title string, msg ...any)            { Default.Warning(title, msg) }
-func MarshalJson(title string, msg any)           { Default.MarshalJson(title, msg) }
-func Json(title string, msg ...any)               { Default.Json(title, msg) }
-func Success(title string, msg ...any)            { Default.Success(title, msg) }
-func Struct(msg any)                              { Default.Struct(msg) }
-func Body() string                                { return Default.Body() }
-func Msg() string                                 { return Default.Msg() }
-func SetDebug(debug bool)                         { Default.SetDebug(debug) }
+func DumpRequest(req *http.Request, body bool) string    { return Default.DumpRequest(req, body) }
+func DumpResponse(resp *http.Response, body bool) string { return Default.DumpResponse(resp, body) }
+func Assert(t *testing.T) *assert.Assertions             { return assert.New(t) }
+func Error(err any) bool                                 { return Default.Error(err) }
+func Error2(_ any, err error) bool                       { return Default.Error2(nil, err) }
+func HexDump(title string, msg any)                      { Default.HexDump(title, msg) }
+func Hex(title string, msg any)                          { Default.Hex(title, msg) }
+func Info(title string, msg ...any)                      { Default.Info(title, msg) }
+func Trace(title string, msg ...any)                     { Default.Trace(title, msg) }
+func Warning(title string, msg ...any)                   { Default.Warning(title, msg) }
+func MarshalJson(title string, msg any)                  { Default.MarshalJson(title, msg) }
+func Json(title string, msg ...any)                      { Default.Json(title, msg) }
+func Success(title string, msg ...any)                   { Default.Success(title, msg) }
+func Struct(msg any)                                     { Default.Struct(msg) }
+func Body() string                                       { return Default.Body() }
+func Msg() string                                        { return Default.Msg() }
+func SetDebug(debug bool)                                { Default.SetDebug(debug) }
