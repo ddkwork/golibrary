@@ -73,12 +73,12 @@ func NewHexDump(hexdump string) (buf []byte) {
 	)
 	defer func() {
 		s := New()
-		s.WriteStringLn("buf:=" + fmt.Sprintf("%#v", buf))
+		//s.WriteStringLn("buf:=" + fmt.Sprintf("%#v", buf))
 		cut := `[]byte`
 		cxx := fmt.Sprintf("%#v", buf)
 		cxx = cxx[len(cut):]
 		s.WriteStringLn("char buf[] = " + cxx + ";")
-		mylog.Json("gen go and c++ code", s.String())
+		mylog.Json("gen c++ code", s.String())
 		mylog.HexDump("recovery go buffer", buf)
 	}()
 	hexdump = strings.TrimSuffix(hexdump, newLine)
