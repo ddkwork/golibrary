@@ -118,9 +118,9 @@ func (o *object) Success(title string, msg ...any) {
 }
 
 const (
-	inHttp  = "--------------------------->\n"
-	outHttp = "<---------------------------\n"
-	endHttp = "----------------------------------------------------------------------------------------------------------------------------------------"
+	inHttp  = ">>>--------------->>>--------------->>>--------------->>>\n"
+	outHttp = "<<<---------------<<<---------------<<<---------------<<<\n"
+	endHttp = "----------------------------------------------------------------------------------------------------------------------------------------\n"
 )
 
 func (o *object) DumpRequest(Request *http.Request, body bool) {
@@ -128,12 +128,8 @@ func (o *object) DumpRequest(Request *http.Request, body bool) {
 	if !o.Error(err) {
 		return
 	}
-	s := inHttp + string(dumpRequest)
-	s += "\n"
-	s += Request.Method
-	s += ""
-	s += Request.URL.String()
-	s += "\n"
+	s := inHttp + Request.URL.String() + "\n"
+	s += strings.TrimSuffix(string(dumpRequest), "\n")
 	s += endHttp
 	*o = object{
 		kind:   JsonKind,
@@ -154,8 +150,7 @@ func (o *object) DumpResponse(Response *http.Response, body bool) {
 	if !o.Error(err) {
 		return
 	}
-	s := outHttp + string(dumpResponse)
-	s += "\n"
+	s := outHttp + strings.TrimSuffix(string(dumpResponse), "\n")
 	s += endHttp
 	*o = object{
 		kind:   JsonKind,
