@@ -201,7 +201,6 @@ func (o *object) printAndWrite() {
 		}
 	}
 	indentTitle := o.kind.String() + ` [` + o.GetTimeNowString() + `] ` + indent.New().Left(o.title)
-	o.cleanMessageStyle()
 	if o.msg == "" {
 		o.msg = `""`
 	}
@@ -218,18 +217,6 @@ func (o *object) printAndWrite() {
 	}
 	o.printColorBody()
 	o.WriteAppend("log.log", o.body) //todo set apk path as log path
-}
-
-func (o *object) cleanMessageStyle() {
-	indexByte := strings.IndexByte(o.msg, '[')
-	if indexByte == 0 {
-		//o.msg = strings.Replace(o.msg, "[", "[\n", 1) //特殊处理，fmt.sprint不知道怎么把这个加上了，应该是格式化了切片类型的原因
-		//o.msg = strings.ReplaceAll(o.msg, "[", "") //pb klv 或者packed的时候怎么破?
-		//o.msg = strings.ReplaceAll(o.msg, "]", "")
-		b := []byte(o.msg)
-		b = b[1 : len(b)-1]
-		o.msg = string(b)
-	}
 }
 
 const (
