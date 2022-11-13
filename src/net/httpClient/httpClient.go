@@ -26,7 +26,7 @@ type (
 		method      string
 		requestUrl  string
 		path        string
-		head        map[string]string
+		head        http.Header
 		stopCode    int
 		responseBuf []byte
 		error       error
@@ -74,11 +74,9 @@ func (o *Object) Request() (ok bool) {
 	if !mylog.Error(o.error) {
 		return
 	}
-	request.Close = true //强制短链接
+	request.Close = false //强制短链接
 	//Request.Header.Add("Connection", "close")
-	for k, v := range o.head {
-		request.Header.Set(k, v)
-	}
+	request.Header = o.head
 	response, o.error = o.client.Do(request)
 	if !mylog.Error(o.error) {
 		return
@@ -119,8 +117,8 @@ func (o *Object) SetPath(path string) *Object {
 	o.path = path
 	return o
 }
-func (o *Object) SetHead(head map[string]string) *Object {
-	o.head = head
+func (o *Object) SetHead(header http.Header) *Object {
+	o.head = header
 	return o
 }
 func (o *Object) StopCode(stopCode int) *Object {
