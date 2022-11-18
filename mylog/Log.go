@@ -196,18 +196,7 @@ func isTermux() bool {
 	return strings.Contains(dir, "termux")
 }
 
-func (o *object) bigDataCheck() {
-	if len(o.msg) > 256 {
-		o.msg = o.msg[:256]
-		o.msg += "\n"
-		o.msg += "... big data was cut int 256 byte"
-		o.msg += "\n"
-	}
-}
-
 func (o *object) printAndWrite() {
-	o.bigDataCheck()
-
 	///data/data/com.termux/files/home/
 	if IsAndroid() {
 		//go run .                --> Android
