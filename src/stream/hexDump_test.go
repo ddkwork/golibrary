@@ -12,7 +12,7 @@ func TestNewHexDump(t *testing.T) {
 func TestHexDumpToGoBytes(t *testing.T) {
 	ss := `00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00 8E 6A 64 01 15 4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47 00`
 	NewHexDump(ss)
-	//NewHexDump(dump)
+	NewHexDump(dump)
 	NewHexDump(`00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00`)             //16 byte header
 	NewHexDump(`8E 6A 64 01`)                                                 //tag
 	NewHexDump(`01`)                                                          //
