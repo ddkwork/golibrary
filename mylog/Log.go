@@ -76,7 +76,7 @@ func (o *object) Info(title string, msg ...any) {
 	*o = object{
 		kind:  InfoKind,
 		title: title,
-		msg:   fmt.Sprint(msg...),
+		msg:   Sprint(msg...),
 		debug: o.debug,
 	}
 	o.printAndWrite()
@@ -86,7 +86,7 @@ func (o *object) Trace(title string, msg ...any) {
 	*o = object{
 		kind:  TraceKind,
 		title: title,
-		msg:   fmt.Sprint(msg...),
+		msg:   Sprint(msg...),
 		debug: o.debug,
 	}
 	o.printAndWrite()
@@ -96,7 +96,7 @@ func (o *object) Warning(title string, msg ...any) {
 	*o = object{
 		kind:  WarningKind,
 		title: title,
-		msg:   fmt.Sprint(msg...),
+		msg:   Sprint(msg...),
 		debug: o.debug,
 	}
 	o.printAndWrite()
@@ -106,7 +106,7 @@ func (o *object) Json(title string, msg ...any) {
 	*o = object{
 		kind:  JsonKind,
 		title: title,
-		msg:   fmt.Sprint(msg...),
+		msg:   Sprint(msg...), //[]
 		debug: o.debug,
 	}
 	o.printAndWrite()
@@ -116,7 +116,7 @@ func (o *object) Success(title string, msg ...any) {
 	*o = object{
 		kind:  SuccessKind,
 		title: title,
-		msg:   fmt.Sprint(msg...),
+		msg:   Sprint(msg...),
 		debug: o.debug,
 	}
 	o.printAndWrite()
@@ -196,7 +196,17 @@ func isTermux() bool {
 	return strings.Contains(dir, "termux")
 }
 
+func Sprint(msg_ ...any) string {
+	msg := fmt.Sprint(msg_...) //遇到[]byte会加上[],
+	switch {
+	case msg[0] == '[' && msg[len(msg)-1] == ']':
+		msg = msg[1 : len(msg)-1]
+	}
+	return msg
+}
+
 func (o *object) printAndWrite() {
+
 	///data/data/com.termux/files/home/
 	if IsAndroid() {
 		//go run .                --> Android
