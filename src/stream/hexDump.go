@@ -75,7 +75,33 @@ func NewHexDump(hexdump string) (buf []byte) {
 		buf = decodeString
 		return
 	case !strings.Contains(hexdump, sep): //非go风格
-		panic("x64dbg copy")
+		split := strings.Split(hexdump, newLine)
+		//noAddres := make([]string, len(split))
+		hexString := new(bytes.Buffer)
+		for _, s := range split {
+			if s == "" {
+				continue
+			}
+			fields := strings.Fields(s)
+			for j, field := range fields {
+				if j > 0 && len(field) > len("00") {
+					fields = fields[1:j]
+					break
+				}
+			}
+			for _, field := range fields {
+				hexString.WriteString(field)
+			}
+			//noAddres[i] = s[addressLen:strings.Index(s, sep)]
+			//noAddres[i] = strings.ReplaceAll(noAddres[i], " ", "")
+			//hexString.WriteString(noAddres[i])
+		}
+		mylog.Json("", hexString.String())
+		decodeString, err := hex.DecodeString(hexString.String())
+		if !mylog.Error(err) {
+			return
+		}
+		buf = decodeString
 	}
 	return
 }
