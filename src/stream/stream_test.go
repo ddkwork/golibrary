@@ -101,3 +101,9 @@ func TestStream_WriteBytesLn(t *testing.T) {
 func TestStream_WriteStringLn(t *testing.T) {
 
 }
+
+func TestStream_InsertString1(t *testing.T) {
+	s := NewString("B3EBDDAF2EA789C4")
+	code := s.InsertString(4, "-")
+	println(code.String())
+}

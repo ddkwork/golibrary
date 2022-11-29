@@ -201,14 +201,17 @@ func (s *Stream) BigNumXorWithAlign(arg1, arg2 []byte, align int) (xorStream []b
 }
 
 func (s *Stream) InsertString(index int, insert string) *Stream {
-	start := s.String()[:index]
-	end := s.String()[index:]
+	blocks := s.SplitString(index)
 	s.Reset()
-	s.WriteString(start)
-	s.WriteString(insert)
-	s.WriteString(end)
+	for i, block := range blocks {
+		s.WriteString(block)
+		if i < len(blocks)-1 {
+			s.WriteString(insert)
+		}
+	}
 	return s
 }
+
 func (s *Stream) InsertBytes(index int, insert []byte) *Stream {
 	start := s.Bytes()[:index]
 	end := s.Bytes()[index:]
