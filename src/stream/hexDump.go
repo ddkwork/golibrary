@@ -76,15 +76,14 @@ func NewHexDump(hexdump string) (buf []byte) {
 		return
 	case !strings.Contains(hexdump, sep): //非go风格
 		split := strings.Split(hexdump, newLine)
-		//noAddres := make([]string, len(split))
 		hexString := new(bytes.Buffer)
 		for _, s := range split {
 			if s == "" {
 				continue
 			}
-			fields := strings.Fields(s)
+			fields := strings.Split(s, " ")
 			for j, field := range fields {
-				if j > 0 && len(field) > len("00") {
+				if j > 0 && field == "" {
 					fields = fields[1:j]
 					break
 				}
@@ -92,9 +91,6 @@ func NewHexDump(hexdump string) (buf []byte) {
 			for _, field := range fields {
 				hexString.WriteString(field)
 			}
-			//noAddres[i] = s[addressLen:strings.Index(s, sep)]
-			//noAddres[i] = strings.ReplaceAll(noAddres[i], " ", "")
-			//hexString.WriteString(noAddres[i])
 		}
 		mylog.Json("", hexString.String())
 		decodeString, err := hex.DecodeString(hexString.String())
