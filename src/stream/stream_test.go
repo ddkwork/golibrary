@@ -105,5 +105,5 @@ func TestStream_WriteStringLn(t *testing.T) {
 func TestStream_InsertString1(t *testing.T) {
 	s := NewString("B3EBDDAF2EA789C4")
 	code := s.InsertString(4, "-")
-	println(code.String())
+	mylog.Assert(t).Equal("B3EB-DDAF-2EA7-89C4", code.String())
 }
