@@ -92,7 +92,6 @@ func NewHexDump(hexdump string) (buf []byte) {
 				hexString.WriteString(field)
 			}
 		}
-		mylog.Json("", hexString.String())
 		decodeString, err := hex.DecodeString(hexString.String())
 		if !mylog.Error(err) {
 			return
