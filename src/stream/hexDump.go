@@ -25,6 +25,8 @@ func HasAddress(s string) bool {
 	//00000000  7e 15
 	//08A73200 57 61 72
 	switch {
+	case len(s) < len("00000000"):
+		return false
 	case strings.Contains(s, address):
 		return true
 	case s[len("00000000")+1] == ' ':
