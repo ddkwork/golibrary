@@ -64,53 +64,6 @@ func (s *Stream) LinesToString(lines []string) string {
 	return s.String()
 }
 
-func NewHexDump(hexdump string) (buf []byte) {
-	const (
-		address    = "00000000  "
-		sep        = "|"
-		newLine    = "\n"
-		addressLen = len(address)
-	)
-	defer func() {
-		s := New()
-		//s.WriteStringLn("buf:=" + fmt.Sprintf("%#v", buf))
-		cut := `[]byte`
-		cxx := fmt.Sprintf("%#v", buf)
-		cxx = cxx[len(cut):]
-		s.WriteStringLn("char buf[] = " + cxx + ";")
-		mylog.Json("gen c++ code", s.String())
-		mylog.HexDump("recovery go buffer", buf)
-	}()
-	hexdump = strings.TrimSuffix(hexdump, newLine)
-	if !strings.Contains(hexdump, address) && !strings.Contains(hexdump, sep) {
-		hexdump = strings.ReplaceAll(hexdump, " ", "")
-		decodeString, err := hex.DecodeString(hexdump)
-		if !mylog.Error(err) {
-			return
-		}
-		buf = decodeString
-		return
-	}
-	split := strings.Split(hexdump, newLine)
-	noAddres := make([]string, len(split))
-
-	hexString := new(bytes.Buffer)
-	for i, s := range split {
-		if s == "" {
-			continue
-		}
-		noAddres[i] = s[addressLen:strings.Index(s, sep)]
-		noAddres[i] = strings.ReplaceAll(noAddres[i], " ", "")
-		hexString.WriteString(noAddres[i])
-	}
-	decodeString, err := hex.DecodeString(hexString.String())
-	if !mylog.Error(err) {
-		return
-	}
-	buf = decodeString
-	return
-}
-
 func (s *Stream) buffer(data any) *bytes.Buffer { //todo replaced as stream pkg
 	switch data.(type) {
 	case string:
