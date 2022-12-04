@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	fyne.io/fyne v1.4.3
-	fyne.io/fyne/v2 v2.2.4
+	fyne.io/fyne/v2 v2.2.3
 	github.com/ActiveState/termtest/conpty v0.5.0
 	github.com/aquasecurity/table v1.8.0
 	github.com/blockpane/prettyfyne v0.0.0-20210324022404-4f2d209f9b43
@@ -20,7 +20,7 @@ require (
 	github.com/fpabl0/sparky-go v0.0.0-20220803072144-1a0971955531
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
-	github.com/goplus/c2go v0.7.10
+	github.com/goplus/c2go v0.7.11-0.20221031233450-df06408062eb
 	github.com/goplus/gox v1.11.22
 	github.com/hjson/hjson-go v3.3.0+incompatible
 	github.com/hupe1980/socks v0.0.9
