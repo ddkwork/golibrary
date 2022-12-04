@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	fyne.io/fyne v1.4.3
-	fyne.io/fyne/v2 v2.2.3
+	fyne.io/fyne/v2 v2.2.4
 	github.com/ActiveState/termtest/conpty v0.5.0
 	github.com/aquasecurity/table v1.8.0
 	github.com/blockpane/prettyfyne v0.0.0-20210324022404-4f2d209f9b43
@@ -20,13 +20,15 @@ require (
 	github.com/fpabl0/sparky-go v0.0.0-20220803072144-1a0971955531
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
-	github.com/goplus/c2go v0.7.11-0.20221031233450-df06408062eb
+	github.com/goplus/c2go v0.7.10
 	github.com/goplus/gox v1.11.22
 	github.com/hjson/hjson-go v3.3.0+incompatible
 	github.com/hupe1980/socks v0.0.9
 	github.com/intel-go/cpuid v0.0.0-20220614022739-219e067757cb
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
+	github.com/richardwilkes/toolbox v1.79.0
+	github.com/richardwilkes/unison v0.44.0
 	github.com/spyre-project/spyre v1.2.5
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/sys v0.2.0
@@ -39,6 +41,7 @@ require (
 	fyne.io/systray v1.10.1-0.20220621085403-9a2652634e93 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/aymanbagabas/go-osc52 v1.0.3 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -51,7 +54,7 @@ require (
 	github.com/fyne-io/image v0.0.0-20220602074514-4956b0afb3d2 // indirect
 	github.com/fyne-io/mobile v0.1.2 // indirect
 	github.com/go-gl/gl v0.0.0-20211210172815-726fda9656d6 // indirect
-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20211213063430-748e38ca8aec // indirect
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff // indirect
@@ -76,8 +79,10 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.13.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkg/term v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/qiniu/x v1.11.9 // indirect
+	github.com/richardwilkes/json v0.1.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -85,13 +90,15 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20200120212402-85cb7272f5e9 // indirect
 	github.com/tevino/abool v1.2.0 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
-	github.com/yuin/goldmark v1.4.13 // indirect
-	golang.org/x/image v0.0.0-20220601225756-64ec528b34cd // indirect
+	github.com/yookoala/realpath v1.0.0 // indirect
+	github.com/yuin/goldmark v1.5.3 // indirect
+	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9 // indirect
+	golang.org/x/image v0.1.0 // indirect
 	golang.org/x/mobile v0.0.0-20211207041440-4e6c2922fdee // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
-	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
-	golang.org/x/tools v0.1.12 // indirect
+	golang.org/x/mod v0.7.0 // indirect
+	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/term v0.2.0 // indirect
+	golang.org/x/tools v0.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/js/dom v0.0.0-20210725211120-f030747120f2 // indirect
 )

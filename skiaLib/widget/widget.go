@@ -1,8 +1,8 @@
 package widget
 
 import (
-	"github.com/ddkwork/hyperdbgui/ux/widget/doctable"
-	"github.com/ddkwork/hyperdbgui/ux/widget/tabbar"
+	"github.com/ddkwork/golibrary/skiaLib/widget/doctable"
+	"github.com/ddkwork/golibrary/skiaLib/widget/tabbar"
 	"github.com/richardwilkes/unison"
 )
 

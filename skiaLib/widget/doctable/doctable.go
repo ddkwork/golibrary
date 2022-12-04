@@ -1,7 +1,7 @@
 package doctable
 
 import (
-	"github.com/ddkwork/hyperdbgui/ux/widget/tabbar"
+	"github.com/ddkwork/golibrary/skiaLib/widget/tabbar"
 	"github.com/richardwilkes/unison"
 )
 
