@@ -1,5 +1,7 @@
 package pather
 
+import "strings"
+
 type (
 	Interface interface {
 		//Fn() (ok bool)
@@ -24,6 +26,7 @@ type (
 )
 
 func New(input Input) *Object {
+	input.Path = strings.ReplaceAll(input.Path, `\`, `/`)
 	return &Object{
 		Input: input,
 		OutPut: OutPut{
