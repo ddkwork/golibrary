@@ -24,7 +24,7 @@ type pair[K comparable, V any] struct {
 }
 
 type OrderedMap[K comparable, V any] struct {
-	lock sync.RWMutex //todo add lock in every method
+	lock sync.RWMutex // todo add lock in every method
 	m    map[K]*list.Element
 	l    *list.List
 }
@@ -56,7 +56,7 @@ func (m *OrderedMap[K, V]) Values() (values []V) {
 	return
 }
 
-func (m *OrderedMap[K, V]) List() []pair[K, V] { //for Range method,it is Ordered
+func (m *OrderedMap[K, V]) List() []pair[K, V] { // for Range method,it is Ordered
 	l := make([]pair[K, V], 0, m.l.Len())
 	for v := m.l.Front(); v != nil; v = v.Next() {
 		l = append(l, v.Value.(pair[K, V]))
@@ -64,7 +64,7 @@ func (m *OrderedMap[K, V]) List() []pair[K, V] { //for Range method,it is Ordere
 	return l
 }
 
-func (m *OrderedMap[K, V]) Update(k K, v V) { //todo test
+func (m *OrderedMap[K, V]) Update(k K, v V) { // todo test
 	if _, ok := m.m[k]; ok {
 		m.m[k].Value = pair[K, V]{
 			Key:   k,
@@ -161,7 +161,6 @@ func (m *OrderedMap[K, V]) MarshalJSON() ([]byte, error) {
 		kBytes, err := json.Marshal(kv.Key)
 		if err != nil {
 			return nil, err
-
 		}
 		buf.Write(kBytes)
 		buf.WriteString(":")
@@ -224,6 +223,7 @@ func (m *OrderedMap[K, V]) objectKeys(b []byte) ([]string, error) {
 		}
 	}
 }
+
 func (m *OrderedMap[K, V]) skipValue(d *json.Decoder) error {
 	t, err := d.Token()
 	if err != nil {
@@ -265,14 +265,14 @@ func (m *OrderedMap[K, V]) InsertBefore(key K, val V) {
 
 func (m *OrderedMap[K, V]) CopyFrom(from *OrderedMap[K, V]) {
 	for _, kv := range from.List() {
-		m.Set(kv.Key, kv.Value) //注意这里不检测是否存在，如果存在key则会覆盖刷新
+		m.Set(kv.Key, kv.Value) // 注意这里不检测是否存在，如果存在key则会覆盖刷新
 	}
 }
 
 func (m *OrderedMap[K, V]) String() string {
-	return fmt.Sprintf("%v", m.Map()) //todo 这里不是排序的map
+	return fmt.Sprintf("%v", m.Map()) // todo 这里不是排序的map
 }
 
 func (m *OrderedMap[K, V]) GoString() string {
-	return fmt.Sprintf("%#v", m.Map()) //todo 这里不是排序的map
+	return fmt.Sprintf("%#v", m.Map()) // todo 这里不是排序的map
 }

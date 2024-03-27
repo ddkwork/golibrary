@@ -12,11 +12,12 @@ package txt_test
 import (
 	"flag"
 	"fmt"
-	"github.com/ddkwork/golibrary/stream/todo/check"
-	"github.com/ddkwork/golibrary/stream/todo/txt"
 	"math/rand"
 	"strconv"
 	"testing"
+
+	"github.com/ddkwork/golibrary/stream/todo/check"
+	"github.com/ddkwork/golibrary/stream/todo/txt"
 )
 
 var benchSet []string

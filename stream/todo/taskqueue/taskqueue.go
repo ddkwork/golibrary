@@ -11,8 +11,9 @@
 package taskqueue
 
 import (
-	"github.com/ddkwork/golibrary/stream/todo/errs"
 	"runtime"
+
+	"github.com/ddkwork/golibrary/stream/todo/errs"
 )
 
 // Logger provides a way to log panics caused by workers in a queue.

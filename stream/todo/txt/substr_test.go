@@ -10,9 +10,10 @@
 package txt_test
 
 import (
+	"testing"
+
 	"github.com/ddkwork/golibrary/stream/todo/check"
 	"github.com/ddkwork/golibrary/stream/todo/txt"
-	"testing"
 )
 
 func TestFirstN(t *testing.T) {

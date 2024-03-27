@@ -12,10 +12,11 @@ package check
 import (
 	"bytes"
 	"fmt"
-	"github.com/ddkwork/golibrary/stream/todo/errs"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/ddkwork/golibrary/stream/todo/errs"
 )
 
 // Equal compares two values for equality.

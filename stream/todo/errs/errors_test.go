@@ -12,11 +12,12 @@ package errs_test
 import (
 	"errors"
 	"fmt"
-	"github.com/ddkwork/golibrary/stream/todo/check"
-	"github.com/ddkwork/golibrary/stream/todo/errs"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/ddkwork/golibrary/stream/todo/check"
+	"github.com/ddkwork/golibrary/stream/todo/errs"
 )
 
 func ExampleError() {

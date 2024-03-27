@@ -18,7 +18,7 @@ func TestNew(t *testing.T) {
 		B int
 	}
 	o := orderedmap.New[string, string]()
-	//o.Set("a", "b")
+	// o.Set("a", "b")
 	o.Set("c", "d")
 	o.Set("a", "b")
 	vv := map[string]string{
@@ -28,7 +28,7 @@ func TestNew(t *testing.T) {
 	bb, err := json.Marshal(vv)
 	assert.NoError(t, err)
 	log.Println(string(bb))
-	//o.Delete("c")
+	// o.Delete("c")
 	for _, v := range o.List() {
 		log.Println(v.Key, v.Value)
 	}

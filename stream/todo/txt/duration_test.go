@@ -11,10 +11,11 @@ package txt_test
 
 import (
 	"fmt"
-	"github.com/ddkwork/golibrary/stream/todo/check"
-	"github.com/ddkwork/golibrary/stream/todo/txt"
 	"testing"
 	"time"
+
+	"github.com/ddkwork/golibrary/stream/todo/check"
+	"github.com/ddkwork/golibrary/stream/todo/txt"
 )
 
 func TestFormatDuration(t *testing.T) {

@@ -24,7 +24,7 @@ func CheckLoopvarAndNilPoint() {
 		// Run("gofumpt -l -w .")
 		return
 	}
-	//Run("go vet -vettool=C:\\Users\\Admin\\go\\bin\\copyloopvar.exe ./...")
+	// Run("go vet -vettool=C:\\Users\\Admin\\go\\bin\\copyloopvar.exe ./...")
 	Run("errcheck.exe -asserts ./...")
 	// Run("go vet -vettool=C:\\Users\\Admin\\go\\bin\\intrange.exe ./...")
 	Run("go vet -vettool=C:\\Users\\Admin\\go\\bin\\nilaway.exe ./...")

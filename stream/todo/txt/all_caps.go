@@ -13,10 +13,11 @@ package txt
 import (
 	_ "embed"
 	"fmt"
-	"github.com/ddkwork/golibrary/stream/todo"
-	"github.com/ddkwork/golibrary/stream/todo/errs"
 	"regexp"
 	"strings"
+
+	"github.com/ddkwork/golibrary/stream/todo"
+	"github.com/ddkwork/golibrary/stream/todo/errs"
 )
 
 //go:embed all_caps.txt

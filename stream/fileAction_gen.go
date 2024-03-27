@@ -1,11 +1,12 @@
 package stream
 
 import (
-	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/safeType"
 	"go/format"
 	"os"
 	"path/filepath"
+
+	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/safeType"
 )
 
 func WriteGoFile[T safeType.Type](name string, data T) bool {

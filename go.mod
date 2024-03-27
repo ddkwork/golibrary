@@ -3,7 +3,7 @@ module github.com/ddkwork/golibrary
 go 1.22
 
 require (
-	cogentcore.org/core v0.0.9
+	cogentcore.org/core v0.0.10-0.20240327060721-da0f626c53da
 	github.com/alecthomas/chroma/v2 v2.13.0
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/charmbracelet/bubbles v0.18.0

@@ -10,8 +10,9 @@
 package todo
 
 import (
-	"github.com/ddkwork/golibrary/stream/todo/check"
 	"testing"
+
+	"github.com/ddkwork/golibrary/stream/todo/check"
 )
 
 func TestBitSet(t *testing.T) {

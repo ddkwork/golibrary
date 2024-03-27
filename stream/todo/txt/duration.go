@@ -11,10 +11,11 @@ package txt
 
 import (
 	"fmt"
-	"github.com/ddkwork/golibrary/stream/todo/errs"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ddkwork/golibrary/stream/todo/errs"
 )
 
 // ParseDuration parses the duration string, as produced by FormatDuration().

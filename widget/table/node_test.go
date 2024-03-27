@@ -60,7 +60,7 @@ func TestDoc(t *testing.T) {
 
 		// todo gen,如何正确的填充？列编辑模式，空下多行，输入双引号和逗号，最后再粘贴方法，空格就去掉了，
 		//  方法列表的话让鼠标在node结构体上就会提取所有方法
-		var _ = []string{ //new methods
+		_ = []string{ // new methods
 			"Root() *Node[T]",
 			"IsRoot() bool",
 			"Walk(callback func(node *Node[T]))",
@@ -253,11 +253,11 @@ func Test_mock(t *testing.T) {
 
 	println(root.String())
 
-	root.Walk(func(node *table.Node[obj]) { //深度遍历
+	root.Walk(func(node *table.Node[obj]) { // 深度遍历
 		mylog.Struct(node.MetaData)
 	})
 
-	root.WalkContainer(func(node *table.Node[obj]) { //广度遍历
+	root.WalkContainer(func(node *table.Node[obj]) { // 广度遍历
 		mylog.Struct(node.MetaData)
 	})
 

@@ -126,12 +126,12 @@ func (v *_varint) Uvarint(bytes []byte) varintStream {
 	)
 	for i, b := range bytes {
 		if i == MaxVarintLen64 {
-			//mylog.Error("i == MaxVarintLen64")
+			// mylog.Error("i == MaxVarintLen64")
 			return nil
 		}
 		if b < 0x80 {
 			if i == MaxVarintLen64-1 && b > 1 {
-				//mylog.Error("i == MaxVarintLen64-1 && b > 1 ")
+				// mylog.Error("i == MaxVarintLen64-1 && b > 1 ")
 				return nil
 			}
 			v.s.SetValue(value | uint64(b)<<shift)
@@ -173,7 +173,7 @@ func (v *_varint) ReadUvarint(reader io.ByteReader) varintStream {
 		}
 		if readByte < 0x80 {
 			if i == MaxVarintLen64-1 && readByte > 1 {
-				//mylog.Error("i == MaxVarintLen64-1 && readByte > 1")
+				// mylog.Error("i == MaxVarintLen64-1 && readByte > 1")
 				return nil
 			}
 			v.s.SetValue(value | uint64(readByte)<<shift) // todo set size

@@ -144,7 +144,7 @@ func (o *Stream) CheckDesBlockSize() bool {
 
 func Concat[S ~[]E, E any](slices_ ...S) S { return slices.Concat(slices_...) }
 func (o *Stream) MergeByte(streams ...[]byte) []byte {
-	//return slices.Concat( streams...)
+	// return slices.Concat( streams...)
 	for _, b := range streams {
 		o.Write(b)
 	}

@@ -15,6 +15,6 @@ func Test_cmd(t *testing.T) {
 	cmd.Run("./a.sh")
 	cmd.Run("echo 123444 > 1.log")
 	os.Remove("1.log")
-	//cmd.Run("ping www.baidu.com")
-	//cmd.Run("ping www.baidu.com -t ")
+	// cmd.Run("ping www.baidu.com")
+	// cmd.Run("ping www.baidu.com -t ")
 }

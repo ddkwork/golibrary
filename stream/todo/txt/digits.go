@@ -11,8 +11,9 @@ package txt
 
 import (
 	"fmt"
-	"github.com/ddkwork/golibrary/stream/todo/errs"
 	"unicode"
+
+	"github.com/ddkwork/golibrary/stream/todo/errs"
 )
 
 // DigitToValue converts a unicode digit into a numeric value.

@@ -10,10 +10,11 @@
 package taskqueue_test
 
 import (
-	"github.com/ddkwork/golibrary/stream/todo/check"
-	"github.com/ddkwork/golibrary/stream/todo/taskqueue"
 	"sync/atomic"
 	"testing"
+
+	"github.com/ddkwork/golibrary/stream/todo/check"
+	"github.com/ddkwork/golibrary/stream/todo/taskqueue"
 )
 
 const (

@@ -3,9 +3,10 @@ package mylog
 import (
 	"bytes"
 	"fmt"
-	"golang.org/x/exp/constraints"
 	"net/http"
 	"os"
+
+	"golang.org/x/exp/constraints"
 )
 
 type (

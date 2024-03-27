@@ -11,9 +11,10 @@
 package desktop
 
 import (
-	"github.com/ddkwork/golibrary/stream/todo/errs"
 	"os/exec"
 	"strings"
+
+	"github.com/ddkwork/golibrary/stream/todo/errs"
 )
 
 // Open asks the system to open the provided path or URL.
