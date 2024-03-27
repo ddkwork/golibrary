@@ -56,7 +56,7 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 				cmd.Run("go get -v -u all")
 			}
 			if i > 0 {
-				cmd.Run("gofumpt -l -w .") //default run gofumpt
+				cmd.Run("gofumpt -l -w .") // default run gofumpt
 			}
 			modChan <- dir
 		}(mod)
