@@ -34,15 +34,18 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 		}
 	}
 
-	modChan := make(chan string, len(mods))
-	var wg sync.WaitGroup
-	mutex := sync.Mutex{}
+	//modChan := make(chan string, len(mods))
+
+	var (
+		wg    sync.WaitGroup
+		mutex sync.Mutex
+	)
+
 	for i, mod := range mods {
 		wg.Add(1)
-		go func(dir string, index int) {
+		go func(abs string, index int) {
 			defer wg.Done()
-			mutex.Lock()
-			if !mylog.Error(os.Chdir(mod)) {
+			if !mylog.Error(os.Chdir(abs)) {
 				return
 			}
 			for _, s := range modWithCommitID {
@@ -57,30 +60,21 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 			if index > 0 {
 				cmd.Run("gofumpt -l -w .") // default run gofumpt,工作区目录运行这个会死循环，原因未知
 			}
-			mutex.Unlock()
-			modChan <- dir
+			mutex.Lock()
+			defer mutex.Unlock()
+			mylog.Success("updated mod", strconv.Quote(abs))
+
+			//modChan <- abs
 		}(mod, i)
 	}
-	go func() {
-		wg.Wait()
-		close(modChan)
-	}()
 
-	for mod := range modChan { // range 可以用于接收通道 <- 操作
-		mylog.Success("finished update mod", strconv.Quote(mod))
-	}
-	mylog.Success("all work finished")
-	//Wait := func() {
-	//	for {
-	//		select {
-	//		case mod := <-modChan:
-	//			mylog.Success("finished update mod", strconv.Quote(mod))
-	//			if len(modChan) == 0 {
-	//				return
-	//			}
-	//		}
+	//go func() {
+	//	for mod := range modChan { // range 可以用于接收通道 <- 操作
+	//		mylog.Success("updated mod", strconv.Quote(mod))
 	//	}
-	//}
-	//Wait()
-	//mylog.Success("all work finished")
+	//	close(modChan)
+	//}()
+
+	wg.Wait()
+	mylog.Success("all work finished")
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/ddkwork/golibrary/mylog"
 )
 
+// New todo github.com\goradd\maps@v0.1.5\safe_slice_map.go
 func New[K comparable, V any]() *OrderedMap[K, V] {
 	return &OrderedMap[K, V]{
 		m: map[K]*list.Element{},

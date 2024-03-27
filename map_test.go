@@ -6,17 +6,24 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ddkwork/golibrary/stream/cmd"
 	"github.com/smallnest/safemap"
 
-	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/stream/cmd"
+
 	"github.com/google/uuid"
+	"github.com/goradd/maps"
+
+	"github.com/ddkwork/golibrary/mylog"
 )
 
 // go get  cogentcore.org/core@35f09866eefbd6adceacea7e75707d4882e23460
 func TestName(t *testing.T) {
 	cmd.CheckLoopvarAndNilPoint()
-	c := safemap.New[string, bool]()
+
+	m := new(maps.Map[string, string]) // todo use maps
+	m.String()
+
+	c := safemap.New[string, bool]() // todo remove safemap
 	id := uuid.NewString()
 	c.Set(id, true)
 	mylog.Info("Count", c.Count())
