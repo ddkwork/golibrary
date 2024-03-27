@@ -34,7 +34,7 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 		}
 	}
 
-	//modChan := make(chan string, len(mods))
+	// modChan := make(chan string, len(mods))
 
 	var (
 		wg    sync.WaitGroup
@@ -67,7 +67,7 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 
 			mylog.Success("updated mod", strconv.Quote(abs))
 
-			//modChan <- abs
+			// modChan <- abs
 		}(mod, i)
 	}
 
