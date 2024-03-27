@@ -4,8 +4,6 @@ import (
 	"github.com/ddkwork/golibrary/mylog"
 )
 
-// todo https://521github.com/uber-go/goleak
-
 //go:generate go install github.com/karamaru-alpha/copyloopvar/cmd/copyloopvar@latest
 //go:generate go install github.com/ckaznocha/intrange/cmd/intrange@latest
 //go:generate go install go.uber.org/nilaway/cmd/nilaway@latest

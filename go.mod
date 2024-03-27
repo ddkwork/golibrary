@@ -14,6 +14,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240307211618-a69d953ea142
 	github.com/google/uuid v1.6.0
+	github.com/goradd/maps v0.1.5
 	github.com/gorilla/websocket v1.5.1
 	github.com/hjson/hjson-go v3.3.0+incompatible
 	github.com/hupe1980/socks v0.0.9
@@ -45,7 +46,6 @@ require (
 	github.com/goki/freetype v1.0.5 // indirect
 	github.com/goki/vulkan v1.0.7 // indirect
 	github.com/google/pprof v0.0.0-20240320155624-b11c3daa6f07 // indirect
-	github.com/goradd/maps v0.1.5 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/hack-pad/go-indexeddb v0.3.2 // indirect
