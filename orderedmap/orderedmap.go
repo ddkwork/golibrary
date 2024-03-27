@@ -12,7 +12,7 @@ import (
 )
 
 // New todo github.com\goradd\maps@v0.1.5\safe_slice_map.go
-func New[K comparable, V any]() *OrderedMap[K, V] {
+func New[K comparable, V any]() (m *OrderedMap[K, V]) {
 	return &OrderedMap[K, V]{
 		m: map[K]*list.Element{},
 		l: list.New(),
@@ -247,23 +247,24 @@ func (m *OrderedMap[K, V]) skipValue(d *json.Decoder) error {
 
 var end = errors.New("invalid end of array or object")
 
-func (m *OrderedMap[K, V]) InsertAfter(key K, val V) {
+func (m *OrderedMap[K, V]) InsertAfter(key K, value V) {
 	if m.Contains(key) {
 		mylog.Error("key already exists")
 		return
 	}
-	m.l.InsertAfter(pair[K, V]{Key: key, Value: val}, m.m[key])
+	m.l.InsertAfter(pair[K, V]{Key: key, Value: value}, m.m[key])
 }
 
-func (m *OrderedMap[K, V]) InsertBefore(key K, val V) {
+func (m *OrderedMap[K, V]) InsertBefore(key K, value V) {
 	if m.Contains(key) {
 		mylog.Error("key already exists")
 		return
 	}
-	m.l.InsertBefore(pair[K, V]{Key: key, Value: val}, m.m[key])
+	m.l.InsertBefore(pair[K, V]{Key: key, Value: value}, m.m[key])
 }
 
 // var _ golibrary.EditorData[any] = (*OrderedMap[comparable, any])(nil)
+
 func (m *OrderedMap[K, V]) CopyFrom(from *OrderedMap[K, V]) {
 	for _, kv := range from.List() {
 		m.Set(kv.Key, kv.Value) // 注意这里不检测是否存在，如果存在key则会覆盖刷新
