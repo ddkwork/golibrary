@@ -34,7 +34,7 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 		}
 	}
 
-	// modChan := make(chan string, len(mods))
+	modChan := make(chan string, len(mods))
 
 	var (
 		wg    sync.WaitGroup
@@ -65,18 +65,18 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 				cmd.Run("gofumpt -l -w .") // default run gofumpt,工作区目录运行这个会死循环，原因未知
 			}
 
-			mylog.Success("updated mod", strconv.Quote(abs))
+			// mylog.Success("updated mod", strconv.Quote(abs)) //不使用信道的话，这里是有序输出，更直观
 
-			// modChan <- abs
+			modChan <- abs
 		}(mod, i)
 	}
 
-	//go func() {
-	//	for mod := range modChan { // range 可以用于接收通道 <- 操作
-	//		mylog.Success("updated mod", strconv.Quote(mod))
-	//	}
-	//	close(modChan)
-	//}()
+	go func() { //在Wait之前的携程中打印才不会阻塞信道，但是信道是无序的
+		for mod := range modChan { // range 可以用于接收通道 <- 操作
+			mylog.Success("updated mod", strconv.Quote(mod))
+		}
+		close(modChan)
+	}()
 
 	wg.Wait()
 	mylog.Success("all work finished")
