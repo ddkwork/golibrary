@@ -262,8 +262,7 @@ func (m *OrderedMap[K, V]) InsertBefore(key K, val V) {
 	m.l.InsertBefore(pair[K, V]{Key: key, Value: val}, m.m[key])
 }
 
-//var _ golibrary.EditorData[any] = (*OrderedMap[comparable, any])(nil)
-
+// var _ golibrary.EditorData[any] = (*OrderedMap[comparable, any])(nil)
 func (m *OrderedMap[K, V]) CopyFrom(from *OrderedMap[K, V]) {
 	for _, kv := range from.List() {
 		m.Set(kv.Key, kv.Value) // 注意这里不检测是否存在，如果存在key则会覆盖刷新

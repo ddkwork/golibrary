@@ -21,7 +21,7 @@ type NodeProvider[T any] interface {
 	Open() bool
 	Depth() int
 	SetOpen(open bool)
-	//CellData(columnID int, data *CellData)
+	// CellData(columnID int, data *CellData)
 	FillWithNameableKeys(m map[string]string)
 	ApplyNameableKeys(m map[string]string)
 }

@@ -1,0 +1,79 @@
+package golibrary
+
+import (
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"sync"
+
+	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/stream"
+	"github.com/ddkwork/golibrary/stream/cmd"
+)
+
+func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) {
+	if !stream.FileExists("go.work") {
+		mylog.Error("go.work not found")
+		return
+	}
+	cmd.RunArgs("go work use -r .")
+	lines, ok := stream.NewReadFile("go.work").ToLines()
+	if !ok {
+		return
+	}
+	mods := make([]string, 0)
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, ".") {
+			abs, err := filepath.Abs(line)
+			if !mylog.Error(err) {
+				return
+			}
+			mods = append(mods, abs)
+		}
+	}
+
+	modChan := make(chan string, len(mods))
+	var wg sync.WaitGroup
+	mutex := sync.Mutex{}
+	for i, mod := range mods {
+		wg.Add(1)
+		go func(dir string) {
+			defer wg.Done()
+			mutex.Lock()
+			if !mylog.Error(os.Chdir(mod)) {
+				return
+			}
+			for _, s := range modWithCommitID {
+				cmd.Run("go get -v  " + s)
+			}
+			mutex.Unlock()
+			if isTidy {
+				cmd.Run("go mod tidy -v")
+			}
+			if isUpdateAll {
+				cmd.Run("go get -v -u all")
+			}
+			if i > 0 {
+				cmd.Run("gofumpt -l -w .") //default run gofumpt
+			}
+			modChan <- dir
+		}(mod)
+	}
+	wg.Wait()
+
+	Wait := func() {
+		for {
+			select {
+			case mod := <-modChan:
+				mylog.Success("finished update mod", strconv.Quote(mod))
+				if len(modChan) == 0 {
+					return
+				}
+			}
+		}
+	}
+	Wait()
+	mylog.Success("all work finished")
+}
