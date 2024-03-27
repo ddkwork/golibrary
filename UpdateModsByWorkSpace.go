@@ -43,7 +43,7 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 
 	for i, mod := range mods {
 		wg.Add(1)
-		go func(abs string, index int) { //丢失数据的原因是没有使用闭包参数，这和函数的形参或者方法的形参是一样的
+		go func(abs string, index int) { // 丢失数据的原因是没有使用闭包参数，这和函数的形参或者方法的形参是一样的
 			defer wg.Done()
 
 			mutex.Lock()
@@ -71,7 +71,7 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 		}(mod, i)
 	}
 
-	go func() { //在Wait之前的携程中打印才不会阻塞信道，但是信道是无序的
+	go func() { // 在Wait之前的携程中打印才不会阻塞信道，但是信道是无序的
 		for mod := range modChan { // range 可以用于接收通道 <- 操作
 			mylog.Success("updated mod", strconv.Quote(mod))
 		}
