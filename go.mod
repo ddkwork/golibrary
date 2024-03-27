@@ -1,7 +1,7 @@
 module github.com/ddkwork/golibrary
 
 go 1.22
-  
+
 require (
 	cogentcore.org/core v0.0.9
 	github.com/alecthomas/chroma/v2 v2.13.0
