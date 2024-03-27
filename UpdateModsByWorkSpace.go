@@ -45,6 +45,10 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 		wg.Add(1)
 		go func(abs string, index int) {
 			defer wg.Done()
+
+			mutex.Lock()
+			defer mutex.Unlock()
+
 			if !mylog.Error(os.Chdir(abs)) {
 				return
 			}
@@ -60,8 +64,7 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 			if index > 0 {
 				cmd.Run("gofumpt -l -w .") // default run gofumpt,工作区目录运行这个会死循环，原因未知
 			}
-			mutex.Lock()
-			defer mutex.Unlock()
+
 			mylog.Success("updated mod", strconv.Quote(abs))
 
 			//modChan <- abs
