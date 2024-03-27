@@ -43,7 +43,7 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 
 	for i, mod := range mods {
 		wg.Add(1)
-		go func(abs string, index int) {
+		go func(abs string, index int) { //丢失数据的原因是没有使用闭包参数，这和函数的形参或者方法的形参是一样的
 			defer wg.Done()
 
 			mutex.Lock()
