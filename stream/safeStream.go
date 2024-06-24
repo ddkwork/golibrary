@@ -296,6 +296,13 @@ func (b *Buffer) ReplaceAll(old, new string) *Buffer {
 	return b
 }
 
+func (b *Buffer) Replace(old, new string, n int) *Buffer {
+	s := strings.Replace(b.String(), old, new, n)
+	b.Reset()
+	b.WriteString(s)
+	return b
+}
+
 func (b *Buffer) TrimSuffix(suffix string) *Buffer {
 	s := strings.TrimSuffix(b.String(), suffix)
 	b.Reset()
