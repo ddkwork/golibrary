@@ -65,10 +65,10 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
 
-      - name: Install Ruby
-        uses: actions/setup-ruby@v1
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.0.0'
+          ruby-version: '3.0.0'  # 使用与操作系统兼容且有效的版本
 
       - name: Install GitHub Changelog Generator
         run: gem install github_changelog_generator
