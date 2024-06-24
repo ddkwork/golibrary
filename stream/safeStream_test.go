@@ -538,3 +538,7 @@ func TestCutUint161(t *testing.T) {
 		})
 	}
 }
+
+func TestToCamelUpper(t *testing.T) {
+	println(stream.ToCamelUpper("PAGE_SIZE", false))
+}

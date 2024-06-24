@@ -3,13 +3,28 @@ package stream
 import (
 	_ "embed"
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/ddkwork/golibrary/mylog"
 )
 
-type GeneratedFile struct{ *Buffer }
+type GeneratedFile struct {
+	*Buffer
+	packageName string
+	filePath    string
+}
+
+func (g *GeneratedFile) SetFilePath(filePath string) *GeneratedFile {
+	g.filePath = filePath
+	return g
+}
+
+func (g *GeneratedFile) SetPackageName(packageName string) *GeneratedFile {
+	g.packageName = packageName
+	return g
+}
 
 func NewGeneratedFile() *GeneratedFile {
 	return &GeneratedFile{
@@ -31,8 +46,10 @@ func (g *GeneratedFile) Enum(kindName string, kinds, tooltip []string) {
 		}
 		kindNameUpper := ToCamelUpper(kindName, false)
 		InvalidKind := "Invalid" + kindNameUpper + "Kind"
-
-		g.P("package ", GetPackageName())
+		if g.packageName == "" {
+			g.packageName = GetPackageName()
+		}
+		g.P("package ", g.packageName)
 		g.P("")
 
 		g.P("import (")
@@ -132,7 +149,7 @@ func (g *GeneratedFile) Enum(kindName string, kinds, tooltip []string) {
 		g.P(" }")
 		g.P("}")
 		g.P("")
-		WriteGoFile(kindName+"_enum_gen.go", g.Buffer)
+		WriteGoFile(filepath.Join(g.filePath, kindName+"_enum_gen.go"), g.Buffer)
 		g.Reset()
 	})
 }
