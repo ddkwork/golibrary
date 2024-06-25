@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -128,6 +129,15 @@ func (s *CommandSession) run(command string) {
 	}
 	s.Output.NewLine()
 	s.Output.WriteStringLn(s.Error.String())
+	ss := trimTrailingEmptyLines(s.Output.String())
+	s.Output.Reset()
+	s.Output.WriteString(ss)
+}
+
+func trimTrailingEmptyLines(s string) string {
+	// 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符
+	re := regexp.MustCompile(`\s*\n*$`)
+	return re.ReplaceAllString(s, "")
 }
 
 func ConvertUtf82Gbk[T Type](src T) *Buffer {
