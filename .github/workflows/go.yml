@@ -6,21 +6,7 @@ on:
       - master
       - dev
     tags:
-      - 'v*'
-    paths-ignore:
-      - '.gitignore'
-      - '.gitattributes'
-      - '**/*.cmd'
-      - '**/*.bat'
-      - '**/*.md'
-
-  pull_request:
-    paths-ignore:
-      - '.gitignore'
-      - '.gitattributes'
-      - '**/*.cmd'
-      - '**/*.bat'
-      - '**/*.md'
+      - 'v*.*.*-pre.*'
 
 env:
   RELEASE_ZIP_FILE_NAME: golibrary
