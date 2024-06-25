@@ -95,7 +95,9 @@ func (s *CommandSession) run(command string) {
 	done := make(chan struct{})
 	go func() {
 		for line := range output {
-			mylog.Warning("line", line)
+			if !strings.Contains(line, "clang") {
+				mylog.Warning("line", line)
+			}
 			s.Output.WriteStringLn(line)
 		}
 		done <- struct{}{}
