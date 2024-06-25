@@ -745,28 +745,26 @@ func CurrentDirName(path string) (currentDirName string) {
 	return split[len(split)-1]
 }
 
-func CopyDir(dst, src string) error {
+func CopyDir(dst, src string) {
 	if !CreatDirectory(dst) {
 		mylog.Check("CreatDirectory err")
 	}
 	entries := mylog.Check2(os.ReadDir(src))
 	for _, entry := range entries {
 		if entry.IsDir() {
-			mylog.Check(CopyDir(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name())))
+			CopyDir(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name()))
 		} else {
-			mylog.Check(copyFile(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name())))
+			copyFile(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name()))
 		}
 	}
-	return nil
 }
 
-func copyFile(dst, src string) (err error) {
+func copyFile(dst, src string) {
 	s := mylog.Check2(os.Open(src))
 	defer func() { mylog.Check(s.Close()) }()
 	d := mylog.Check2(os.Create(dst))
 	defer func() { mylog.Check(d.Close()) }()
 	mylog.Check2(io.Copy(d, s))
-	return nil
 }
 
 func CopyFile(path, dstPath string) {
