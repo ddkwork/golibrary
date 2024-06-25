@@ -26,7 +26,7 @@ func (g *GeneratedFile) SetPackageName(packageName string) *GeneratedFile {
 	return g
 }
 
-func NewGeneratedFile() *GeneratedFile {
+func NewGeneratedFile() (g *GeneratedFile) {
 	return &GeneratedFile{
 		Buffer: NewBuffer(""),
 	}
