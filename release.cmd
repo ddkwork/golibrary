@@ -4,7 +4,7 @@
 chcp 65001 >nul
 
 :: 定义版本变量
-set "VERSION=v0.0.82"
+set "VERSION=v0.0.83"
 
 :: 定义脚本操作
 setlocal
