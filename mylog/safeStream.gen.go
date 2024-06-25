@@ -294,6 +294,13 @@ func (b *Buffer) ReplaceAll(old, new string) *Buffer {
 	return b
 }
 
+func (b *Buffer) Replace(old, new string, n int) *Buffer {
+	s := strings.Replace(b.String(), old, new, n)
+	b.Reset()
+	b.WriteString(s)
+	return b
+}
+
 func (b *Buffer) TrimSuffix(suffix string) *Buffer {
 	s := strings.TrimSuffix(b.String(), suffix)
 	b.Reset()
@@ -736,28 +743,26 @@ func CurrentDirName(path string) (currentDirName string) {
 	return split[len(split)-1]
 }
 
-func CopyDir(dst, src string) error {
+func CopyDir(dst, src string) {
 	if !CreatDirectory(dst) {
 		Check("CreatDirectory err")
 	}
 	entries := Check2(os.ReadDir(src))
 	for _, entry := range entries {
 		if entry.IsDir() {
-			Check(CopyDir(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name())))
+			CopyDir(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name()))
 		} else {
-			Check(copyFile(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name())))
+			copyFile(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name()))
 		}
 	}
-	return nil
 }
 
-func copyFile(dst, src string) (err error) {
+func copyFile(dst, src string) {
 	s := Check2(os.Open(src))
 	defer func() { Check(s.Close()) }()
 	d := Check2(os.Create(dst))
 	defer func() { Check(d.Close()) }()
 	Check2(io.Copy(d, s))
-	return nil
 }
 
 func CopyFile(path, dstPath string) {
