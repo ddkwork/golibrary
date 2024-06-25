@@ -35,6 +35,11 @@ func RunCommand(command string) (session *CommandSession) {
 func (s *CommandSession) run(command string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	skipLog := false
+	if strings.Contains(command, "clang") {
+		skipLog = true
+		mylog.Warning("skipLog in clang", skipLog)
+	}
 
 	fnInitCmd := func() *exec.Cmd {
 		if runtime.GOOS == "windows" {
@@ -95,7 +100,7 @@ func (s *CommandSession) run(command string) {
 	done := make(chan struct{})
 	go func() {
 		for line := range output {
-			if !strings.Contains(line, "clang") {
+			if !skipLog {
 				mylog.Warning("line", line)
 			}
 			s.Output.WriteStringLn(line)
