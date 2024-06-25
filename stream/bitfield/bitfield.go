@@ -109,7 +109,6 @@ func (b BitField) ANDMask(m BitField) {
 func (b BitField) ORMask(m BitField) {
 	maxidx := len(m)
 	for idx := range b {
-
 		if idx > maxidx {
 			break
 		}
@@ -120,7 +119,6 @@ func (b BitField) ORMask(m BitField) {
 func (b BitField) XORMask(m BitField) {
 	maxidx := len(m)
 	for idx := range b {
-
 		if idx > maxidx {
 			break
 		}
