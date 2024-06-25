@@ -38,7 +38,7 @@ func (s *CommandSession) run(command string) {
 	skipLog := false
 	if strings.Contains(command, "clang") {
 		skipLog = true
-		mylog.Warning("skipLog in clang", skipLog)
+		mylog.Info("", "skip log in clang")
 	}
 
 	fnInitCmd := func() *exec.Cmd {
