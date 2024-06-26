@@ -15,7 +15,7 @@ require (
 	github.com/rivo/uniseg v0.4.7
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
-	golang.org/x/image v0.17.0
+	golang.org/x/image v0.18.0
 	golang.org/x/text v0.16.0
 	golang.org/x/tools v0.22.0
 	mvdan.cc/gofumpt v0.6.0
