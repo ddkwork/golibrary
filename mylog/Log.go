@@ -188,7 +188,7 @@ func (o *object) Struct(msg any) {
 
 func (o *object) MarshalJson(title string, msg any) {
 	indent := Check2(json.MarshalIndent(msg, "", " "))
-	o.Info(title, string(indent))
+	o.Json(title, string(indent))
 }
 
 func (o *object) Reason() (reason string) {
