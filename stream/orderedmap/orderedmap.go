@@ -14,7 +14,7 @@ import (
 	"github.com/ddkwork/golibrary/mylog"
 )
 
-func New[K comparable, V any]() (m *OrderedMap[K, V]) {
+func New[K comparable, V any](k K, v V) (m *OrderedMap[K, V]) {
 	return &OrderedMap[K, V]{
 		m: map[K]*list.Element{},
 		l: list.New(),

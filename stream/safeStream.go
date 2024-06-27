@@ -714,6 +714,12 @@ func GetWindowsLogicalDrives() []string {
 	return driveLetters
 }
 
+func trimTrailingEmptyLines(s string) string {
+	// 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符
+	re := regexp.MustCompile(`\s*\n*$`)
+	return re.ReplaceAllString(s, "")
+}
+
 func ToCamel(data string, isCommit bool) string {
 	s := fmt.Sprintf("%-50s", caseconv.ToCamel(data))
 	if isCommit {

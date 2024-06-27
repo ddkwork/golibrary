@@ -15,7 +15,7 @@ require (
 	github.com/rivo/uniseg v0.4.7
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
-	golang.org/x/image v0.17.0
+	golang.org/x/image v0.18.0
 	golang.org/x/text v0.16.0
 	golang.org/x/tools v0.22.0
 	mvdan.cc/gofumpt v0.6.0
@@ -26,7 +26,7 @@ require (
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/pprof v0.0.0-20240618054019-d3b898a103f8 // indirect
+	github.com/google/pprof v0.0.0-20240625030939-27f56978b8b0 // indirect
 	github.com/hupe1980/golog v0.0.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

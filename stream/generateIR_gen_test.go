@@ -806,6 +806,13 @@ func generateIR(path string, callBack func(b *stream.Buffer)) {
 	g.P("}")
 	g.P("")
 
+	g.P("func trimTrailingEmptyLines(s string) string {")
+	g.P(" // 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符")
+	g.P(" re := regexp.MustCompile(`\\s*\\n*$`)")
+	g.P(" return re.ReplaceAllString(s, \"\")")
+	g.P("}")
+	g.P("")
+
 	g.P("func ToCamel(data string, isCommit bool) string {")
 	g.P(" s := fmt.Sprintf(\"%-50s\", caseconv.ToCamel(data))")
 	g.P(" if isCommit {")

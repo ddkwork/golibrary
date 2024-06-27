@@ -210,7 +210,7 @@ func (o *object) Reason() (reason string) {
 			}
 		}
 	}
-	return r.String()
+	return trimTrailingEmptyLines(r.String())
 }
 
 func (o *object) printAndWrite() {
@@ -230,6 +230,7 @@ func (o *object) printAndWrite() {
 	if o.isHttp {
 		o.body = o.message
 	}
+	o.body = trimTrailingEmptyLines(o.body)
 	o.printColorBody()
 	if !IsAndroid() {
 		o.body += "\n"
