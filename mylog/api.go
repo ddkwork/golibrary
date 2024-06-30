@@ -49,7 +49,7 @@ func init() {
 	FormatAllFiles()
 }
 
-func TruncateLogFile() { Check(os.Truncate(logFileName, io.SeekStart)) }
+func TruncateLogFile() { CheckIgnore(os.Truncate(logFileName, io.SeekStart)) }
 
 var defaultObject = newObject()
 
