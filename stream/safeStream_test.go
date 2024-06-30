@@ -372,7 +372,6 @@ func BenchmarkName(b *testing.B) {
 
 func BenchmarkByBufioReaderReadLine(b *testing.B) {
 	path := "D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js"
-	path = "C:\\Users\\Admin\\go\\pkg\\mod\\fyne.io\\fyne\\v2@v2.4.4\\theme\\bundled-emoji.go"
 	s := stream.NewBuffer(path)
 	for i := 0; i < b.N; i++ {
 		s.ToLines()
