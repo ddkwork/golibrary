@@ -1,7 +1,7 @@
 module github.com/ddkwork/golibrary
 
 go 1.22.4
-
+//tesy sync
 require (
 	github.com/alecthomas/chroma/v2 v2.14.0
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
