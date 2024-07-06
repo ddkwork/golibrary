@@ -875,7 +875,7 @@ func HomeDir() string {
 }
 
 func RunDir() string {
-	return filepath.Base(Check2(os.Getwd()))
+	return Check2(os.Getwd())
 }
 
 func ParseFloat(sizeStr string) (size float64) {
