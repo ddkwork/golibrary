@@ -23,13 +23,13 @@ type errorX interface {
 
 var errType = reflect.TypeFor[error]
 
-func Check2[T any](ret T, err error) (r1 T) {
+func Check2[T any](ret T, err error) T {
 	check(newErrorMock(err))
 	CheckNil(ret)
 	return ret
 }
 
-func Check2Ignore[T any](ret T, err error) (r1 T) {
+func Check2Ignore[T any](ret T, err error) T {
 	defaultObject.errorCall(err)
 	return ret
 }
@@ -38,27 +38,27 @@ func CheckIgnore(err any) {
 	defaultObject.errorCall(err)
 }
 
-func Check2Bool[T any](ret T, ok bool) (r1 T) {
+func Check2Bool[T any](ret T, ok bool) T {
 	check(ok)
 	CheckNil(ret)
 	return ret
 }
 
-func Check3[T1 any, T2 any](ret1 T1, ret2 T2, err error) (r1 T1, r2 T2) {
+func Check3[T1 any, T2 any](ret1 T1, ret2 T2, err error) (T1, T2) {
 	check(newErrorMock(err))
 	CheckNil(ret1)
 	CheckNil(ret2)
 	return ret1, ret2
 }
 
-func Check3Bool[T1 any, T2 any](ret1 T1, ret2 T2, ok bool) (r1 T1, r2 T2) {
+func Check3Bool[T1 any, T2 any](ret1 T1, ret2 T2, ok bool) (T1, T2) {
 	check(ok)
 	CheckNil(ret1)
 	CheckNil(ret2)
 	return ret1, ret2
 }
 
-func Check4[T1 any, T2 any, T3 any](ret1 T1, ret2 T2, ret3 T3, err error) (r1 T1, r2 T2, r3 T3) {
+func Check4[T1 any, T2 any, T3 any](ret1 T1, ret2 T2, ret3 T3, err error) (T1, T2, T3) {
 	check(newErrorMock(err))
 	CheckNil(ret1)
 	CheckNil(ret2)
@@ -66,7 +66,7 @@ func Check4[T1 any, T2 any, T3 any](ret1 T1, ret2 T2, ret3 T3, err error) (r1 T1
 	return ret1, ret2, ret3
 }
 
-func Check4Bool[T1 any, T2 any, T3 any](ret1 T1, ret2 T2, ret3 T3, ok bool) (r1 T1, r2 T2, r3 T3) {
+func Check4Bool[T1 any, T2 any, T3 any](ret1 T1, ret2 T2, ret3 T3, ok bool) (T1, T2, T3) {
 	check(ok)
 	CheckNil(ret1)
 	CheckNil(ret2)
@@ -74,7 +74,7 @@ func Check4Bool[T1 any, T2 any, T3 any](ret1 T1, ret2 T2, ret3 T3, ok bool) (r1 
 	return ret1, ret2, ret3
 }
 
-func Check5[T1 any, T2 any, T3 any, T4 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, err error) (r1 T1, r2 T2, r3 T3, r4 T4) {
+func Check5[T1 any, T2 any, T3 any, T4 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, err error) (T1, T2, T3, T4) {
 	check(newErrorMock(err))
 	CheckNil(ret1)
 	CheckNil(ret2)
@@ -83,7 +83,7 @@ func Check5[T1 any, T2 any, T3 any, T4 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, 
 	return ret1, ret2, ret3, ret4
 }
 
-func Check5Bool[T1 any, T2 any, T3 any, T4 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ok bool) (r1 T1, r2 T2, r3 T3, r4 T4) {
+func Check5Bool[T1 any, T2 any, T3 any, T4 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ok bool) (T1, T2, T3, T4) {
 	check(ok)
 	CheckNil(ret1)
 	CheckNil(ret2)
@@ -92,7 +92,7 @@ func Check5Bool[T1 any, T2 any, T3 any, T4 any](ret1 T1, ret2 T2, ret3 T3, ret4 
 	return ret1, ret2, ret3, ret4
 }
 
-func Check6[T1 any, T2 any, T3 any, T4 any, T5 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ret5 T5, err error) (r1 T1, r2 T2, r3 T3, r4 T4, r5 T5) {
+func Check6[T1 any, T2 any, T3 any, T4 any, T5 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ret5 T5, err error) (T1, T2, T3, T4, T5) {
 	check(newErrorMock(err))
 	CheckNil(ret1)
 	CheckNil(ret2)
@@ -102,7 +102,7 @@ func Check6[T1 any, T2 any, T3 any, T4 any, T5 any](ret1 T1, ret2 T2, ret3 T3, r
 	return ret1, ret2, ret3, ret4, ret5
 }
 
-func Check6Bool[T1 any, T2 any, T3 any, T4 any, T5 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ret5 T5, ok bool) (r1 T1, r2 T2, r3 T3, r4 T4, r5 T5) {
+func Check6Bool[T1 any, T2 any, T3 any, T4 any, T5 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ret5 T5, ok bool) (T1, T2, T3, T4, T5) {
 	check(ok)
 	CheckNil(ret1)
 	CheckNil(ret2)
@@ -112,7 +112,7 @@ func Check6Bool[T1 any, T2 any, T3 any, T4 any, T5 any](ret1 T1, ret2 T2, ret3 T
 	return ret1, ret2, ret3, ret4, ret5
 }
 
-func Check7[T1 any, T2 any, T3 any, T4 any, T5 any, T6 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ret5 T5, ret6 T6, err error) (r1 T1, r2 T2, r3 T3, r4 T4, r5 T5, r6 T6) {
+func Check7[T1 any, T2 any, T3 any, T4 any, T5 any, T6 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ret5 T5, ret6 T6, err error) (T1, T2, T3, T4, T5, T6) {
 	check(newErrorMock(err))
 	CheckNil(ret1)
 	CheckNil(ret2)
@@ -123,7 +123,7 @@ func Check7[T1 any, T2 any, T3 any, T4 any, T5 any, T6 any](ret1 T1, ret2 T2, re
 	return ret1, ret2, ret3, ret4, ret5, ret6
 }
 
-func Check7Bool[T1 any, T2 any, T3 any, T4 any, T5 any, T6 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ret5 T5, ret6 T6, ok bool) (r1 T1, r2 T2, r3 T3, r4 T4, r5 T5, r6 T6) {
+func Check7Bool[T1 any, T2 any, T3 any, T4 any, T5 any, T6 any](ret1 T1, ret2 T2, ret3 T3, ret4 T4, ret5 T5, ret6 T6, ok bool) (T1, T2, T3, T4, T5, T6) {
 	check(ok)
 	CheckNil(ret1)
 	CheckNil(ret2)
