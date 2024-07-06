@@ -37,6 +37,8 @@ func (m *SafeMap[K, V]) Get(k K) (v V) {
 }
 
 func (m *SafeMap[K, V]) Has(k K) (exists bool) {
+	m.RLock()
+	defer m.RUnlock()
 	_, ok := m.items[k]
 	return ok
 }
