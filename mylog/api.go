@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 
 	"golang.org/x/exp/constraints"
 )
@@ -43,6 +44,16 @@ func newObject() *object {
 func init() {
 	if IsAndroid() {
 		SetDebug(false)
+	}
+	if IsWindows() {
+		/*
+			// loadDll堆栈溢出
+			// go build -buildmode=exe
+			// go env -w GOFLAGS="-buildmode=exe"
+			// https://github.com/golang/go/issues/42593
+		*/
+		cmd := exec.Command("go", "env", "-w", "GOFLAGS=-buildmode=exe")
+		Check2(cmd.CombinedOutput())
 	}
 	TruncateLogFile()
 	Trace("--------- title ---------", "------------------ info ------------------")
