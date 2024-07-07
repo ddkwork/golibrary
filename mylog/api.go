@@ -47,10 +47,11 @@ func init() {
 	}
 	if IsWindows() {
 		/*
-			// loadDll堆栈溢出
-			// go build -buildmode=exe
-			// go env -w GOFLAGS="-buildmode=exe"
-			// https://github.com/golang/go/issues/42593
+			cmd/link: enable ASLR by default on Windows
+				// loadDll堆栈溢出
+				// go build -buildmode=exe
+				// go env -w GOFLAGS="-buildmode=exe"
+				// https://github.com/golang/go/issues/42593
 		*/
 		cmd := exec.Command("go", "env", "-w", "GOFLAGS=-buildmode=exe")
 		Check2(cmd.CombinedOutput())
