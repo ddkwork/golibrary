@@ -47,11 +47,14 @@ func init() {
 	}
 	if IsWindows() {
 		/*
-			cmd/link: enable ASLR by default on Windows
-				// loadDll堆栈溢出
-				// go build -buildmode=exe
-				// go env -w GOFLAGS="-buildmode=exe"
-				// https://github.com/golang/go/issues/42593
+				cmd/link: enable ASLR by default on Windows
+			ASLR（Address Space Layout Randomization）是一种安全技术，用于防止缓冲区溢出攻击。它通过随机化内存中关键数据结构的位置，
+			使得攻击者难以预测和利用这些位置来进行攻击。在Windows操作系统中，启用ASLR可以提高系统的安全性。
+
+					// loadDll堆栈溢出
+					// go build -buildmode=exe
+					// go env -w GOFLAGS="-buildmode=exe"
+					// https://github.com/golang/go/issues/42593
 		*/
 		cmd := exec.Command("go", "env", "-w", "GOFLAGS=-buildmode=exe")
 		Check2(cmd.CombinedOutput())
