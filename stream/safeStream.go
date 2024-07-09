@@ -169,13 +169,13 @@ func write[T Type](name string, isAppend bool, data T) {
 		if !CreatDirectory(filepath.Dir(name)) {
 			mylog.Check(fmt.Errorf("create directory failed: %s", filepath.Dir(name)))
 		}
-		flag := os.O_RDWR | os.O_CREATE
+		flag := os.O_WRONLY | os.O_CREATE | os.O_SYNC
 		if isAppend {
 			flag |= os.O_APPEND
 		} else {
 			flag |= os.O_TRUNC
 		}
-		f, e := os.OpenFile(name, flag, 0666)
+		f, e := os.OpenFile(name, flag, 0644)
 		defer func() { mylog.Check(f.Close()) }()
 		mylog.CheckIgnore(e)
 		if e != nil {

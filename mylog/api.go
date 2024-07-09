@@ -26,7 +26,7 @@ type (
 const logFileName = "log.log"
 
 func newObject() *object {
-	f, e := os.OpenFile(logFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND|os.O_TRUNC, os.ModePerm)
+	f, e := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_TRUNC|os.O_SYNC, 0644)
 	if e != nil {
 		panic(e)
 	}
