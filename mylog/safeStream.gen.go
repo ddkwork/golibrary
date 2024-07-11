@@ -770,34 +770,20 @@ func CopyFS(dir string, fsys fs.FS) error {
 		if !d.Type().IsRegular() {
 			return &os.PathError{Op: "CopyFS", Path: path, Err: os.ErrInvalid}
 		}
-
 		r := Check2(fsys.Open(path))
-
-		defer r.Close()
+		defer func() { Check(r.Close()) }()
 		info := Check2(r.Stat())
-
 		w := Check2(os.OpenFile(newPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666|info.Mode()&0777))
-
-		if _ := Check2(io.Copy(w, r)); err != nil {
-			w.Close()
-			return &os.PathError{Op: "Copy", Path: newPath, Err: err}
+		if _, e := io.Copy(w, r); e != nil {
+			Check(w.Close())
+			return &os.PathError{Op: "Copy", Path: newPath, Err: e}
 		}
 		return w.Close()
 	})
 }
 
 func CopyDir(dst, src string) {
-	if !CreatDirectory(dst) {
-		Check("CreatDirectory err")
-	}
-	entries := Check2(os.ReadDir(src))
-	for _, entry := range entries {
-		if entry.IsDir() {
-			CopyDir(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name()))
-		} else {
-			copyFile(filepath.Join(dst, entry.Name()), filepath.Join(src, entry.Name()))
-		}
-	}
+	Check(CopyFS(dst, os.DirFS(src)))
 }
 
 func copyFile(dst, src string) {
