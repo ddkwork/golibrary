@@ -136,7 +136,7 @@ func (s *CommandSession) run(command string) {
 func ConvertUtf82Gbk[T Type](src T) *Buffer {
 	b := NewBuffer(src)
 	if IsWindows() {
-		c := mylog.Check2(simplifiedchinese.GB18030.NewDecoder().Bytes(b.Bytes()))
+		c := mylog.Check2(simplifiedchinese.GB18030.NewDecoder().Bytes(b.Bytes())) // todo test rune
 		return NewBuffer(c).TrimSuffix("\r\n")
 	}
 	return b
