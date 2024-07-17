@@ -602,24 +602,17 @@ func SwapBytes(src []byte) (dst []byte) {
 }
 
 func AlignString(s string, length int) (ss string) {
-	width := uniseg.StringWidth(s)
+	runes := []rune(s)
+	width := uniseg.StringWidth(string(runes))
 	if width < length {
 		repeat := strings.Repeat(" ", length-width)
-		ss = s + repeat
+		ss = string(runes) + repeat
 		return ss
-	}
-	return s
-}
-
-func SubStrRunes(s string, length int) string {
-	switch {
-	case len(s) > length:
-		rs := []rune(s)
-		return string(rs[:length])
-	case len(s) < length:
-		repeat := strings.Repeat(" ", length-len(s))
-		return s + repeat
-		return fmt.Sprintf("%-*s", length, s)
+	} else {
+		if length <= len(runes) {
+			return string(runes[:length])
+		}
+		return s
 	}
 	return s
 }
