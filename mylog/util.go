@@ -36,7 +36,7 @@ func WriteGoFileWithDiff[T []byte](path string, data T) {
 	}
 }
 
-func (o *object) textIndent(src string, isLeftAlign bool) string {
+func (o *object) textIndent(src string, isLeftAlign bool) string { //TODO: use rune
 	const hexDumpIndentLen = 26
 	Separate := ` │ `
 	spaceLen := hexDumpIndentLen - o.width(src)
