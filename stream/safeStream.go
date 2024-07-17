@@ -609,19 +609,8 @@ func AlignString(s string, length int) (ss string) {
 		repeat := strings.Repeat(" ", length-width)
 		ss = s + repeat
 		return ss
-	}
-	return s
-}
-
-func SubStrRunes(s string, length int) string {
-	switch {
-	case len(s) > length:
-		rs := []rune(s)
-		return string(rs[:length])
-	case len(s) < length:
-		repeat := strings.Repeat(" ", length-len(s))
-		return s + repeat
-		return fmt.Sprintf("%-*s", length, s)
+	} else {
+		return s[:length]
 	}
 	return s
 }
