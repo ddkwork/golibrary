@@ -104,14 +104,18 @@ func (h *handle) removeComments() {
 func FormatAllFiles()           { formatAllFiles(false, "") }
 func FormatAllFilesNoComments() { formatAllFiles(true, "") }
 
-func formatAllFiles(noComments bool, path string) {
-	if path == "" {
-		path = "."
+func formatAllFiles(noComments bool, root string) {
+	if root == "" {
+		root = "."
 	}
-	Check(filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+	Check(filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
 		abs := Check2(filepath.Abs(path))
 		if filepath.Ext(abs) == ".go" {
 			if filepath.Base(abs) == "SkipCheckBase.go" {
+				return nil
+			}
+			if strings.Contains(path, "gio") {
+				Warning("skip", path)
 				return nil
 			}
 			newHandle(path, noComments).rewriteAst()
