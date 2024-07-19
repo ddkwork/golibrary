@@ -114,6 +114,7 @@ func formatAllFiles(noComments bool, root string) {
 			if filepath.Base(abs) == "SkipCheckBase.go" {
 				return nil
 			}
+			println(path)
 			newHandle(path, noComments).rewriteAst()
 		}
 		return err
