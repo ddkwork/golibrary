@@ -61,7 +61,7 @@ func init() {
 	}
 	TruncateLogFile()
 	Trace("--------- title ---------", "------------------ info ------------------")
-	FormatAllFiles()
+	//FormatAllFiles()
 }
 
 func TruncateLogFile() { CheckIgnore(os.Truncate(logFileName, io.SeekStart)) }

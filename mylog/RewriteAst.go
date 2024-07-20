@@ -8,6 +8,7 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -111,24 +112,26 @@ var skips = []string{
 	`\gio-x\`,
 }
 
-func formatAllFiles(noComments bool, root string) {
-	if root == "" {
-		root = "."
+func formatAllFiles(noComments bool, path string) {
+	if path == "" {
+		path = "."
 	}
-	matches := Check2(filepath.Glob(filepath.Join(root, "*.go")))
-	for _, match := range matches {
-		abs := Check2(filepath.Abs(match))
-		if filepath.Base(abs) == "SkipCheckBase.go" {
-			continue
-		}
-		for _, skip := range skips {
-			if strings.Contains(abs, skip) {
-				Warning("skip", abs)
-				return
+	Check(filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+		abs := Check2(filepath.Abs(path))
+		if filepath.Ext(abs) == ".go" {
+			if filepath.Base(abs) == "SkipCheckBase.go" {
+				return nil
 			}
+			for _, skip := range skips {
+				if strings.Contains(abs, skip) {
+					// Warning("skip", abs)
+					return nil
+				}
+			}
+			newHandle(path, noComments).rewriteAst()
 		}
-		newHandle(abs, noComments).rewriteAst()
-	}
+		return err
+	}))
 }
 
 func (h *handle) findEof(stmtType string) (hasEof bool) {

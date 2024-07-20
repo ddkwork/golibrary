@@ -234,6 +234,6 @@ func (o *object) printAndWrite() {
 	o.printColorBody()
 	if !IsAndroid() {
 		o.body += "\n"
-		WriteAppend(logFileName, o.body)
+		//WriteAppend(logFileName, o.body)
 	}
 }

@@ -13,6 +13,10 @@ func TestRewriteAst(t *testing.T) {
 	formatAllFiles(true, "testdata/out")
 }
 
+func TestRewriteAst2(t *testing.T) {
+	formatAllFiles(false, "D:\\giotest")
+}
+
 func Test_handle_findEof(t *testing.T) {
 	code := `
 package main
