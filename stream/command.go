@@ -3,6 +3,7 @@ package stream
 import (
 	"bufio"
 	"context"
+	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -49,7 +50,7 @@ func (s *CommandSession) run(command string) {
 	}
 	cmd := fnInitCmd()
 
-	mylog.Warning("go-command", cmd.String())
+	log.Println(command)
 
 	stdoutPipe := mylog.Check2(cmd.StdoutPipe())
 	stderrPipe := mylog.Check2(cmd.StderrPipe())
