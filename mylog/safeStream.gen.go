@@ -194,7 +194,6 @@ func CreatDirectory(dir string) bool {
 		}
 		Check("path exists but is not a directory " + dir)
 	}
-	// Warning("", "如果第一次看到这个错误，则说明当前目录下没有这个目录，请手动检查目录结构，如果第二次运行还出现权限错误则需要检查代码和系统问题")
 	switch {
 	case os.IsExist(e):
 		return info.IsDir()
@@ -788,7 +787,6 @@ func copyFile(dst, src string) {
 }
 
 func CopyFile(path, dstPath string) {
-	CheckIgnore(os.Remove(dstPath))
 	WriteTruncate(dstPath, NewBuffer(path).Bytes())
 }
 

@@ -101,7 +101,7 @@ func (s *CommandSession) run(command string) {
 	go func() {
 		for line := range output {
 			if !skipLog {
-				mylog.Warning("line", line)
+				println(line)
 			}
 			s.Output.WriteStringLn(line)
 		}
@@ -110,7 +110,7 @@ func (s *CommandSession) run(command string) {
 
 	go func() {
 		for line := range errorOutput {
-			mylog.Warning("line", line)
+			println(line)
 			s.Error.WriteStringLn(line)
 		}
 		done <- struct{}{}

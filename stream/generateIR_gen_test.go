@@ -221,7 +221,6 @@ func generateIR(path string, callBack func(b *stream.Buffer)) {
 	g.P("  }")
 	g.P("  mylog.Check(\"path exists but is not a directory \" + dir)")
 	g.P(" }")
-	g.P(" //mylog.Warning(\"\", \"如果第一次看到这个错误，则说明当前目录下没有这个目录，请手动检查目录结构，如果第二次运行还出现权限错误则需要检查代码和系统问题\")")
 	g.P(" switch {")
 	g.P(" case os.IsExist(e):")
 	g.P("  return info.IsDir()")
@@ -890,7 +889,6 @@ func generateIR(path string, callBack func(b *stream.Buffer)) {
 	g.P("")
 
 	g.P("func CopyFile(path, dstPath string) {")
-	g.P(" mylog.CheckIgnore(os.Remove(dstPath))")
 	g.P(" WriteTruncate(dstPath, NewBuffer(path).Bytes())")
 	g.P("}")
 	g.P("")
