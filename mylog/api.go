@@ -61,11 +61,19 @@ func init() {
 	}
 	TruncateLogFile()
 	Trace("--------- title ---------", "------------------ info ------------------")
-	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
-	if githubWorkspace != "" {
-		Check(os.Chdir(githubWorkspace))
-	}
 	//FormatAllFiles()
+}
+
+var (
+	GithubWorkspace = os.Getenv("GITHUB_WORKSPACE")
+	IsAction        = GithubWorkspace != ""
+)
+
+func ChdirToGithubWorkspace() {
+	if IsAction {
+		Check(os.Chdir(GithubWorkspace))
+	}
+	Info("GITHUB_WORKSPACE", Check2(os.Getwd()))
 }
 
 func TruncateLogFile() { CheckIgnore(os.Truncate(logFileName, io.SeekStart)) }

@@ -789,6 +789,7 @@ func copyFile(dst, src string) {
 }
 
 func CopyFile(path, dstPath string) {
+	mylog.Check(IsFilePathEx(path))
 	WriteTruncate(dstPath, NewBuffer(path).Bytes())
 }
 

@@ -889,6 +889,7 @@ func generateIR(path string, callBack func(b *stream.Buffer)) {
 	g.P("")
 
 	g.P("func CopyFile(path, dstPath string) {")
+	g.P(" mylog.Check(IsFilePathEx(path))")
 	g.P(" WriteTruncate(dstPath, NewBuffer(path).Bytes())")
 	g.P("}")
 	g.P("")
