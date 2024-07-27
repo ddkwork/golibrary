@@ -178,7 +178,7 @@ func write[T Type](name string, isAppend bool, data T) {
 		}
 		f, e := os.OpenFile(name, flag, 0644)
 		defer func() { mylog.Check(f.Close()) }()
-		mylog.CheckIgnore(e)
+		//mylog.CheckIgnore(e)
 		if e != nil {
 			write(name, isAppend, data)
 		}
@@ -189,7 +189,7 @@ func write[T Type](name string, isAppend bool, data T) {
 func CreatDirectory(dir string) bool {
 	dir = FixFilePath(dir)
 	info, e := os.Stat(dir)
-	mylog.CheckIgnore(e)
+	//mylog.CheckIgnore(e)
 	if e == nil {
 		if info.IsDir() {
 			return true
