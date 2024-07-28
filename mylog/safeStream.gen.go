@@ -30,6 +30,8 @@ import (
 	"github.com/dc0d/caseconv"
 	"github.com/rivo/uniseg"
 	"mvdan.cc/gofumpt/format"
+
+	
 )
 
 type (
@@ -176,7 +178,7 @@ func write[T Type](name string, isAppend bool, data T) {
 		}
 		f, e := os.OpenFile(name, flag, 0644)
 		defer func() { Check(f.Close()) }()
-		// CheckIgnore(e)
+		//CheckIgnore(e)
 		if e != nil {
 			write(name, isAppend, data)
 		}
@@ -187,7 +189,7 @@ func write[T Type](name string, isAppend bool, data T) {
 func CreatDirectory(dir string) bool {
 	dir = FixFilePath(dir)
 	info, e := os.Stat(dir)
-	// CheckIgnore(e)
+	//CheckIgnore(e)
 	if e == nil {
 		if info.IsDir() {
 			return true
@@ -757,8 +759,8 @@ func CopyFS(dir string, fsys fs.FS) error {
 		}
 
 		// TODO(panjf2000): handle symlinks with the help of fs.ReadLinkFS
-		//   once https://go.dev/issue/49580 is done.
-		//  we also need filepathlite.IsLocal from https://go.dev/cl/564295.
+		// 		once https://go.dev/issue/49580 is done.
+		//		we also need filepathlite.IsLocal from https://go.dev/cl/564295.
 		if !d.Type().IsRegular() {
 			return &os.PathError{Op: "CopyFS", Path: path, Err: os.ErrInvalid}
 		}

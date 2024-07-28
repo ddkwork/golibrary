@@ -8,12 +8,12 @@ import (
 )
 
 func TestName(t *testing.T) {
-	stream.NewGeneratedFile().ReadTemplates("safeStream.go", "stream")
-	generateIR("../mylog/safeStream.gen.go", func(b *stream.Buffer) {
-		b.ReplaceAll("package stream", "package mylog")
-		b.ReplaceAll(strconv.Quote("github.com/ddkwork/golibrary/mylog"), "")
-		b.ReplaceAll("mylog.", "")
-	})
+	g := stream.NewGeneratedFile()
+	g.Write(stream.NewBuffer("safeStream.go").Bytes())
+	g.ReplaceAll("package stream", "package mylog")
+	g.ReplaceAll(strconv.Quote("github.com/ddkwork/golibrary/mylog"), "")
+	g.ReplaceAll("mylog.", "")
+	stream.WriteTruncate("../mylog/safeStream.gen.go", g.Buffer)
 }
 
 func TestGeneratedFile_Iota(t *testing.T) {

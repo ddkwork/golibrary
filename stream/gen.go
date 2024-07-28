@@ -188,7 +188,7 @@ func (g *GeneratedFile) ReadTemplates(path, pkg string) {
 		// s.WriteStringLn("stream.WriteGoFile(" + strconv.Quote(BaseName(path)+"_gen.go") + ", g.Buffer())")
 		s.WriteStringLn("stream.WriteGoFile(path, g.Buffer)")
 		s.WriteStringLn("}")
-		WriteGoFile("generateIR_gen_test.go", s.Bytes())
+		println(s.String())
 	})
 }
 
