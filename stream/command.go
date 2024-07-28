@@ -69,7 +69,7 @@ func (s *CommandSession) run(command string) {
 			scanner := bufio.NewScanner(stdoutPipe)
 			for scanner.Scan() {
 				line := scanner.Text()
-				output <- ConvertUtf82Gbk(line).String()
+				output <- ConvertUtf82Gbk(line)
 			}
 			mylog.Check(stdoutPipe.Close())
 		})
@@ -83,8 +83,8 @@ func (s *CommandSession) run(command string) {
 			scanner := bufio.NewScanner(stderrPipe)
 			for scanner.Scan() {
 				line := scanner.Text()
-				println(ConvertUtf82Gbk(line).String())
-				errorOutput <- ConvertUtf82Gbk(line).String()
+				println(ConvertUtf82Gbk(line))
+				errorOutput <- ConvertUtf82Gbk(line)
 			}
 			mylog.Check(stderrPipe.Close())
 		})
@@ -134,15 +134,15 @@ func (s *CommandSession) run(command string) {
 	s.Output.WriteString(ss)
 }
 
-func ConvertUtf82Gbk(src string) *Buffer {
+func ConvertUtf82Gbk(src string) string {
 	if IsWindows() {
 		c := mylog.Check2(simplifiedchinese.GB18030.NewDecoder().String(src)) // todo test rune
-		return NewBuffer(c).TrimSuffix("\r\n")
+		return strings.TrimSuffix(c, "\r\n")
 	}
-	return NewBuffer(src)
+	return src
 }
 
-func runCmd(command string) *Buffer {
+func runCmd(command string) string { //std error not support
 	fnInitCmd := func() *exec.Cmd {
 		if runtime.GOOS == "windows" {
 			return exec.Command("cmd", "/C", command)
