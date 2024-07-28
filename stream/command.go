@@ -134,13 +134,12 @@ func (s *CommandSession) run(command string) {
 	s.Output.WriteString(ss)
 }
 
-func ConvertUtf82Gbk[T Type](src T) *Buffer {
-	b := NewBuffer(src)
+func ConvertUtf82Gbk(src string) *Buffer {
 	if IsWindows() {
-		c := mylog.Check2(simplifiedchinese.GB18030.NewDecoder().Bytes(b.Bytes())) // todo test rune
+		c := mylog.Check2(simplifiedchinese.GB18030.NewDecoder().String(src)) // todo test rune
 		return NewBuffer(c).TrimSuffix("\r\n")
 	}
-	return b
+	return NewBuffer(src)
 }
 
 func runCmd(command string) *Buffer {
