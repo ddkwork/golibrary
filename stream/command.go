@@ -82,9 +82,7 @@ func (s *CommandSession) run(command string) {
 			defer wg.Done()
 			scanner := bufio.NewScanner(stderrPipe)
 			for scanner.Scan() {
-				line := scanner.Text()
-				println(ConvertUtf82Gbk(line))
-				errorOutput <- ConvertUtf82Gbk(line)
+				errorOutput <- ConvertUtf82Gbk(ConvertUtf82Gbk(scanner.Text()))
 			}
 			mylog.Check(stderrPipe.Close())
 		})
