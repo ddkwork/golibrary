@@ -14,6 +14,7 @@ func TestRewriteAst(t *testing.T) {
 }
 
 func TestRewriteAst2(t *testing.T) {
+	t.Skip()
 	formatAllFiles(false, "D:\\giotest")
 }
 
