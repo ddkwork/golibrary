@@ -36,8 +36,8 @@ import (
 	"github.com/snapcore/snapd/osutil"
 	"github.com/snapcore/snapd/polkit"
 
+	"github.com/ddkwork/unison"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/unison"
 
 	"github.com/ddkwork/golibrary/mylog"
 )
