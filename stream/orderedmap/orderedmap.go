@@ -45,6 +45,10 @@ func (m *OrderedMap[K, V]) Contains(key K) bool {
 	return found
 }
 
+func (m *OrderedMap[K, V]) Empty() bool {
+	return m.l.Len()==0
+}
+
 func (m *OrderedMap[K, V]) Keys() (keys []K) {
 	for _, k := range m.List() {
 		keys = append(keys, k.Key)
@@ -86,6 +90,8 @@ func (m *OrderedMap[K, V]) Set(k K, v V) {
 	})
 	m.m[k] = e
 }
+
+
 
 func (m *OrderedMap[K, V]) Get(k K) (v V, ok bool) {
 	e, ok := m.m[k]
