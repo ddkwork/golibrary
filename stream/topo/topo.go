@@ -1,4 +1,4 @@
-package toposort
+package topo
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/ddkwork/golibrary/stream/orderedmap"
 )
 
-func TopologicalSort[T comparable](m *orderedmap.OrderedMap[T, []T], allowCyclicDependency bool) (sorted []T) {
+func Sort[T comparable](m *orderedmap.OrderedMap[T, []T], allowCyclicDependency bool) (sorted []T) {
 	var zero T                             //说白了就是树形结构转为去重+处理优先级的线性结构
 	visited := orderedmap.New(zero, false) //用于检查孩子节点是否在容器节点中
 	temp := orderedmap.New(zero, false)    //用于检测循环依赖

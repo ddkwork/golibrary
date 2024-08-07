@@ -1,4 +1,4 @@
-package toposort
+package topo
 
 import (
 	"github.com/ddkwork/golibrary/stream/orderedmap"
@@ -31,7 +31,7 @@ func TestTopologicalSort(t *testing.T) {
 		"C3DC85E1-0559-4B58-9792-DE421472DFE9",
 	})
 
-	for _, s := range TopologicalSort(m, true) {
+	for _, s := range Sort(m, true) {
 		println(s)
 	}
 
