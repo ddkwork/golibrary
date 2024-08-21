@@ -1,6 +1,6 @@
 module github.com/ddkwork/golibrary
 
-go 1.23
+go 1.23.0
 
 require (
 	github.com/alecthomas/chroma/v2 v2.14.0
