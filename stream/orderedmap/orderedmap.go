@@ -82,11 +82,10 @@ func (m *OrderedMap[K, V]) Set(k K, v V) {
 }
 
 func (m *OrderedMap[K, V]) Get(k K) (v V, ok bool) {
-	e, ok := m.m[k]
-	if ok {
-		return e.Value.(pair[K, V]).Value, true
+	if m.Has(k) {
+		return m.m[k].Value.(pair[K, V]).Value, true
 	}
-	return v, false
+	return
 }
 func (m *OrderedMap[K, V]) Has(key K) bool {
 	_, found := m.m[key]
