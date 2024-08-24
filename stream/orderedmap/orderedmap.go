@@ -72,14 +72,13 @@ func (m *OrderedMap[K, V]) Update(k K, v V) {
 }
 
 func (m *OrderedMap[K, V]) Set(k K, v V) {
-	if _, ok := m.m[k]; ok {
-		return
+	if m.Has(k) {
+		//return//todo
 	}
-	e := m.l.PushBack(pair[K, V]{
+	m.m[k] = m.l.PushBack(pair[K, V]{
 		Key:   k,
 		Value: v,
 	})
-	m.m[k] = e
 }
 
 func (m *OrderedMap[K, V]) Get(k K) (v V, ok bool) {
