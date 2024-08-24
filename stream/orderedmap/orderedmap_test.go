@@ -43,7 +43,7 @@ func TestNew(t *testing.T) {
 
 func TestOrderedMap_UnmarshalJSON(t *testing.T) {
 	mylog.Call(func() {
-		o := orderedmap.New("", "")
+		o := new(orderedmap.OrderedMap[string, any])
 		assert.NoError(t, json.Unmarshal([]byte(data), o))
 		mylog.Struct(o.Keys())
 		for _, p := range o.List() {
