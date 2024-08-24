@@ -13,13 +13,13 @@ func Sort[T comparable](m *orderedmap.OrderedMap[T, []T], allowCyclicDependency 
 	var visitAll func(T)
 
 	visitAll = func(id T) {
-		if temp.Contains(id) {
+		if temp.Has(id) {
 			if allowCyclicDependency {
 				return //sln can be cyclic
 			}
 			mylog.Check(fmt.Errorf("cyclic dependency detected involving project %v", id))
 		}
-		if !visited.Contains(id) { //递归处理node及其children,最终得到一个拓扑排序sorted
+		if !visited.Has(id) { //递归处理node及其children,最终得到一个拓扑排序sorted
 			temp.Set(id, true)
 			deps, ok := m.Get(id)
 			if ok {
@@ -35,7 +35,7 @@ func Sort[T comparable](m *orderedmap.OrderedMap[T, []T], allowCyclicDependency 
 	}
 
 	for _, p := range m.List() {
-		if !visited.Contains(p.Key) {
+		if !visited.Has(p.Key) {
 			visitAll(p.Key)
 		}
 	}

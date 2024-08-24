@@ -40,13 +40,13 @@ func (m *OrderedMap[K, V]) Map() map[K]V {
 	return r
 }
 
-func (m *OrderedMap[K, V]) Contains(key K) bool {
+func (m *OrderedMap[K, V]) Has(key K) bool {
 	_, found := m.m[key]
 	return found
 }
 
 func (m *OrderedMap[K, V]) Empty() bool {
-	return m.l.Len()==0
+	return m.l.Len() == 0
 }
 
 func (m *OrderedMap[K, V]) Keys() (keys []K) {
@@ -90,8 +90,6 @@ func (m *OrderedMap[K, V]) Set(k K, v V) {
 	})
 	m.m[k] = e
 }
-
-
 
 func (m *OrderedMap[K, V]) Get(k K) (v V, ok bool) {
 	e, ok := m.m[k]
@@ -232,14 +230,14 @@ func (m *OrderedMap[K, V]) skipValue(d *json.Decoder) error {
 var end = errors.New("invalid end of array or object")
 
 func (m *OrderedMap[K, V]) InsertAfter(key K, value V) {
-	if m.Contains(key) {
+	if m.Has(key) {
 		mylog.Check("key already exists")
 	}
 	m.l.InsertAfter(pair[K, V]{Key: key, Value: value}, m.m[key])
 }
 
 func (m *OrderedMap[K, V]) InsertBefore(key K, value V) {
-	if m.Contains(key) {
+	if m.Has(key) {
 		mylog.Check("key already exists")
 	}
 	m.l.InsertBefore(pair[K, V]{Key: key, Value: value}, m.m[key])

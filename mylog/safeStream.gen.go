@@ -30,8 +30,6 @@ import (
 	"github.com/dc0d/caseconv"
 	"github.com/rivo/uniseg"
 	"mvdan.cc/gofumpt/format"
-
-	
 )
 
 type (
@@ -834,7 +832,7 @@ func isFilePath(path string, debug bool) bool {
 		}
 		return false
 	}
-	// strings.Contains(path, "/") || strings.Contains(path, "\\")
+	// strings.Has(path, "/") || strings.Has(path, "\\")
 	mode := stat.Mode()
 	return !mode.IsDir() && mode.IsRegular()
 }
