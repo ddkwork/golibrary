@@ -63,7 +63,7 @@ func (m *OrderedMap[K, V]) List() []pair[K, V] {
 }
 
 func (m *OrderedMap[K, V]) Update(k K, v V) {
-	if _, ok := m.m[k]; ok {
+	if m.Has(k) {
 		m.m[k].Value = pair[K, V]{
 			Key:   k,
 			Value: v,
