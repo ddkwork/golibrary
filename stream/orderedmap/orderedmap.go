@@ -40,15 +40,6 @@ func (m *OrderedMap[K, V]) Map() map[K]V {
 	return r
 }
 
-func (m *OrderedMap[K, V]) Has(key K) bool {
-	_, found := m.m[key]
-	return found
-}
-
-func (m *OrderedMap[K, V]) Empty() bool {
-	return m.l.Len() == 0
-}
-
 func (m *OrderedMap[K, V]) Keys() (keys []K) {
 	for _, k := range m.List() {
 		keys = append(keys, k.Key)
@@ -97,6 +88,14 @@ func (m *OrderedMap[K, V]) Get(k K) (v V, ok bool) {
 		return e.Value.(pair[K, V]).Value, true
 	}
 	return v, false
+}
+func (m *OrderedMap[K, V]) Has(key K) bool {
+	_, found := m.m[key]
+	return found
+}
+
+func (m *OrderedMap[K, V]) Empty() bool {
+	return m.l.Len() == 0
 }
 
 func (m *OrderedMap[K, V]) Front() (pair[K, V], bool) {
