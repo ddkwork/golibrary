@@ -28,7 +28,12 @@ const logFileName = "log.log"
 func newObject() *object {
 	f, e := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_TRUNC|os.O_SYNC, 0644)
 	if e != nil {
-		panic(e)
+		if !IsAndroid() {
+			panic(e)
+		}
+	}
+	if IsAndroid() {
+		f = os.Stdout
 	}
 	return &object{
 		-1,
