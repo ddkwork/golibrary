@@ -23,6 +23,10 @@ type errorX interface {
 
 var errType = reflect.TypeFor[error]
 
+func Check2ForJsonNumberNodeType[T any](ret T, err error) bool {
+	return err == nil
+}
+
 func Check2[T any](ret T, err error) T {
 	check(newErrorMock(err))
 	CheckNil(ret)
