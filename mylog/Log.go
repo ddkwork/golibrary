@@ -24,7 +24,6 @@ func (o *object) hexDump(title string, b []byte) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -37,7 +36,6 @@ func (o *object) Hex(title string, msg any) string {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite()
 	return o.message
@@ -51,7 +49,6 @@ func (o *object) Info(title string, msg ...any) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -64,7 +61,6 @@ func (o *object) Trace(title string, msg ...any) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -77,7 +73,6 @@ func (o *object) Warning(title string, msg ...any) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -90,7 +85,6 @@ func (o *object) Json(title string, msg ...any) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -103,7 +97,6 @@ func (o *object) Success(title string, msg ...any) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -122,7 +115,6 @@ func (o *object) Request(Request *http.Request, body bool) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  true,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -149,7 +141,6 @@ func (o *object) Response(Response *http.Response, body bool) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  true,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -181,7 +172,6 @@ func (o *object) Struct(msg any) {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite()
 }
@@ -214,9 +204,6 @@ func (o *object) Reason() (reason string) {
 }
 
 func (o *object) printAndWrite() {
-	if IsTermux() {
-		return
-	}
 	indentTitle := GetTimeNowString() + o.kind.String() + " " + o.textIndent(o.title, false)
 	o.message = strings.TrimSuffix(o.message, "\n")
 	c := " //" + caller()
@@ -232,8 +219,6 @@ func (o *object) printAndWrite() {
 	}
 	o.body = trimTrailingEmptyLines(o.body)
 	o.printColorBody()
-	if !IsAndroid() {
-		o.body += "\n"
-		//WriteAppend(logFileName, o.body)
-	}
+	o.body += "\n"
+	WriteAppend(LogPath(), o.body)
 }

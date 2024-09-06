@@ -39,7 +39,6 @@ func (o *object) errorCall(err any) bool {
 		body:    "",
 		debug:   o.debug,
 		isHttp:  false,
-		w:       o.w,
 	}
 	o.printAndWrite2()
 	return false
@@ -93,10 +92,8 @@ func (o *object) printAndWrite2() {
 	o.message = builder.String()
 	o.body = o.message
 	o.printColorBody()
-	if !IsAndroid() {
-		o.body += "\n"
-		WriteAppend(logFileName, o.body)
-	}
+	o.body += "\n"
+	WriteAppend(LogPath(), o.body)
 }
 
 var RuntimePrefixesToFilter = []string{

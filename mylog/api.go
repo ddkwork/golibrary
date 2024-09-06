@@ -3,12 +3,13 @@ package mylog
 import (
 	"bytes"
 	"fmt"
-	"io"
+	"gioui.org/app"
+	_ "gioui.org/app/permission/storage"
+	"golang.org/x/exp/constraints"
 	"net/http"
 	"os"
 	"os/exec"
-
-	"golang.org/x/exp/constraints"
+	"path/filepath"
 )
 
 type (
@@ -19,22 +20,22 @@ type (
 		body    string
 		debug   bool
 		isHttp  bool
-		w       *os.File
 	}
 )
 
-const logFileName = "log.log"
-
-func newObject() *object {
-	f, e := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_TRUNC|os.O_SYNC, 0644)
-	if e != nil {
-		if !IsAndroid() {
-			panic(e)
-		}
-	}
+func LogPath() (path string) {
+	const logFileName = "log.log"
 	if IsAndroid() {
-		f = os.Stdout
+		dir, err := app.DataDir()
+		if err != nil {
+			panic(err)
+		}
+		return filepath.Join(dir, logFileName)
 	}
+	return logFileName
+}
+
+func New() *object {
 	return &object{
 		-1,
 		"",
@@ -42,13 +43,15 @@ func newObject() *object {
 		"",
 		true,
 		false,
-		f,
 	}
 }
 
+var defaultObject = New()
+
 func init() {
-	if IsAndroid() {
-		SetDebug(false)
+	//Trace("--------- title ---------", "------------------ info ------------------") //android not work,why?
+	if IsAndroid() || IsTermux() {
+		return
 	}
 	if IsWindows() {
 		/*
@@ -64,9 +67,6 @@ func init() {
 		cmd := exec.Command("go", "env", "-w", "GOFLAGS=-buildmode=exe")
 		Check2(cmd.CombinedOutput())
 	}
-	TruncateLogFile()
-	Trace("--------- title ---------", "------------------ info ------------------")
-	//FormatAllFiles()
 }
 
 var (
@@ -80,10 +80,6 @@ func ChdirToGithubWorkspace() {
 	}
 	Info("GITHUB_WORKSPACE", Check2(os.Getwd()))
 }
-
-func TruncateLogFile() { CheckIgnore(os.Truncate(logFileName, io.SeekStart)) }
-
-var defaultObject = newObject()
 
 func Reason() (reason string)        { return defaultObject.Reason() }
 func HexDump(title string, b []byte) { defaultObject.hexDump(title, b) }
