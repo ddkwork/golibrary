@@ -6,6 +6,7 @@ import (
 	"gioui.org/app"
 	_ "gioui.org/app/permission/storage"
 	"golang.org/x/exp/constraints"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -32,6 +33,10 @@ func LogPath() (path string) {
 		}
 		return filepath.Join(dir, logFileName)
 	}
+	if IsTermux() {
+		dir := "/data/data/com.termux/files/usr" //todo choose another dir
+		return filepath.Join(dir, logFileName)
+	}
 	return logFileName
 }
 
@@ -49,10 +54,11 @@ func New() *object {
 var defaultObject = New()
 
 func init() {
-	//Trace("--------- title ---------", "------------------ info ------------------") //android not work,why?
 	if IsAndroid() || IsTermux() {
 		return
 	}
+	CheckIgnore(os.Truncate(LogPath(), io.SeekStart))
+	Trace("--------- title ---------", "------------------ info ------------------") //android not work,why?
 	if IsWindows() {
 		/*
 				cmd/link: enable ASLR by default on Windows
