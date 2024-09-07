@@ -40,6 +40,10 @@ func LogPath() (path string) {
 	return logFileName
 }
 
+func LogFileBody() string {
+	return string(Check2(os.ReadFile(LogPath())))
+}
+
 func New() *object {
 	return &object{
 		-1,
