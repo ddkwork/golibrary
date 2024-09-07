@@ -29,6 +29,10 @@ func (o *object) SetAppendCallStack(appendCallStack func()) {
 	o.appendCallStack = appendCallStack
 }
 
+func SetAppendCallStack(appendCallStack func()) {
+	defaultObject.SetAppendCallStack(appendCallStack)
+}
+
 func LogPath() (path string) {
 	const logFileName = "log.log"
 	if IsAndroid() {
