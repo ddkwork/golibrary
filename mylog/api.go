@@ -15,14 +15,19 @@ import (
 
 type (
 	object struct {
-		kind    kind
-		title   string
-		message string
-		body    string
-		debug   bool
-		isHttp  bool
+		kind            kind
+		title           string
+		message         string
+		body            string
+		debug           bool
+		isHttp          bool
+		appendCallStack func()
 	}
 )
+
+func (o *object) SetAppendCallStack(appendCallStack func()) {
+	o.appendCallStack = appendCallStack
+}
 
 func LogPath() (path string) {
 	const logFileName = "log.log"
@@ -46,12 +51,13 @@ func LogFileBody() string {
 
 func New() *object {
 	return &object{
-		-1,
-		"",
-		"",
-		"",
-		true,
-		false,
+		kind:            0,
+		title:           "",
+		message:         "",
+		body:            "",
+		debug:           true,
+		isHttp:          false,
+		appendCallStack: nil,
 	}
 }
 
