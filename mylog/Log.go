@@ -18,26 +18,26 @@ func (o *object) hexDump(title string, b []byte) {
 		b = b[:257]
 	}
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            hexDumpKind,
-		title:           title,
-		message:         hex.Dump(b),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     hexDumpKind,
+		title:    title,
+		message:  hex.Dump(b),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite()
 }
 
 func (o *object) Hex(title string, msg any) string {
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            hexKind,
-		title:           title,
-		message:         fmt.Sprintf("%#x", msg),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     hexKind,
+		title:    title,
+		message:  fmt.Sprintf("%#x", msg),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite()
 	return o.message
@@ -45,65 +45,65 @@ func (o *object) Hex(title string, msg any) string {
 
 func (o *object) Info(title string, msg ...any) {
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            infoKind,
-		title:           title,
-		message:         sprint(msg...),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     infoKind,
+		title:    title,
+		message:  sprint(msg...),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite()
 }
 
 func (o *object) Trace(title string, msg ...any) {
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            traceKind,
-		title:           title,
-		message:         sprint(msg...),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     traceKind,
+		title:    title,
+		message:  sprint(msg...),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite()
 }
 
 func (o *object) Warning(title string, msg ...any) {
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            warningKind,
-		title:           title,
-		message:         sprint(msg...),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     warningKind,
+		title:    title,
+		message:  sprint(msg...),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite()
 }
 
 func (o *object) Json(title string, msg ...any) {
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            jsonKind,
-		title:           title,
-		message:         sprint(msg...),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     jsonKind,
+		title:    title,
+		message:  sprint(msg...),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite()
 }
 
 func (o *object) Success(title string, msg ...any) {
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            successKind,
-		title:           title,
-		message:         sprint(msg...),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     successKind,
+		title:    title,
+		message:  sprint(msg...),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite()
 }
@@ -116,13 +116,13 @@ const (
 
 func (o *object) Request(Request *http.Request, body bool) {
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            jsonKind,
-		title:           "",
-		message:         o.DumpRequest(Request, body),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          true,
+		callBack: o.callBack,
+		kind:     jsonKind,
+		title:    "",
+		message:  o.DumpRequest(Request, body),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   true,
 	}
 	o.printAndWrite()
 }
@@ -143,13 +143,13 @@ func (o *object) DumpRequest(Request *http.Request, body bool) string {
 
 func (o *object) Response(Response *http.Response, body bool) {
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            jsonKind,
-		title:           "",
-		message:         o.DumpResponse(Response, body),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          true,
+		callBack: o.callBack,
+		kind:     jsonKind,
+		title:    "",
+		message:  o.DumpResponse(Response, body),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   true,
 	}
 	o.printAndWrite()
 }
@@ -175,13 +175,13 @@ func (o *object) Struct(msg any) {
 		body = fmt.Sprintf("%#v", msg)
 	}
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            structKind,
-		title:           "",
-		message:         body,
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     structKind,
+		title:    "",
+		message:  body,
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite()
 }
@@ -230,8 +230,8 @@ func (o *object) printAndWrite() {
 	o.body = trimTrailingEmptyLines(o.body)
 	o.printColorBody()
 	o.body += "\n"
-	if o.appendCallStack != nil {
-		o.appendCallStack()
+	if o.callBack != nil {
+		o.callBack()
 	}
 	WriteAppend(LogPath(), o.body)
 }

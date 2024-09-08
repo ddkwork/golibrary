@@ -15,22 +15,22 @@ import (
 
 type (
 	object struct {
-		kind            kind
-		title           string
-		message         string
-		body            string
-		debug           bool
-		isHttp          bool
-		appendCallStack func()
+		kind     kind
+		title    string
+		message  string
+		body     string
+		debug    bool
+		isHttp   bool
+		callBack func()
 	}
 )
 
-func (o *object) SetAppendCallStack(appendCallStack func()) {
-	o.appendCallStack = appendCallStack
+func (o *object) SetCallBack(callBack func()) {
+	o.callBack = callBack
 }
 
-func SetAppendCallStack(appendCallStack func()) {
-	defaultObject.SetAppendCallStack(appendCallStack)
+func SetCallBack(callBack func()) {
+	defaultObject.SetCallBack(callBack)
 }
 
 func LogPath() (path string) {
@@ -55,13 +55,13 @@ func LogFileBody() string {
 
 func New() *object {
 	return &object{
-		kind:            0,
-		title:           "",
-		message:         "",
-		body:            "",
-		debug:           true,
-		isHttp:          false,
-		appendCallStack: nil,
+		kind:     0,
+		title:    "",
+		message:  "",
+		body:     "",
+		debug:    true,
+		isHttp:   false,
+		callBack: nil,
 	}
 }
 

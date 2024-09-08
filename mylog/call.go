@@ -33,13 +33,13 @@ func (o *object) errorCall(err any) bool {
 		return true
 	}
 	*o = object{
-		appendCallStack: o.appendCallStack,
-		kind:            errorKind,
-		title:           "",
-		message:         reason(err),
-		body:            "",
-		debug:           o.debug,
-		isHttp:          false,
+		callBack: o.callBack,
+		kind:     errorKind,
+		title:    "",
+		message:  reason(err),
+		body:     "",
+		debug:    o.debug,
+		isHttp:   false,
 	}
 	o.printAndWrite2()
 	return false
@@ -94,8 +94,8 @@ func (o *object) printAndWrite2() {
 	o.body = o.message
 	o.printColorBody()
 	o.body += "\n"
-	if o.appendCallStack != nil {
-		o.appendCallStack()
+	if o.callBack != nil {
+		o.callBack()
 	}
 	WriteAppend(LogPath(), o.body)
 }

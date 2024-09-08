@@ -25,15 +25,11 @@ func (c *Cell) String() string {
 }
 
 func (c *Cell) Integer() int {
-	v := mylog.Check2(strconv.Atoi(c.Value))
-
-	return v
+	return mylog.Check2(strconv.Atoi(c.Value))
 }
 
 func (c *Cell) Float() float64 {
-	f := mylog.Check2(strconv.ParseFloat(c.Value, 64))
-
-	return f
+	return mylog.Check2(strconv.ParseFloat(c.Value, 64))
 }
 
 func (c *Cell) Boolean() bool {
