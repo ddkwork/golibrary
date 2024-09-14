@@ -40,6 +40,7 @@ func (g *GeneratedFile) P(v ...any) {
 }
 
 func (g *GeneratedFile) Enum(kindName string, kinds, tooltip []string) {
+	//todo kinds and tooltip use map
 	mylog.Call(func() {
 		for i, kind := range kinds {
 			kinds[i] = ToCamelUpper(kind, false)

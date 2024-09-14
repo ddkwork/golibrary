@@ -168,6 +168,10 @@ func (o *object) DumpResponse(Response *http.Response, body bool) string {
 }
 
 func (o *object) Struct(msg any) {
+	if msg == nil {
+		o.Info("Struct", "is nil")
+		return
+	}
 	msg = reflect.Indirect(reflect.ValueOf(msg)).Interface()
 	marshalIndent := Check2(json.MarshalIndent(msg, "", " "))
 	body := string(marshalIndent)
