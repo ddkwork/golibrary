@@ -38,7 +38,10 @@ type (
 	Type interface {
 		string | HexString | HexDumpString | ~[]byte | ~*bytes.Buffer | *big.Int | *Buffer
 	}
-	Buffer struct{ *bytes.Buffer }
+	Buffer struct {
+		path string
+		*bytes.Buffer
+	}
 )
 
 func NewBuffer[T Type](s T) *Buffer {
@@ -46,14 +49,14 @@ func NewBuffer[T Type](s T) *Buffer {
 	case *Buffer:
 		return s
 	case []byte:
-		return &Buffer{bytes.NewBuffer(s)}
+		return &Buffer{Buffer: bytes.NewBuffer(s)}
 	case *bytes.Buffer:
-		return &Buffer{s}
+		return &Buffer{Buffer: s}
 	case string:
 		if IsFilePath(s) {
 			return &Buffer{Buffer: bytes.NewBuffer(Check2(os.ReadFile(s)))}
 		}
-		return &Buffer{Buffer: bytes.NewBufferString(s)}
+		return &Buffer{Buffer: bytes.NewBufferString(s), path: s}
 	case HexString:
 		return NewHexString(s)
 	case HexDumpString:
@@ -71,6 +74,10 @@ func NewHexString(s HexString) *Buffer {
 }
 
 type HexString string
+
+func (b *Buffer) ReWriteSelf() {
+	WriteTruncate(b.path, b.Bytes())
+}
 
 func (b *Buffer) HexString() HexString      { return HexString(hex.EncodeToString(b.Bytes())) }
 func (b *Buffer) HexStringUpper() HexString { return HexString(fmt.Sprintf("%#X", b.Bytes())[2:]) }
