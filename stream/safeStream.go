@@ -54,9 +54,9 @@ func NewBuffer[T Type](s T) *Buffer {
 		return &Buffer{Buffer: s}
 	case string:
 		if IsFilePath(s) {
-			return &Buffer{Buffer: bytes.NewBuffer(mylog.Check2(os.ReadFile(s)))}
+			return &Buffer{path: s, Buffer: bytes.NewBuffer(mylog.Check2(os.ReadFile(s)))}
 		}
-		return &Buffer{Buffer: bytes.NewBufferString(s), path: s}
+		return &Buffer{Buffer: bytes.NewBufferString(s)}
 	case HexString:
 		return NewHexString(s)
 	case HexDumpString:
@@ -76,6 +76,9 @@ func NewHexString(s HexString) *Buffer {
 type HexString string
 
 func (b *Buffer) ReWriteSelf() {
+	if b.path == "" {
+		panic("path is empty")
+	}
 	WriteTruncate(b.path, b.Bytes())
 }
 
