@@ -34,19 +34,21 @@ func SetCallBack(callBack func()) {
 }
 
 func LogPath() (path string) {
-	const logFileName = "log.log"
+	return filepath.Join(DataDir(), "log.log")
+}
+
+func DataDir() string {
 	if IsAndroid() {
 		dir, err := app.DataDir()
 		if err != nil {
 			panic(err)
 		}
-		return filepath.Join(dir, logFileName)
+		return dir
 	}
 	if IsTermux() {
-		dir := "/data/data/com.termux/files/usr" //todo choose another dir
-		return filepath.Join(dir, logFileName)
+		return "/data/data/com.termux/files/usr" //todo choose another dir
 	}
-	return logFileName
+	return "."
 }
 
 func LogFileBody() string {
