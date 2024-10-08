@@ -2,6 +2,7 @@ package align
 
 import (
 	"fmt"
+	"gioui.org/unit"
 	"strings"
 	"unicode"
 )
@@ -10,7 +11,7 @@ func isChinese(r rune) bool {
 	return unicode.Is(unicode.Han, r)
 }
 
-func StringWidth(s string) (width int) {
+func StringWidth(s string) (width unit.Dp) {
 	for _, char := range s {
 		if isChinese(char) {
 			width += 2 // 中文字符宽度
@@ -26,8 +27,8 @@ func formatString(s string) string {
 	currentWidth := StringWidth(s)
 	padding := minWidth - currentWidth
 	if padding > 0 {
-		return strings.Repeat(".", padding) + s
-		return s + strings.Repeat(" ", padding)
+		return strings.Repeat(".", int(padding)) + s
+		return s + strings.Repeat(" ", int(padding))
 	}
 	return s
 }
