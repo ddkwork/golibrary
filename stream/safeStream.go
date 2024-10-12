@@ -533,7 +533,7 @@ func ReflectVisibleFields(object any) []reflect.StructField {
 	fields := reflect.VisibleFields(reflect.TypeOf(object))
 	var exportedFields []reflect.StructField
 	for _, field := range fields {
-		if field.Tag.Get("table") == "_" || field.Tag.Get("json") == "_" {
+		if field.Tag.Get("table") == "-" || field.Tag.Get("json") == "-" {
 			continue
 		}
 		if !unicode.IsUpper(rune(field.Name[0])) {
