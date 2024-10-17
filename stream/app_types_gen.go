@@ -39,9 +39,9 @@ func ConvertInteger2AppType[T constraints.Integer](v T) AppType {
 	return AppType(v)
 }
 
-func (t AppType) AssertType(Types string) AppType {
+func (t AppType) AssertType(name string) AppType {
 	for _, Type := range t.Types() {
-		if strings.ToLower(Types) == strings.ToLower(Type.String()) {
+		if strings.ToLower(name) == strings.ToLower(Type.String()) {
 			return Type
 		}
 	}

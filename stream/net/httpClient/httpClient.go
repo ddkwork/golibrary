@@ -76,12 +76,12 @@ func (c *Client) SetForm(form url.Values) *Client            { c.form = form; re
 func (c *Client) Body(requestBody []byte) *Client            { c.requestBody = requestBody; return c }
 func (c *Client) BodyStream(s *stream.Buffer) *Client        { c.requestBody = s.Bytes(); return c }
 func (c *Client) CreatNewClient(client *http.Client) *Client { c.Client = client; return c }
-func (c *Client) ProxyHttp(s string) *Client                 { return c.SetProxy(HttpKind, s) }
-func (c *Client) ProxyHttps(s string) *Client                { return c.SetProxy(HttpsKind, s) }
-func (c *Client) ProxySocket5Layer(s string) *Client         { return c.SetProxy(Socket5Kind, s) }
-func (c *Client) ProxySocket4Layer(s string) *Client         { return c.SetProxy(Socket4Kind, s) }
-func (c *Client) ProxyWebSocketLayer(s string) *Client       { return c.SetProxy(WebSocketKind, s) }
-func (c *Client) ProxyWebsocketTlsLayer(s string) *Client    { return c.SetProxy(WebsocketTlsKind, s) }
+func (c *Client) ProxyHttp(s string) *Client                 { return c.SetProxy(HttpType, s) }
+func (c *Client) ProxyHttps(s string) *Client                { return c.SetProxy(HttpsType, s) }
+func (c *Client) ProxySocket5Layer(s string) *Client         { return c.SetProxy(Socket5Type, s) }
+func (c *Client) ProxySocket4Layer(s string) *Client         { return c.SetProxy(Socket4Type, s) }
+func (c *Client) ProxyWebSocketLayer(s string) *Client       { return c.SetProxy(WebSocketType, s) }
+func (c *Client) ProxyWebsocketTlsLayer(s string) *Client    { return c.SetProxy(WebsocketTlsType, s) }
 func (c *Client) CheckProtocol(protocol string, port string) bool {
 	return false
 }
@@ -151,12 +151,12 @@ func (c *Client) HasCookieInJar(jar *cookiejar.Jar, cookieName, Host string) (ok
 	return
 }
 
-func (c *Client) SetProxyEx(layer SchemerKind, hostPort string) *Client {
+func (c *Client) SetProxyEx(layer SchemerType, hostPort string) *Client {
 	c.SetProxy(layer, hostPort)
 	return c
 }
 
-func (c *Client) SetProxy(layer SchemerKind, hostPort string) *Client {
+func (c *Client) SetProxy(layer SchemerType, hostPort string) *Client {
 	host, port := mylog.Check3(net.SplitHostPort(hostPort))
 	var Transport struct {
 		Transport    *http.Transport
@@ -164,21 +164,21 @@ func (c *Client) SetProxy(layer SchemerKind, hostPort string) *Client {
 		proxyURLFunc func(*http.Request) (*url.URL, error)
 	}
 	switch layer {
-	case Socket4Kind:
+	case Socket4Type:
 		c.Client.Transport = &http.Transport{
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 				d := socks.NewSocks4Dialer("tcp", net.JoinHostPort(host, port))
 				return d.DialContext(ctx, network, addr)
 			},
 		}
-	case Socket5Kind:
+	case Socket5Type:
 		c.Client.Transport = &http.Transport{
 			Proxy: func(request *http.Request) (*url.URL, error) {
 				return url.Parse("socks5://" + net.JoinHostPort(host, port))
 			},
 		}
-	case HttpKind, HttpsKind:
-		URL := mylog.Check2(url.Parse(HttpKind.String() + "://" + net.JoinHostPort(host, port)))
+	case HttpType, HttpsType:
+		URL := mylog.Check2(url.Parse(HttpType.String() + "://" + net.JoinHostPort(host, port)))
 		Transport.proxyURLFunc = http.ProxyURL(URL)
 		Transport.dialContext = (&net.Dialer{
 			Timeout:   6 * time.Second,
@@ -216,7 +216,7 @@ func (c *Client) SetProxy(layer SchemerKind, hostPort string) *Client {
 			ReadBufferSize:         bufferSize,
 			ForceAttemptHTTP2:      false,
 		}
-	case WebsocketTlsKind:
+	case WebsocketTlsType:
 		endpointURL := "wss://localhost:12345"
 
 		proxyURL := "http://" + net.JoinHostPort(host, port)
@@ -251,7 +251,7 @@ var LogeventBuf []byte
 func MockProtoBufPacket(proxyPort string) {
 	c := New()
 	c.SetDebug(true)
-	c.SetProxy(HttpKind, net.JoinHostPort(Localhost, proxyPort))
+	c.SetProxy(HttpType, net.JoinHostPort(Localhost, proxyPort))
 
 	header := map[string]string{
 		"Content-Type": "application/x-protobuf",

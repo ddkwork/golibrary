@@ -91,9 +91,9 @@ func (g *GeneratedFile) Types(name string, TypeTooltipMap *OrderedMap[string, st
 		g.P("}")
 		g.P("")
 
-		g.P("func (t ", TypeNameUpper, "Type) AssertType(Types string) ", TypeNameUpper, "Type {")
+		g.P("func (t ", TypeNameUpper, "Type) AssertType(name string) ", TypeNameUpper, "Type {")
 		g.P(" for _, Type := range t.Types() {")
-		g.P("  if strings.ToLower(Types) == strings.ToLower(Type.String()) {")
+		g.P("  if strings.ToLower(name) == strings.ToLower(Type.String()) {")
 		g.P("   return Type")
 		g.P("  }")
 		g.P(" }")

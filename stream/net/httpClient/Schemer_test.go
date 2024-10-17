@@ -12,38 +12,38 @@ import (
 )
 
 func TestLayer_AssertKind(t *testing.T) {
-	assert.Equal(t, TcpKind, InvalidSchemerKind.AssertKind("tcp"))
-	assert.Equal(t, HttpsKind, InvalidSchemerKind.AssertKind("https"))
+	assert.Equal(t, TcpType, InvalidSchemerType.AssertType("tcp"))
+	assert.Equal(t, HttpsType, InvalidSchemerType.AssertType("https"))
 }
 
 func TestGeneratedFile_Iota(t *testing.T) {
-	stream.NewGeneratedFile().Types("Schemer", []string{
-		"Http",
-		"Https",
-		"Socket4",
-		"Socket5",
-		"WebSocket",
-		"WebsocketTls",
-		"Tcp",
-		"TcpTls",
-		"Udp",
-		"Kcp",
-		"Pipe",
-		"Quic",
-		"Rpc",
-		"Ssh",
-	}, nil)
-	b := stream.NewBuffer("Schemer_enum_gen.go")
+	m := stream.NewOrderedMap("", "")
+	m.Set("Http", "Http")
+	m.Set("Https", "Https")
+	m.Set("Socket4", "Socket4")
+	m.Set("Socket5", "Socket5")
+	m.Set("WebSocket", "WebSocket")
+	m.Set("WebsocketTls", "WebsocketTls")
+	m.Set("Tcp", "Tcp")
+	m.Set("TcpTls", "TcpTls")
+	m.Set("Udp", "Udp")
+	m.Set("Kcp", "Kcp")
+	m.Set("Pipe", "Pipe")
+	m.Set("Quic", "Quic")
+	m.Set("Rpc", "Rpc")
+	m.Set("Ssh", "Ssh")
+	stream.NewGeneratedFile().Types("Schemer", m)
+	b := stream.NewBuffer("Schemer_types_gen.go")
 	b.WriteStringLn(expansions)
 	f := mylog.Check2(format.Source(b.Bytes(), format.Options{}))
-	stream.WriteTruncate("Schemer_enum_gen.go", f)
+	stream.WriteTruncate("Schemer_types_gen.go", f)
 }
 
 var expansions = `
 
-func (l SchemerKind) IsStream() bool {
+func (l SchemerType) IsStream() bool {
 	switch l {
-	case InvalidSchemerKind, HttpKind, HttpsKind:
+	case InvalidSchemerType, HttpType, HttpsType:
 		return false
 	default:
 		return true
@@ -51,24 +51,24 @@ func (l SchemerKind) IsStream() bool {
 	}
 }
 
-func (l SchemerKind) IsContainer() bool {
+func (l SchemerType) IsContainer() bool {
 	return l.IsStream()
 }
 
-func (l SchemerKind) Containers() []SchemerKind {
-	return []SchemerKind{
-		WebSocketKind,
-		KcpKind,
-		PipeKind,
-		QuicKind,
-		RpcKind,
-		Socket4Kind,
-		Socket5Kind,
-		SshKind,
-		TcpKind,
-		TcpTlsKind,
-		UdpKind,
-		WebsocketTlsKind,
+func (l SchemerType) Containers() []SchemerType {
+	return []SchemerType{
+		WebSocketType,
+		KcpType,
+		PipeType,
+		QuicType,
+		RpcType,
+		Socket4Type,
+		Socket5Type,
+		SshType,
+		TcpType,
+		TcpTlsType,
+		UdpType,
+		WebsocketTlsType,
 	}
 }
 `
