@@ -1,4 +1,4 @@
-package orderedmap
+package stream
 
 import (
 	"bytes"
@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/ddkwork/golibrary/stream"
-
 	"github.com/ddkwork/golibrary/mylog"
 )
 
-func New[K comparable, V any](k K, v V) (m *OrderedMap[K, V]) {
+//github.com/doublepu/orderedmap
+
+func NewOrderedMap[K comparable, V any](k K, v V) (m *OrderedMap[K, V]) {
 	return &OrderedMap[K, V]{
 		m: map[K]*list.Element{},
 		l: list.New(),
@@ -257,8 +257,8 @@ func (m *OrderedMap[K, V]) String() string {
 }
 
 func (m *OrderedMap[K, V]) GoString() string {
-	g := stream.NewGeneratedFile()
-	g.P("var m = orderedmap.New[string, string]()")
+	g := NewGeneratedFile()
+	g.P("var m = orderedmap.NewOrderedMap[string, string]()")
 	g.P()
 
 	g.P("func init() {")

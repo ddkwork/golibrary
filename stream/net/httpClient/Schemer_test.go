@@ -17,7 +17,7 @@ func TestLayer_AssertKind(t *testing.T) {
 }
 
 func TestGeneratedFile_Iota(t *testing.T) {
-	stream.NewGeneratedFile().Enum("Schemer", []string{
+	stream.NewGeneratedFile().Types("Schemer", []string{
 		"Http",
 		"Https",
 		"Socket4",

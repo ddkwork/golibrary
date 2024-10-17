@@ -1,12 +1,12 @@
 package topo
 
 import (
-	"github.com/ddkwork/golibrary/stream/orderedmap"
+	"github.com/ddkwork/golibrary/stream"
 	"testing"
 )
 
 func TestTopologicalSort(t *testing.T) {
-	m := orderedmap.New("", []string{})
+	m := stream.NewOrderedMap("", []string{})
 	m.Set("06FB1AF7-647C-4BA4-860A-4533763440F9", nil)
 	m.Set("2D988267-CC53-41E3-936A-48CEF9049DF5", nil)
 	m.Set("79AB8BD3-03A4-4B65-ABF6-313C10A00CC5", []string{"BB17323A-2460-4AE1-8AFE-B367400B934F"})

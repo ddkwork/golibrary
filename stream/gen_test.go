@@ -17,7 +17,7 @@ func TestName(t *testing.T) {
 }
 
 func TestGeneratedFile_Iota(t *testing.T) {
-	stream.NewGeneratedFile().Enum("app", []string{
+	stream.NewGeneratedFile().Types("app", []string{
 		"SuperRecovery4",
 		"AneData6",
 		"ChaoQiangZhaoPian",

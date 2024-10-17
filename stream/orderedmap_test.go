@@ -1,7 +1,8 @@
-package orderedmap_test
+package stream_test
 
 import (
 	"encoding/json"
+	"github.com/ddkwork/golibrary/stream"
 	"log"
 	"testing"
 	"time"
@@ -9,15 +10,14 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/stream/orderedmap"
 )
 
-func TestNew(t *testing.T) {
+func TestNewOrderedMap(t *testing.T) {
 	type Data struct {
 		A int
 		B int
 	}
-	o := orderedmap.New("", "")
+	o := stream.NewOrderedMap("", "")
 
 	o.Set("c", "d")
 	o.Set("a", "b")
@@ -34,7 +34,7 @@ func TestNew(t *testing.T) {
 	start := time.Now()
 	b := mylog.Check2(json.Marshal(o))
 	log.Println(string(b), time.Since(start))
-	newO := orderedmap.New("", Data{})
+	newO := stream.NewOrderedMap("", Data{})
 	b = []byte(`{"c": {"A":2333}}`)
 	log.Println(json.Unmarshal(b, newO))
 	b = mylog.Check2(json.Marshal(newO))
@@ -43,7 +43,7 @@ func TestNew(t *testing.T) {
 
 func TestOrderedMap_UnmarshalJSON(t *testing.T) {
 	mylog.Call(func() {
-		o := new(orderedmap.OrderedMap[string, any])
+		o := new(stream.OrderedMap[string, any])
 		assert.NoError(t, json.Unmarshal([]byte(data), o))
 		mylog.Struct(o.Keys())
 		for _, p := range o.List() {
