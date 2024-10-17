@@ -73,7 +73,8 @@ func (m *OrderedMap[K, V]) Update(k K, v V) {
 
 func (m *OrderedMap[K, V]) Set(k K, v V) {
 	if m.Has(k) {
-		//return//todo
+		mylog.CheckIgnore("key already exists")
+		return
 	}
 	m.m[k] = m.l.PushBack(pair[K, V]{
 		Key:   k,
