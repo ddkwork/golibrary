@@ -156,7 +156,7 @@ func (g *GeneratedFile) Types(name string, TypeTooltipMap *OrderedMap[string, st
 		g.P(" }")
 		g.P("}")
 		g.P("")
-		WriteGoFile(filepath.Join(g.filePath, name+"_enum_gen.go"), g.Buffer)
+		WriteGoFile(filepath.Join(g.filePath, name+"_types_gen.go"), g.Buffer)
 		g.Reset()
 	})
 }
