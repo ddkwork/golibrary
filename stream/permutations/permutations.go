@@ -6,7 +6,7 @@ import "encoding/binary"
 func Permute[T comparable](data []T) [][]T {
 	var res [][]T
 	var track []T
-	var used = make([]bool, len(data))
+	used := make([]bool, len(data))
 
 	var backtrack func()
 	backtrack = func() {
@@ -35,7 +35,7 @@ func Permute[T comparable](data []T) [][]T {
 
 func ToUint32Slice(slice [][]byte) []uint32 {
 	var uint32s []uint32
-	for _, bytes := range slice { //permutations
+	for _, bytes := range slice { // permutations
 		// 只处理长度为4的字节数组
 		if len(bytes) == 4 {
 			uint32s = append(uint32s, binary.LittleEndian.Uint32(bytes))

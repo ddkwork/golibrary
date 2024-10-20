@@ -3,9 +3,8 @@ package stream_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/ddkwork/golibrary/stream"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestInterfaceVerSion(t *testing.T) {

@@ -1,8 +1,9 @@
 package topo
 
 import (
-	"github.com/ddkwork/golibrary/stream"
 	"testing"
+
+	"github.com/ddkwork/golibrary/stream"
 )
 
 func TestTopologicalSort(t *testing.T) {
@@ -34,5 +35,4 @@ func TestTopologicalSort(t *testing.T) {
 	for _, s := range Sort(m, true) {
 		println(s)
 	}
-
 }

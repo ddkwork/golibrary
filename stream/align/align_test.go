@@ -6,7 +6,6 @@ import (
 )
 
 func TestName(t *testing.T) {
-
 	data := map[string]int{
 		"张三":           95,
 		"李四":           85,
@@ -20,7 +19,7 @@ func TestName(t *testing.T) {
 		"firstEnd xor  删除第一个字节":       75,
 	}
 	for name, score := range data {
-		//fmt.Printf("name：%s \t scores:%d\n", formatString(name), score)
-		fmt.Printf("姓名：%s \t 分数:%d\n", formatString(name), score) //因为特殊字符的视觉宽度真的就是以像素为单位的，加一个\t
+		// fmt.Printf("name：%s \t scores:%d\n", formatString(name), score)
+		fmt.Printf("姓名：%s \t 分数:%d\n", formatString(name), score) // 因为特殊字符的视觉宽度真的就是以像素为单位的，加一个\t
 	}
 }

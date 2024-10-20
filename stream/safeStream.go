@@ -188,7 +188,7 @@ func write[T Type](name string, isAppend bool, data T) {
 		}
 		f, e := os.OpenFile(name, flag, 0644)
 		defer func() { mylog.Check(f.Close()) }()
-		//mylog.CheckIgnore(e)
+		// mylog.CheckIgnore(e)
 		if e != nil {
 			write(name, isAppend, data)
 		}
@@ -199,7 +199,7 @@ func write[T Type](name string, isAppend bool, data T) {
 func CreatDirectory(dir string) bool {
 	dir = FixFilePath(dir)
 	info, e := os.Stat(dir)
-	//mylog.CheckIgnore(e)
+	// mylog.CheckIgnore(e)
 	if e == nil {
 		if info.IsDir() {
 			return true
@@ -350,14 +350,17 @@ func (b *Buffer) Peek(n int) []byte {
 	}()
 	return b.ReadN(n)
 }
+
 func (b *Buffer) ReadN(n int) []byte {
 	buf := make([]byte, n)
 	mylog.Check2(b.Read(buf))
 	return buf
 }
+
 func (b *Buffer) Append(other *Buffer) {
 	b.Write(other.Bytes())
 }
+
 func (b *Buffer) MergeByte(streams ...[]byte) []byte {
 	return slices.Concat(b.Bytes(), slices.Concat(streams...))
 	for _, s := range streams {

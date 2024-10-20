@@ -2,10 +2,11 @@ package stream_test
 
 import (
 	"encoding/json"
-	"github.com/ddkwork/golibrary/stream"
 	"log"
 	"testing"
 	"time"
+
+	"github.com/ddkwork/golibrary/stream"
 
 	"github.com/stretchr/testify/assert"
 

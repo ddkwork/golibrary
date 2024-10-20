@@ -3,10 +3,11 @@ package permutations
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/ddkwork/golibrary/stream"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/ddkwork/golibrary/stream"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -45,7 +46,7 @@ type table struct {
 
 func (t *table) FromByteSlice(slice [][]byte) {
 	var uint32s []uint32
-	for _, bytes := range slice { //permutations
+	for _, bytes := range slice { // permutations
 		// 只处理长度为4的字节数组
 		if len(bytes) == 4 {
 			uint32s = append(uint32s, binary.LittleEndian.Uint32(bytes))

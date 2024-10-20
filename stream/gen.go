@@ -49,8 +49,8 @@ func (g *GeneratedFile) Types(name string, TypeTooltipMap *OrderedMap[string, st
 			Types = append(Types, kv.Key)
 			tooltips = append(tooltips, kv.Value)
 		}
-		//Types = append(Types, InvalidType)
-		//tooltips = append(tooltips, InvalidType)
+		// Types = append(Types, InvalidType)
+		// tooltips = append(tooltips, InvalidType)
 		for i, Type := range Types {
 			Types[i] = ToCamelUpper(Type, false)
 		}

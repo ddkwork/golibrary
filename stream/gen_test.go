@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/ddkwork/golibrary/mylog"
+
 	"github.com/ddkwork/golibrary/stream"
 )
 
@@ -17,6 +19,7 @@ func TestName(t *testing.T) {
 }
 
 func TestGeneratedFile_Iota(t *testing.T) {
+	mylog.FormatAllFiles()
 	m := stream.NewOrderedMap("", "")
 	m.Set("SuperRecovery4", "SuperRecovery4")
 	m.Set("AneData6", "AneData6")

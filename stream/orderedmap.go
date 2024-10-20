@@ -12,8 +12,7 @@ import (
 	"github.com/ddkwork/golibrary/mylog"
 )
 
-//github.com/doublepu/orderedmap
-
+// github.com/doublepu/orderedmap
 func NewOrderedMap[K comparable, V any](k K, v V) (m *OrderedMap[K, V]) {
 	return &OrderedMap[K, V]{
 		m: map[K]*list.Element{},
@@ -88,6 +87,7 @@ func (m *OrderedMap[K, V]) Get(k K) (v V, ok bool) {
 	}
 	return
 }
+
 func (m *OrderedMap[K, V]) Has(key K) bool {
 	_, found := m.m[key]
 	return found
