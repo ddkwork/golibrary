@@ -342,6 +342,9 @@ func (b *Buffer) CheckDesBlockSize() {
 }
 
 func Concat[S ~[]E, E any](slices_ ...S) S { return slices.Concat(slices_...) }
+func (b *Buffer) Append(other *Buffer) {
+	b.Write(other.Bytes())
+}
 func (b *Buffer) MergeByte(streams ...[]byte) []byte {
 	return slices.Concat(b.Bytes(), slices.Concat(streams...))
 	for _, s := range streams {
