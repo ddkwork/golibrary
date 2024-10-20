@@ -342,6 +342,19 @@ func (b *Buffer) CheckDesBlockSize() {
 }
 
 func Concat[S ~[]E, E any](slices_ ...S) S { return slices.Concat(slices_...) }
+func (b *Buffer) Peek(n int) []byte {
+	defer func() {
+		for range n {
+			Check(b.UnreadByte())
+		}
+	}()
+	return b.ReadN(n)
+}
+func (b *Buffer) ReadN(n int) []byte {
+	buf := make([]byte, n)
+	Check2(b.Read(buf))
+	return buf
+}
 func (b *Buffer) Append(other *Buffer) {
 	b.Write(other.Bytes())
 }
