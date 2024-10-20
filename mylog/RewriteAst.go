@@ -104,7 +104,7 @@ func (h *handle) removeComments() {
 func FormatAllFiles()           { formatAllFiles(false, "") }
 func FormatAllFilesNoComments() { formatAllFiles(true, "") }
 
-var skips = []string{
+var Skips = []string{
 	`\gioview\`,
 	`\gio\`,
 	`\gio-cmd\`,
@@ -122,7 +122,7 @@ func formatAllFiles(noComments bool, path string) {
 			if filepath.Base(abs) == "SkipCheckBase.go" {
 				return nil
 			}
-			for _, skip := range skips {
+			for _, skip := range Skips {
 				if strings.Contains(abs, skip) {
 					// Warning("skip", abs)
 					return nil
