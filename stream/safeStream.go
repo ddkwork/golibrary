@@ -96,7 +96,7 @@ func NewHexDump(hexdumpStr HexDumpString) (data *Buffer) {
 		cxx := fmt.Sprintf("%#v", data.Bytes())
 		cxx = cxx[len(cut):]
 		s.WriteString("char data[] = " + cxx + ";\n")
-		mylog.Json("gen c++ code", s.String())
+		//mylog.Json("gen c++ code", s.String())
 		mylog.HexDump("recovery go buffer", data.Bytes())
 	}()
 	hexdump = strings.TrimSuffix(hexdump, newLine)
