@@ -113,6 +113,7 @@ func Todo(body string) {
 	Warning("TODO", body)
 }
 
+// todo key use cmp.ordering 支持自动格式化int，因为时候传入index作为key
 func Hex[T constraints.Integer | []byte | *bytes.Buffer](title string, msg T) string {
 	return defaultObject.Hex(title, msg)
 }
