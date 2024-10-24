@@ -90,13 +90,10 @@ type HexDumpString string
 func NewHexDump(hexdumpStr HexDumpString) (data *Buffer) {
 	hexdump := string(hexdumpStr)
 	defer func() {
-		s := NewBuffer("")
-
-		cut := `[]byte`
 		cxx := fmt.Sprintf("%#v", data.Bytes())
-		cxx = cxx[len(cut):]
-		s.WriteString("char data[] = " + cxx + ";\n")
-		//mylog.Json("gen c++ code", s.String())
+		cxx = strings.ReplaceAll(cxx, "[]byte", "char data[]")
+		cxx += ";\n"
+		// mylog.Json("gen c++ code", cxx)
 		mylog.HexDump("recovery go buffer", data.Bytes())
 	}()
 	hexdump = strings.TrimSuffix(hexdump, newLine)
