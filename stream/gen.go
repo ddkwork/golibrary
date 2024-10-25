@@ -39,7 +39,7 @@ func (g *GeneratedFile) P(v ...any) {
 	mylog.Check2(fmt.Fprintln(g))
 }
 
-func (g *GeneratedFile) Types(name string, TypeTooltipMap *OrderedMap[string, string]) {
+func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *OrderedMap[string, string]) {
 	mylog.Call(func() {
 		var (
 			Types    []string
@@ -49,7 +49,7 @@ func (g *GeneratedFile) Types(name string, TypeTooltipMap *OrderedMap[string, st
 			Types = append(Types, kv.Key)
 			tooltips = append(tooltips, kv.Value)
 		}
-		// Types = append(Types, InvalidType)
+		// EnumTypes = append(EnumTypes, InvalidType)
 		// tooltips = append(tooltips, InvalidType)
 		for i, Type := range Types {
 			Types[i] = ToCamelUpper(Type, false)
@@ -92,7 +92,7 @@ func (g *GeneratedFile) Types(name string, TypeTooltipMap *OrderedMap[string, st
 		g.P("")
 
 		g.P("func (t ", TypeNameUpper, "Type) AssertType(name string) ", TypeNameUpper, "Type {")
-		g.P(" for _, Type := range t.Types() {")
+		g.P(" for _, Type := range t.EnumTypes() {")
 		g.P("  if strings.ToLower(name) == strings.ToLower(Type.String()) {")
 		g.P("   return Type")
 		g.P("  }")
@@ -136,7 +136,7 @@ func (g *GeneratedFile) Types(name string, TypeTooltipMap *OrderedMap[string, st
 		g.P("}")
 		g.P("")
 
-		g.P("func (t ", TypeNameUpper, "Type) Types() []", TypeNameUpper, "Type {")
+		g.P("func (t ", TypeNameUpper, "Type) EnumTypes() []", TypeNameUpper, "Type {")
 		g.P(" return []", TypeNameUpper, "Type{")
 		for _, Type := range Types {
 			g.P("  ", Type, "Type,")

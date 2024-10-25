@@ -33,7 +33,7 @@ func ConvertInteger2SchemerType[T constraints.Integer](v T) SchemerType {
 }
 
 func (t SchemerType) AssertType(name string) SchemerType {
-	for _, Type := range t.Types() {
+	for _, Type := range t.EnumTypes() {
 		if strings.ToLower(name) == strings.ToLower(Type.String()) {
 			return Type
 		}
@@ -130,7 +130,7 @@ func (t SchemerType) Names() []string {
 	}
 }
 
-func (t SchemerType) Types() []SchemerType {
+func (t SchemerType) EnumTypes() []SchemerType {
 	return []SchemerType{
 		HttpType,
 		HttpsType,

@@ -32,7 +32,7 @@ func TestGeneratedFile_Iota(t *testing.T) {
 	m.Set("Quic", "Quic")
 	m.Set("Rpc", "Rpc")
 	m.Set("Ssh", "Ssh")
-	stream.NewGeneratedFile().Types("Schemer", m)
+	stream.NewGeneratedFile().EnumTypes("Schemer", m)
 	b := stream.NewBuffer("Schemer_types_gen.go")
 	b.WriteStringLn(expansions)
 	f := mylog.Check2(format.Source(b.Bytes(), format.Options{}))

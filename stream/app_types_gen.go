@@ -40,7 +40,7 @@ func ConvertInteger2AppType[T constraints.Integer](v T) AppType {
 }
 
 func (t AppType) AssertType(name string) AppType {
-	for _, Type := range t.Types() {
+	for _, Type := range t.EnumTypes() {
 		if strings.ToLower(name) == strings.ToLower(Type.String()) {
 			return Type
 		}
@@ -172,7 +172,7 @@ func (t AppType) Names() []string {
 	}
 }
 
-func (t AppType) Types() []AppType {
+func (t AppType) EnumTypes() []AppType {
 	return []AppType{
 		SuperRecovery4Type,
 		AneData6Type,

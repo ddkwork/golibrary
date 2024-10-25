@@ -42,5 +42,5 @@ func TestGeneratedFile_Iota(t *testing.T) {
 	m.Set("WordScan", "WordScan")
 	m.Set("XlsxBuild", "XlsxBuild")
 	m.Set("ZipBuild", "ZipBuild")
-	stream.NewGeneratedFile().Types("app", m)
+	stream.NewGeneratedFile().EnumTypes("app", m)
 }
