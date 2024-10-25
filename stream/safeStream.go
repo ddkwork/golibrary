@@ -94,7 +94,7 @@ func NewHexDump(hexdumpStr HexDumpString) (data *Buffer) {
 		cxx = strings.ReplaceAll(cxx, "[]byte", "char data[]")
 		cxx += ";\n"
 		// mylog.Json("gen c++ code", cxx)
-		mylog.HexDump("recovery go buffer", data.Bytes())
+		// mylog.HexDump("recovery go buffer", data.Bytes())
 	}()
 	hexdump = strings.TrimSuffix(hexdump, newLine)
 	switch {
