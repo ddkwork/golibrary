@@ -241,6 +241,12 @@ func (m *OrderedMap[K, V]) InsertBefore(key K, value V) {
 	m.l.InsertBefore(Pair[K, V]{Key: key, Value: value}, m.m[key])
 }
 
+func (m *OrderedMap[K, V]) CopyFromKeys(keys []K) {
+	var zero V
+	for _, key := range keys {
+		m.Set(key, zero)
+	}
+}
 func (m *OrderedMap[K, V]) CopyFrom(from *OrderedMap[K, V]) {
 	for _, kv := range from.List() {
 		m.Set(kv.Key, kv.Value)
