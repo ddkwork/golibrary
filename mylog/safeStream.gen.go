@@ -30,7 +30,7 @@ import (
 	"github.com/ddkwork/golibrary/stream/constraints"
 
 	"github.com/dc0d/caseconv"
-	
+
 	"github.com/rivo/uniseg"
 	"mvdan.cc/gofumpt/format"
 )
