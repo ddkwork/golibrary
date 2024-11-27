@@ -950,7 +950,10 @@ func FixFilePath(path string) string {
 func BaseName(path string) string {
 	return TrimExtension(filepath.Base(mylog.Check2(filepath.Abs(path))))
 }
-func TrimExtension(path string) string { return path[:len(path)-len(filepath.Ext(path))] }
+func TrimExtension(path string) string {
+	path = strings.ReplaceAll(path, "-", "_")
+	return path[:len(path)-len(filepath.Ext(path))]
+}
 
 func JoinHomeDir(path string) (join string)  { return joinHome(path, true) }
 func JoinHomeFile(path string) (join string) { return joinHome(path, false) }
