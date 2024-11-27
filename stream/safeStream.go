@@ -50,6 +50,16 @@ type (
 	}
 )
 
+func IsIncludeLine(s string) bool {
+	s = strings.TrimSpace(s)
+	if !strings.HasPrefix(s, "#") {
+		return false
+	}
+	s = strings.TrimPrefix(s, "#")
+	s = strings.TrimSpace(s)
+	return strings.HasPrefix(s, "include")
+}
+
 func ValueIsBytesType(v reflect.Value) bool {
 	return v.Type().Elem().Kind() == reflect.Uint8
 }
