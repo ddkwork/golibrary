@@ -152,6 +152,7 @@ func (m *OrderedMap[K, V]) Reset() {
 func (m *OrderedMap[K, V]) Last() Pair[K, V] {
 	return m.List()[m.Len()-1]
 }
+
 func (m *OrderedMap[K, V]) Len() int {
 	return len(m.m)
 }
