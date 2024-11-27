@@ -247,6 +247,7 @@ func (m *OrderedMap[K, V]) CopyFromKeys(keys []K) {
 		m.Set(key, zero)
 	}
 }
+
 func (m *OrderedMap[K, V]) CopyFrom(from *OrderedMap[K, V]) {
 	for _, kv := range from.List() {
 		m.Set(kv.Key, kv.Value)

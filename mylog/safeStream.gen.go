@@ -30,7 +30,7 @@ import (
 	"github.com/ddkwork/golibrary/stream/constraints"
 
 	"github.com/dc0d/caseconv"
-
+	
 	"github.com/rivo/uniseg"
 	"mvdan.cc/gofumpt/format"
 )
@@ -950,7 +950,11 @@ func FixFilePath(path string) string {
 func BaseName(path string) string {
 	return TrimExtension(filepath.Base(Check2(filepath.Abs(path))))
 }
-func TrimExtension(path string) string { return path[:len(path)-len(filepath.Ext(path))] }
+
+func TrimExtension(path string) string {
+	path = strings.ReplaceAll(path, "-", "_")
+	return path[:len(path)-len(filepath.Ext(path))]
+}
 
 func JoinHomeDir(path string) (join string)  { return joinHome(path, true) }
 func JoinHomeFile(path string) (join string) { return joinHome(path, false) }

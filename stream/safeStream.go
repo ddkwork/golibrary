@@ -950,6 +950,7 @@ func FixFilePath(path string) string {
 func BaseName(path string) string {
 	return TrimExtension(filepath.Base(mylog.Check2(filepath.Abs(path))))
 }
+
 func TrimExtension(path string) string {
 	path = strings.ReplaceAll(path, "-", "_")
 	return path[:len(path)-len(filepath.Ext(path))]

@@ -229,7 +229,7 @@ func (h *handle) rewriteAst() {
 		h.line = h.fileSet.Position(cursor.Node().Pos()).Line
 		if h.line > len(h.lines)-1 {
 			h.line = len(h.lines) - 1 // todo bug
-			Warning("line > len(lines) " + h.lineInfo)
+			// Warning("line > len(lines) " + h.lineInfo)
 		}
 		h.lineInfo = fmt.Sprintf(h.path+":%d ", h.line) + h.lines[h.line]
 
