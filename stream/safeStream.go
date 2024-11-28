@@ -402,6 +402,7 @@ func (b *Buffer) WritePackageName() {
 }
 
 func GetPackageName() (pkgName string) {
+	defer func() { pkgName = strings.ReplaceAll(pkgName, "-", "_") }()
 	return filepath.Base(mylog.Check2(filepath.Abs(".")))
 }
 
