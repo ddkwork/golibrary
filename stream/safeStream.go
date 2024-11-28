@@ -541,9 +541,12 @@ func (b *Buffer) Join(sep string, size int) string {
 	return strings.TrimSuffix(result, sep)
 }
 
-func (b *Buffer) InsertString(index int, s string) string {
-	return string(slices.Insert(b.Bytes(), index, []byte(s)...))
-	return string(b.InsertBytes(index, []byte(s)))
+func (b *Buffer) InsertString(index int, s string) *Buffer {
+	buf := slices.Insert(b.Bytes(), index, []byte(s)...)
+	b.Reset()
+	b.Write(buf)
+	return b
+	//return string(b.InsertBytes(index, []byte(s)))
 }
 
 func (b *Buffer) AppendByteSlice(bytesSlice ...[]byte) []byte {
