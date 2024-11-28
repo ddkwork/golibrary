@@ -219,6 +219,12 @@ func (b *Buffer) ReWriteSelf() {
 	}
 	WriteTruncate(b.path, b.Bytes())
 }
+func (b *Buffer) ReWriteSelfGo() {
+	if b.path == "" {
+		panic("path is empty")
+	}
+	WriteGoFile(b.path, b.Bytes())
+}
 
 func (b *Buffer) HexString() HexString      { return HexString(hex.EncodeToString(b.Bytes())) }
 func (b *Buffer) HexStringUpper() HexString { return HexString(fmt.Sprintf("%#X", b.Bytes())[2:]) }
