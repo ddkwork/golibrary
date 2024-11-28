@@ -50,6 +50,26 @@ type (
 	}
 )
 
+func Integer2Bool[T constraints.Integer](value T) bool {
+	switch v := any(value).(type) {
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr:
+		if v == 1 {
+			return false
+		}
+	}
+	return true
+}
+
+func Bool2Integer[T constraints.Integer](b bool) T {
+	var zero T
+	switch any(zero).(type) {
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr:
+		if b {
+			zero = 1
+		}
+	}
+	return zero
+}
 func IsIncludeLine(s string) bool {
 	s = strings.TrimSpace(s)
 	if !strings.HasPrefix(s, "#") {
