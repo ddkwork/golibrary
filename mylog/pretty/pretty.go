@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"reflect"
 	r "reflect"
 	"strconv"
 	"strings"
-
-	"github.com/ddkwork/golibrary/stream/constraints"
 )
 
 const (
@@ -58,48 +55,6 @@ func (p *Pretty) Print(i interface{}) {
 func (p *Pretty) Println(i interface{}) {
 	p.PrintValue(r.ValueOf(i), 0)
 	io.WriteString(p.Out, "\n")
-}
-
-func FormatInteger[T reflect.Value | constraints.Integer](data T) string {
-	var v reflect.Value
-	switch vv := any(data).(type) {
-	case reflect.Value:
-		v = vv
-	default:
-		v = reflect.ValueOf(data)
-	}
-	format := ""
-	switch v.Kind() {
-	case reflect.Int:
-		format = "%016X" // 对于 uint 和 uintptr，使用 16 位
-	case reflect.Int8:
-		format = "%02X" // 对于 uint8，使用 2 位
-	case reflect.Int16:
-		format = "%04X" // 对于 uint16，使用 4 位
-	case reflect.Int32:
-		format = "%08X" // 对于 uint32，使用 8 位
-	case reflect.Int64:
-		format = "%016X" // 对于 uint64，使用 16 位
-
-	case reflect.Uint, reflect.Uintptr:
-		format = "%016X" // 对于 uint 和 uintptr，使用 16 位
-	case reflect.Uint8:
-		format = "%02X" // 对于 uint8，使用 2 位
-	case reflect.Uint16:
-		format = "%04X" // 对于 uint16，使用 4 位
-	case reflect.Uint32:
-		format = "%08X" // 对于 uint32，使用 8 位
-	case reflect.Uint64:
-		format = "%016X" // 对于 uint64，使用 16 位
-	}
-	if format == "" {
-		panic("unsupported int kind")
-	}
-	return fmt.Sprintf(format, data)
-}
-
-func ValueIsBytesType(v reflect.Value) bool {
-	return v.Type().Elem().Kind() == reflect.Uint8
 }
 
 func (p *Pretty) PrintValue(val r.Value, level int) {

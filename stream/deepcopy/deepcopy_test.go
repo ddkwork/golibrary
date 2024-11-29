@@ -859,7 +859,7 @@ func TestTimeCopy(t *testing.T) {
 	}{
 		{2016, time.July, 4, 23, 11, 33, 3000, "America/New_York"},
 		{2015, time.October, 31, 9, 44, 23, 45935, "UTC"},
-		{2014, time.May, 5, 22, 01, 50, 219300, "Europe/Prague"},
+		{2014, time.May, 5, 22, 0o1, 50, 219300, "Europe/Prague"},
 	}
 
 	for i, test := range tests {

@@ -14,20 +14,25 @@ import (
 )
 
 func (l *log) hexDump(title string, b []byte) {
-	if len(b) > 4096 { // for x64dbg big packet
+	isShortHexdump := false
+	switch {
+	case len(b) < 16+1:
+		isShortHexdump = true
+	case len(b) > 4096: // for x64dbg big packet
 		l.Warning("big data", len(b))
 		b = b[:4096]
 	}
 	*l = log{
-		callBack: l.callBack,
-		kind:     hexDumpKind,
-		title:    title,
-		message:  hex.Dump(b),
-		body:     "",
-		debug:    l.debug,
-		isHttp:   false,
+		kind:           hexDumpKind,
+		title:          title,
+		message:        hex.Dump(b),
+		body:           "",
+		debug:          l.debug,
+		isHttp:         false,
+		callBack:       l.callBack,
+		isShortHexdump: isShortHexdump,
 	}
-	fmt.Printf("%#v\n", b)
+	fmt.Printf("%#v\n", b) // for copy into clipboard
 	l.printAndWrite()
 }
 
@@ -213,9 +218,15 @@ func (l *log) printAndWrite() {
 	indentTitle := GetTimeNowString() + l.kind.String() + " " + l.textIndent(l.title, false)
 	l.message = strings.TrimSuffix(l.message, "\n")
 	c := " //" + caller()
+	indentTitle += c
 	switch l.kind {
-	case jsonKind, hexDumpKind, structKind:
-		indentTitle += c + "\n"
+	case hexDumpKind:
+		if !l.isShortHexdump {
+			indentTitle += "\n"
+		}
+		l.body = indentTitle + l.message
+	case jsonKind, structKind:
+		indentTitle += "\n"
 		l.body = indentTitle + l.message
 	default:
 		l.body = indentTitle + l.message + c

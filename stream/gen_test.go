@@ -8,15 +8,28 @@ import (
 )
 
 func TestName(t *testing.T) {
+	cloneStreamForLogPkg("safeStream.go")
+	cloneStreamForLogPkg("constraints.go")
+
+	path := "constraints.go"
 	g := stream.NewGeneratedFile()
-	g.Write(stream.NewBuffer("safeStream.go").Bytes())
+	g.Write(stream.NewBuffer(path).Bytes())
+	g.ReplaceAll("package stream", "package pretty")
+	g.ReplaceAll(strconv.Quote("github.com/ddkwork/golibrary/mylog"), "")
+	g.ReplaceAll("mylog.", "")
+	stream.WriteTruncate("../mylog/pretty/"+stream.BaseName(path)+"_gen.go", g.Buffer)
+}
+
+func cloneStreamForLogPkg(path string) {
+	g := stream.NewGeneratedFile()
+	g.Write(stream.NewBuffer(path).Bytes())
 	g.ReplaceAll("package stream", "package mylog")
 	g.ReplaceAll(strconv.Quote("github.com/ddkwork/golibrary/mylog"), "")
 	g.ReplaceAll("mylog.", "")
-	stream.WriteTruncate("../mylog/safeStream.gen.go", g.Buffer)
+	stream.WriteTruncate("../mylog/"+stream.BaseName(path)+"_gen.go", g.Buffer)
 }
 
-func TestGeneratedFile_Iota(t *testing.T) {
+func TestGeneratedFile_enum(t *testing.T) {
 	m := stream.NewOrderedMap("", "")
 	m.Set("SuperRecovery4", "SuperRecovery4")
 	m.Set("AneData6", "AneData6")

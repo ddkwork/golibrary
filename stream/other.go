@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/stream/maps"
+	"github.com/goradd/maps"
 )
 
 func GoReleaser() {

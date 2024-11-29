@@ -17,13 +17,14 @@ import (
 
 type (
 	log struct {
-		kind     kind
-		title    string
-		message  string
-		body     string
-		debug    bool
-		isHttp   bool
-		callBack func()
+		kind           kind
+		title          string
+		message        string
+		body           string
+		debug          bool
+		isHttp         bool
+		callBack       func()
+		isShortHexdump bool
 	}
 )
 
@@ -105,10 +106,17 @@ func ChdirToGithubWorkspace() {
 	Info("GITHUB_WORKSPACE", Check2(os.Getwd()))
 }
 
-func Reason() (reason string)              { return l.Reason() }
-func HexDump[K keyType](title K, b []byte) { l.hexDump(formatKey(title), b) }
-func HexInteger[T constraints.Unsigned](msg T) string {
-	return Hex("", msg) + "|" + fmt.Sprintf("%d", msg)
+func Reason() (reason string) { return l.Reason() }
+func HexDump[K keyType, V constraints.Unsigned | []byte | *bytes.Buffer](title K, buf V) {
+	key := formatKey(title)
+	switch v := any(buf).(type) {
+	case []byte:
+		l.hexDump(key, v)
+	case *bytes.Buffer:
+		l.hexDump(key, v.Bytes())
+	default:
+		panic("unsupported type")
+	}
 }
 
 func Todo(body string) {
@@ -127,23 +135,25 @@ func formatKey[K keyType](title K) (key string) {
 	return key
 }
 
-func Hex[K keyType, V constraints.Unsigned | []byte | *bytes.Buffer](title K, msg V) string {
-	key := formatKey(title)
-	switch v := any(msg).(type) {
-	case []byte:
-		return l.Hex(key, fmt.Sprintf("%#v", v))
-	case *bytes.Buffer:
-		return l.Hex(key, fmt.Sprintf("%#v", v.Bytes()))
-	}
-	return l.Hex(key, "0x"+FormatInteger(reflect.ValueOf(msg))+"│"+fmt.Sprintf("%d", msg))
+func Hex[K keyType, V constraints.Unsigned](title K, v V) string {
+	return l.Hex(formatKey(title), FormatInteger(v))
 }
-func Info[K keyType](title K, msg ...any)             { l.Info(formatKey(title), msg...) }
-func Trace[K keyType](title K, msg ...any)            { l.Trace(formatKey(title), msg...) }
-func Warning[K keyType](title K, msg ...any)          { l.Warning(formatKey(title), msg...) }
-func MarshalJson[K keyType](title K, msg any)         { l.MarshalJson(formatKey(title), msg) }
-func Json[K keyType](title K, msg ...any)             { l.Json(formatKey(title), msg...) }
-func Success[K keyType](title K, msg ...any)          { l.Success(formatKey(title), msg...) }
-func Struct[K keyType](title K, msg any)              { l.Struct(formatKey(title), msg) }
+func Info[K keyType](title K, msg ...any)     { l.Info(formatKey(title), msg...) }
+func Trace[K keyType](title K, msg ...any)    { l.Trace(formatKey(title), msg...) }
+func Warning[K keyType](title K, msg ...any)  { l.Warning(formatKey(title), msg...) }
+func MarshalJson[K keyType](title K, msg any) { l.MarshalJson(formatKey(title), msg) }
+func Json[K keyType](title K, msg ...any)     { l.Json(formatKey(title), msg...) }
+func Success[K keyType](title K, msg ...any)  { l.Success(formatKey(title), msg...) }
+func Struct[K keyType](title K, msg any) {
+	switch t := any(title).(type) {
+	case string:
+		if t == "" {
+			l.Struct(reflect.TypeOf(msg).Name(), msg)
+			return
+		}
+	}
+	l.Struct(formatKey(title), msg)
+}
 func SetDebug(debug bool)                             { l.debug = debug }
 func Request(Request *http.Request, body bool)        { l.Request(Request, body) }
 func Response(Response *http.Response, body bool)     { l.Response(Response, body) }

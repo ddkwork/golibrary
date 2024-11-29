@@ -27,8 +27,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/ddkwork/golibrary/stream/constraints"
-
 	"github.com/dc0d/caseconv"
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/rivo/uniseg"
@@ -50,122 +48,12 @@ type (
 	}
 )
 
-func Integer2Bool[T constraints.Integer](value T) bool {
-	switch v := any(value).(type) {
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr:
-		if v == 1 {
-			return true
-		}
-	}
-	return false
-}
-
-func Bool2Integer[T constraints.Integer](b bool) T {
-	var zero T
-	switch any(zero).(type) {
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr:
-		if b {
-			zero = 1
-		}
-	}
-	return zero
-}
-func IsIncludeLine(s string) bool {
-	s = strings.TrimSpace(s)
-	if !strings.HasPrefix(s, "#") {
-		return false
-	}
-	s = strings.TrimPrefix(s, "#")
-	s = strings.TrimSpace(s)
-	return strings.HasPrefix(s, "include")
-}
-
-func ValueIsBytesType(v reflect.Value) bool {
-	return v.Type().Elem().Kind() == reflect.Uint8
-}
-
-func FormatInteger[T reflect.Value | constraints.Integer](data T) string {
-	var v reflect.Value
-	switch vv := any(data).(type) {
-	case reflect.Value:
-		v = vv
-	default:
-		v = reflect.ValueOf(data)
-	}
-	format := ""
-	switch v.Kind() {
-	case reflect.Int:
-		format = "%016X" // 对于 uint 和 uintptr，使用 16 位
-	case reflect.Int8:
-		format = "%02X" // 对于 uint8，使用 2 位
-	case reflect.Int16:
-		format = "%04X" // 对于 uint16，使用 4 位
-	case reflect.Int32:
-		format = "%08X" // 对于 uint32，使用 8 位
-	case reflect.Int64:
-		format = "%016X" // 对于 uint64，使用 16 位
-
-	case reflect.Uint, reflect.Uintptr:
-		format = "%016X" // 对于 uint 和 uintptr，使用 16 位
-	case reflect.Uint8:
-		format = "%02X" // 对于 uint8，使用 2 位
-	case reflect.Uint16:
-		format = "%04X" // 对于 uint16，使用 4 位
-	case reflect.Uint32:
-		format = "%08X" // 对于 uint32，使用 8 位
-	case reflect.Uint64:
-		format = "%016X" // 对于 uint64，使用 16 位
-	}
-	if format == "" {
-		panic("unsupported int kind")
-	}
-	return fmt.Sprintf(format, data)
-}
-
-func isASCIILower(c byte) bool { return 'a' <= c && c <= 'z' }
-func isASCIIUpper(c byte) bool { return 'A' <= c && c <= 'Z' }
-func isASCIIDigit(c byte) bool { return '0' <= c && c <= '9' }
-
-func IsASCIIAlpha(s string) bool {
-	for i := 0; i < len(s); i++ {
-		c := s[i] // 直接按字节获取
-		if !isASCIILower(c) && !isASCIIUpper(c) {
-			return false
-		}
-	}
-	return true
-}
-
-func IsASCIIDigit(s string) bool {
-	for i := 0; i < len(s); i++ {
-		if !isASCIIDigit(s[i]) {
-			return false
-		}
-	}
-	return len(s) > 0 // 确保字符串非空
-}
-
-func IsAlphanumeric(s string) bool {
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if !isASCIIDigit(c) && !isASCIILower(c) && !isASCIIUpper(c) {
-			return false
-		}
-	}
-	return len(s) > 0 // 确保字符串非空
-}
-
 func GenMask() {
 	for i := 1; i <= 8*4; i++ {
 		mask := (1 << i) - 1
 		fmt.Printf("%d 位掩码: 0x%X (二进制: %08b)\n", i, mask, mask)
 	}
 	mylog.Hex("0x000001000000007E&0xFFFFFFFF", uint64(0x000001000000007E&0xFFFFFFFF))
-}
-
-func isOneByteInteger(n int) bool {
-	return n >= -128 && n <= 127 // 检查有符号整数
-	// return n >= 0 && n <= 255 // 可以用于无符号整数
 }
 
 func NewBuffer[T Type](data T) *Buffer {
@@ -239,6 +127,7 @@ func (b *Buffer) ReWriteSelf() {
 	}
 	WriteTruncate(b.path, b.Bytes())
 }
+
 func (b *Buffer) ReWriteSelfGo() {
 	if b.path == "" {
 		panic("path is empty")
@@ -351,7 +240,7 @@ func write[T Type](name string, isAppend bool, data T) {
 		} else {
 			flag |= os.O_TRUNC
 		}
-		f, e := os.OpenFile(name, flag, 0644)
+		f, e := os.OpenFile(name, flag, 0o644)
 		defer func() { mylog.Check(f.Close()) }()
 		// mylog.CheckIgnore(e)
 		if e != nil {
@@ -573,7 +462,7 @@ func (b *Buffer) InsertString(index int, s string) *Buffer {
 	b.Reset()
 	b.Write(buf)
 	return b
-	//return string(b.InsertBytes(index, []byte(s)))
+	// return string(b.InsertBytes(index, []byte(s)))
 }
 
 func (b *Buffer) AppendByteSlice(bytesSlice ...[]byte) []byte {
