@@ -57,6 +57,13 @@ func (p *Pretty) Println(i interface{}) {
 	io.WriteString(p.Out, "\n")
 }
 
+func (p *Pretty) checkStringer(val r.Value) {
+	m, ok := val.Interface().(fmt.Stringer)
+	if ok {
+		io.WriteString(p.Out, " "+m.String())
+	}
+}
+
 func (p *Pretty) PrintValue(val r.Value, level int) {
 	if !val.IsValid() {
 		io.WriteString(p.Out, p.NilString)
@@ -77,51 +84,39 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 	}
 
 	switch val.Kind() {
-	case r.Int, r.Int8, r.Int16, r.Int32, r.Int64:
-		io.WriteString(p.Out, "0x")
-		switch val.Kind() {
-		case r.Int, r.Int64:
-			io.WriteString(p.Out, FormatInteger(val.Int()))
-		case r.Int8:
-			io.WriteString(p.Out, FormatInteger(int8(val.Int())))
-		case r.Int16:
-			io.WriteString(p.Out, FormatInteger(int16(val.Int())))
-		case r.Int32:
-			io.WriteString(p.Out, FormatInteger(int32(val.Int())))
-		}
-		io.WriteString(p.Out, "│")
-		io.WriteString(p.Out, strconv.FormatInt(val.Int(), 10))
-		m, ok := val.Interface().(fmt.Stringer)
-		if ok {
-			io.WriteString(p.Out, " "+m.String())
-		}
-	case r.Uint, r.Uint8, r.Uint16, r.Uint32, r.Uint64, r.Uintptr:
-		io.WriteString(p.Out, "0x")
-		switch val.Kind() {
-		case r.Uint, r.Uint64:
-			io.WriteString(p.Out, FormatInteger(val.Uint()))
-		case r.Uint8:
-			io.WriteString(p.Out, FormatInteger(byte(val.Uint())))
-		case r.Uint16:
-			io.WriteString(p.Out, FormatInteger(uint16(val.Uint())))
-		case r.Uint32:
-			io.WriteString(p.Out, FormatInteger(uint32(val.Uint())))
-		}
-		io.WriteString(p.Out, "│")
-		io.WriteString(p.Out, strconv.FormatUint(val.Uint(), 10))
-		m, ok := val.Interface().(fmt.Stringer)
-		if ok {
-			io.WriteString(p.Out, " "+m.String())
-		}
+	case r.Int, r.Int64:
+		io.WriteString(p.Out, FormatInteger(val.Int()))
+		p.checkStringer(val)
+	case r.Int8:
+		io.WriteString(p.Out, FormatInteger(int8(val.Int())))
+		p.checkStringer(val)
+	case r.Int16:
+		io.WriteString(p.Out, FormatInteger(int16(val.Int())))
+		p.checkStringer(val)
+	case r.Int32:
+		io.WriteString(p.Out, FormatInteger(int32(val.Int())))
+		p.checkStringer(val)
+	case r.Uint, r.Uint64:
+		io.WriteString(p.Out, FormatInteger(val.Uint()))
+		p.checkStringer(val)
+	case r.Uint8:
+		io.WriteString(p.Out, FormatInteger(byte(val.Uint())))
+		p.checkStringer(val)
+	case r.Uint16:
+		io.WriteString(p.Out, FormatInteger(uint16(val.Uint())))
+		p.checkStringer(val)
+	case r.Uint32:
+		io.WriteString(p.Out, FormatInteger(uint32(val.Uint())))
+		p.checkStringer(val)
 	case r.Float32, r.Float64:
 		io.WriteString(p.Out, strconv.FormatFloat(val.Float(), 'f', -1, 64))
-
+		p.checkStringer(val)
 	case r.String:
 		io.WriteString(p.Out, strconv.Quote(val.String()))
-
+		p.checkStringer(val)
 	case r.Bool:
 		io.WriteString(p.Out, strconv.FormatBool(val.Bool()))
-
+		p.checkStringer(val)
 	case r.Map:
 		l := val.Len()
 

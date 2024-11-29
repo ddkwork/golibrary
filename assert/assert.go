@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/peterldowns/testy/common"
-	"golang.org/x/exp/constraints"
 )
 
 //
@@ -162,7 +161,7 @@ import (
 //	}
 //}
 
-//func Signed[T constraints.Signed](t common.T, want, got T, opts ...cmp.Option) {
+//func Signed[T Signed](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
@@ -170,7 +169,7 @@ import (
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
 //}
 
-func Unsigned[T constraints.Unsigned](t common.T, want, got T, opts ...cmp.Option) {
+func UnsignedInteger[T Unsigned](t common.T, want, got T, opts ...cmp.Option) {
 	t.Helper()
 	if want == got {
 		return
@@ -178,7 +177,7 @@ func Unsigned[T constraints.Unsigned](t common.T, want, got T, opts ...cmp.Optio
 	t.Error(fmt.Sprintf("expected %#X, got %#X", want, got))
 }
 
-//func Integer[T constraints.Integer](t common.T, want, got T, opts ...cmp.Option) {
+//func Integer[T Integer](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
@@ -186,7 +185,7 @@ func Unsigned[T constraints.Unsigned](t common.T, want, got T, opts ...cmp.Optio
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
 //}
 //
-//func Float[T constraints.Float](t common.T, want, got T, opts ...cmp.Option) {
+//func Float[T Float](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
@@ -194,7 +193,7 @@ func Unsigned[T constraints.Unsigned](t common.T, want, got T, opts ...cmp.Optio
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
 //}
 //
-//func Complex[T constraints.Complex](t common.T, want, got T, opts ...cmp.Option) {
+//func Complex[T Complex](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
@@ -202,7 +201,7 @@ func Unsigned[T constraints.Unsigned](t common.T, want, got T, opts ...cmp.Optio
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
 //}
 //
-//func Ordered[T constraints.Ordered](t common.T, want, got T, opts ...cmp.Option) {
+//func Ordered[T Ordered](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
@@ -252,7 +251,7 @@ func NotEqual[T any](t common.T, want, got T, opts ...cmp.Option) {
 	t.Error(fmt.Sprintf("expected want != got\nwant: %+v\n got: %+v", want, got))
 }
 
-func LessThan[T constraints.Ordered](t common.T, small, big T) {
+func LessThan[T Ordered](t common.T, small, big T) {
 	t.Helper()
 	if small < big {
 		return
@@ -260,7 +259,7 @@ func LessThan[T constraints.Ordered](t common.T, small, big T) {
 	t.Error(fmt.Sprintf("expected %v < %v", small, big))
 }
 
-func LessThanOrEqual[T constraints.Ordered](t common.T, small, big T) {
+func LessThanOrEqual[T Ordered](t common.T, small, big T) {
 	t.Helper()
 	if small <= big {
 		return
@@ -268,7 +267,7 @@ func LessThanOrEqual[T constraints.Ordered](t common.T, small, big T) {
 	t.Error(fmt.Sprintf("expected %v <= %v", small, big))
 }
 
-func GreaterThan[T constraints.Ordered](t common.T, big, small T) {
+func GreaterThan[T Ordered](t common.T, big, small T) {
 	t.Helper()
 	if big > small {
 		return
@@ -276,7 +275,7 @@ func GreaterThan[T constraints.Ordered](t common.T, big, small T) {
 	t.Error(fmt.Sprintf("expected %v > %v", big, small))
 }
 
-func GreaterThanOrEqual[T constraints.Ordered](t common.T, big, small T) {
+func GreaterThanOrEqual[T Ordered](t common.T, big, small T) {
 	t.Helper()
 	if big >= small {
 		return

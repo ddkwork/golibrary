@@ -1,8 +1,6 @@
 package languages
 
-import (
-	"golang.org/x/exp/constraints"
-)
+import "github.com/ddkwork/golibrary/stream"
 
 type LanguagesKind byte
 
@@ -264,7 +262,7 @@ const (
 	InvalidLanguagesKind
 )
 
-func ConvertInteger2LanguagesKind[T constraints.Integer](v T) LanguagesKind {
+func ConvertInteger2LanguagesKind[T stream.Integer](v T) LanguagesKind {
 	return LanguagesKind(v)
 }
 

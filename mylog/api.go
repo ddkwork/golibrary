@@ -12,7 +12,6 @@ import (
 
 	"gioui.org/app"
 	_ "gioui.org/app/permission/storage"
-	"golang.org/x/exp/constraints"
 )
 
 type (
@@ -107,7 +106,7 @@ func ChdirToGithubWorkspace() {
 }
 
 func Reason() (reason string) { return l.Reason() }
-func HexDump[K keyType, V constraints.Unsigned | []byte | *bytes.Buffer](title K, buf V) {
+func HexDump[K keyType, V Unsigned | []byte | *bytes.Buffer](title K, buf V) {
 	key := formatKey(title)
 	switch v := any(buf).(type) {
 	case []byte:
@@ -123,7 +122,7 @@ func Todo(body string) {
 	Warning("TODO", body)
 }
 
-type keyType interface{ string | constraints.Integer }
+type keyType interface{ string | Integer }
 
 func formatKey[K keyType](title K) (key string) {
 	switch k := any(title).(type) {
@@ -135,7 +134,7 @@ func formatKey[K keyType](title K) (key string) {
 	return key
 }
 
-func Hex[K keyType, V constraints.Unsigned](title K, v V) string {
+func Hex[K keyType, V Unsigned](title K, v V) string {
 	return l.Hex(formatKey(title), FormatInteger(v))
 }
 func Info[K keyType](title K, msg ...any)     { l.Info(formatKey(title), msg...) }

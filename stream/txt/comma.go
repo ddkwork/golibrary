@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/exp/constraints"
+	"github.com/ddkwork/golibrary/stream"
 )
 
-func Comma[T constraints.Integer | constraints.Float](value T) string {
+func Comma[T stream.Integer | stream.Float](value T) string {
 	return CommaFromStringNum(fmt.Sprintf("%v", value))
 }
 
