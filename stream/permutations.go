@@ -1,4 +1,4 @@
-package permutations
+package stream
 
 import "encoding/binary"
 
@@ -33,7 +33,7 @@ func Permute[T comparable](data []T) [][]T {
 	return res
 }
 
-func ToUint32Slice(slice [][]byte) []uint32 {
+func PermuteToUint32Slice(slice [][]byte) []uint32 {
 	var uint32s []uint32
 	for _, bytes := range slice { // permutations
 		// 只处理长度为4的字节数组

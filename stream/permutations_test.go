@@ -1,4 +1,4 @@
-package permutations
+package stream
 
 import (
 	"encoding/binary"
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/ddkwork/golibrary/assert"
-	"github.com/ddkwork/golibrary/stream"
 )
 
 var (
@@ -91,7 +90,7 @@ func newTable() *table {
 }
 
 func (t *table) GoString() string {
-	g := stream.NewGeneratedFile()
+	g := NewGeneratedFile()
 	g.P("var tableBuf = []byte{")
 	for _, u := range t.data {
 		b := make([]byte, 4)
