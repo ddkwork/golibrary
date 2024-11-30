@@ -219,6 +219,7 @@ func (l *log) printAndWrite() {
 			case hexDumpKind:
 				isLongHexdump := strings.Contains(l.message, "\n")
 				if isLongHexdump {
+					v = "\n" + v
 					end = "\n" + end
 				}
 				v += end

@@ -59,7 +59,7 @@ func (p *Pretty) Println(i interface{}) {
 func (p *Pretty) checkStringer(val r.Value) {
 	m, ok := val.Interface().(fmt.Stringer)
 	if ok {
-		io.WriteString(p.Out, " "+m.String())
+		io.WriteString(p.Out, " //"+strconv.Quote(m.String()))
 	}
 }
 
@@ -137,11 +137,8 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 	case r.Array, r.Slice:
 		l := val.Len()
 		if ValueIsBytesType(val) {
-			io.WriteString(p.Out, DumpHex(val.Bytes()))
-			io.WriteString(p.Out, ",")
-			if i, ok := val.Interface().(fmt.Stringer); ok {
-				io.WriteString(p.Out, " //"+strconv.Quote(i.String()))
-			}
+			io.WriteString(p.Out, strings.ReplaceAll(DumpHex(val.Bytes()), "}", "},"))
+			p.checkStringer(val)
 			return
 		}
 
