@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/ddkwork/golibrary/assert"
-
 	"github.com/ddkwork/golibrary/mylog"
 )
 
