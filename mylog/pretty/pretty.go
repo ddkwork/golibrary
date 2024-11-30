@@ -72,9 +72,9 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 	cur := strings.Repeat(p.Indent, level)
 	next := strings.Repeat(p.Indent, level+1)
 
-	nl := "\n"
+	newLine := "\n"
 	if len(p.Indent) == 0 {
-		nl = " "
+		newLine = " "
 	}
 
 	if p.MaxLevel > 0 && level >= p.MaxLevel {
@@ -119,16 +119,16 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 	case r.Map:
 		l := val.Len()
 
-		io.WriteString(p.Out, "{"+nl)
+		io.WriteString(p.Out, "{"+newLine)
 		for i, k := range val.MapKeys() {
 			io.WriteString(p.Out, next)
 			io.WriteString(p.Out, strconv.Quote(k.String()))
 			io.WriteString(p.Out, ": ")
 			p.PrintValue(val.MapIndex(k), level+1)
 			if i < l-1 {
-				io.WriteString(p.Out, ","+nl)
+				io.WriteString(p.Out, ","+newLine)
 			} else {
-				io.WriteString(p.Out, nl)
+				io.WriteString(p.Out, newLine)
 			}
 		}
 		io.WriteString(p.Out, cur)
@@ -145,7 +145,7 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 		if p.Compact && l == 0 {
 			io.WriteString(p.Out, "[]")
 		} else {
-			io.WriteString(p.Out, "["+nl)
+			io.WriteString(p.Out, "["+newLine)
 			for i := 0; i < l; i++ {
 
 				io.WriteString(p.Out, next)
@@ -156,9 +156,9 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 
 				p.PrintValue(val.Index(i), level+1)
 				if i < l-1 {
-					io.WriteString(p.Out, ","+nl)
+					io.WriteString(p.Out, ","+newLine)
 				} else {
-					io.WriteString(p.Out, nl)
+					io.WriteString(p.Out, newLine)
 				}
 			}
 			io.WriteString(p.Out, cur)
@@ -182,7 +182,7 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 				if p.Compact && l == 0 {
 					io.WriteString(p.Out, "{}")
 				} else {
-					io.WriteString(p.Out, sOpen+nl)
+					io.WriteString(p.Out, sOpen+newLine)
 					// 计算最大字段名长度，以便对齐
 					maxKeyLen := 0
 					for i := 0; i < l; i++ {
@@ -202,9 +202,9 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 						io.WriteString(p.Out, ": ")
 						p.PrintValue(val.Field(i), level+1)
 						if i < l-1 {
-							io.WriteString(p.Out, ","+nl)
+							io.WriteString(p.Out, ","+newLine) //todo 整数格式化后已经有 , 了，需要移除
 						} else {
-							io.WriteString(p.Out, nl)
+							io.WriteString(p.Out, newLine)
 						}
 					}
 					io.WriteString(p.Out, cur)

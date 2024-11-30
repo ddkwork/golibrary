@@ -98,7 +98,7 @@ func formatBytesAsGoCode(data []byte) string {
 			if i > 0 {
 				buffer.WriteString(", ")
 			}
-			buffer.WriteString(fmt.Sprintf("0x%s", hex.EncodeToString([]byte{b})))
+			buffer.WriteString(fmt.Sprintf("0x%s", hex.EncodeToString([]byte{b}))) // todo 1字节需要对齐
 		}
 		buffer.WriteString(",\n")
 	}
@@ -107,7 +107,7 @@ func formatBytesAsGoCode(data []byte) string {
 }
 
 func FormatInteger[T Integer](data T) string {
-	return FormatIntegerHex0x(data) + ", //(" + fmt.Sprintf("%d", reflect.ValueOf(data).Interface()) + ")"
+	return FormatIntegerHex0x(data) + ", //" + fmt.Sprintf("%d", reflect.ValueOf(data).Interface())
 	return FormatIntegerHex0x(data) + " # " + fmt.Sprintf("%d", reflect.ValueOf(data).Interface())
 }
 

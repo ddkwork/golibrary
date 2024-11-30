@@ -224,6 +224,7 @@ func (l *log) printAndWrite() {
 				}
 				v += end
 			case jsonKind, structKind:
+				v = "\n" + v
 				end = "\n" + end
 				v += end
 			default:
