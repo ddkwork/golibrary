@@ -2,7 +2,6 @@ package pretty
 
 import (
 	"bytes"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -138,29 +137,8 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 	case r.Array, r.Slice:
 		l := val.Len()
 		if ValueIsBytesType(val) {
-			if l == 0 {
-				io.WriteString(p.Out, "[]bytes{}")
-				return
-			}
-			dump := hex.Dump(val.Bytes())
-			dump = strings.TrimPrefix(dump, "\n")
-			dump = strings.TrimSuffix(dump, "\n")
-			mixHex := "00000000  3c 4d 55 fe 16 14 00 00  00 d8 70 c5 70 e8 ab 30  |<MU.......p.p..0|"
-			if len(dump) > len(mixHex) {
-				dump = "\n" + dump // todo indent left it
-
-				for i, s := range strings.Split(dump, "\n") {
-					if i > 0 {
-						io.WriteString(p.Out, "\n")
-					}
-					io.WriteString(p.Out, cur) // todo 取字段名称长度?
-					io.WriteString(p.Out, s)
-				}
-				return
-			}
-			io.WriteString(p.Out, fmt.Sprintf("%#v", val.Bytes()))
-			io.WriteString(p.Out, " //"+hex.EncodeToString(val.Bytes()))
-			// todo get tag and print string
+			io.WriteString(p.Out, DumpHex(val.Bytes()))
+			io.WriteString(p.Out, ",")
 			if i, ok := val.Interface().(fmt.Stringer); ok {
 				io.WriteString(p.Out, " //"+strconv.Quote(i.String()))
 			}

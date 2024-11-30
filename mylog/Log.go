@@ -2,9 +2,7 @@ package mylog
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
@@ -13,26 +11,16 @@ import (
 	"github.com/ddkwork/golibrary/mylog/pretty"
 )
 
-func (l *log) hexDump(title string, b []byte) {
-	isShortHexdump := false
-	switch {
-	case len(b) < 16+1:
-		isShortHexdump = true
-	case len(b) > 4096: // for x64dbg big packet
-		l.Warning("big data", len(b))
-		b = b[:4096]
-	}
+func (l *log) hexDump(title string, dump string) {
 	*l = log{
-		kind:           hexDumpKind,
-		title:          title,
-		message:        hex.Dump(b),
-		body:           "",
-		debug:          l.debug,
-		isHttp:         false,
-		callBack:       l.callBack,
-		isShortHexdump: isShortHexdump,
+		kind:     hexDumpKind,
+		title:    title,
+		message:  dump,
+		body:     "",
+		debug:    l.debug,
+		isHttp:   false,
+		callBack: l.callBack,
 	}
-	fmt.Printf("%#v\n", b) // for copy into clipboard
 	l.printAndWrite()
 }
 
@@ -214,27 +202,40 @@ func (l *log) Reason() (reason string) {
 	return trimTrailingEmptyLines(r.String())
 }
 
+type keyValue struct {
+	key   func() string
+	value func() string // 重点是处理换行逻辑
+}
+
 func (l *log) printAndWrite() {
-	indentTitle := GetTimeNowString() + l.kind.String() + " " + l.textIndent(l.title, false)
-	l.message = strings.TrimSuffix(l.message, "\n")
-	c := " //" + caller()
-	switch l.kind {
-	case hexDumpKind:
-		indentTitle += c
-		if !l.isShortHexdump {
-			indentTitle += "\n"
-		}
-		l.body = indentTitle + l.message
-	case jsonKind, structKind:
-		indentTitle += c + "\n"
-		l.body = indentTitle + l.message
-	default:
-		l.body = indentTitle + l.message + c
+	fn := keyValue{
+		key: func() string {
+			return GetTimeNowString() + l.kind.String() + " " + l.textIndent(l.title, false)
+		},
+		value: func() string {
+			v := strings.TrimSuffix(l.message, "\n")
+			end := " //" + caller()
+			switch l.kind {
+			case hexDumpKind:
+				isLongHexdump := strings.Contains(l.message, "\n")
+				if isLongHexdump {
+					end = "\n" + end
+				}
+				v += end
+			case jsonKind, structKind:
+				end = "\n" + end
+				v += end
+			default:
+				v += end
+			}
+			return v
+		},
 	}
+	l.body = fn.key() + " " + fn.value()
 	if l.isHttp {
 		l.body = l.message
 	}
-	l.body = trimTrailingEmptyLines(l.body)
+	// l.body = trimTrailingEmptyLines(l.body) //todo remove bug
 	l.printColorBody()
 	l.body += "\n"
 	if l.callBack != nil {

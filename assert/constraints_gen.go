@@ -1,8 +1,11 @@
 package assert
 
 import (
+	"bytes"
+	"encoding/hex"
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 )
 
@@ -30,8 +33,70 @@ type Ordered interface {
 	Integer | Float | ~string
 }
 
+func DumpHex[T []byte | *bytes.Buffer](buf T) (dump string) {
+	var b []byte
+	switch v := any(buf).(type) {
+	case []byte:
+		b = v
+	case *bytes.Buffer:
+		b = v.Bytes()
+	default:
+		panic(fmt.Sprintf("unsupported type %T", v))
+	}
+
+	if len(b) == 0 {
+		return "[]bytes{}"
+	}
+
+	length := len(b)
+	switch {
+	case length == 0:
+		return "[]bytes{}"
+	case length < 16+1:
+		// 结构体字段格式打印优先
+		dump += fmt.Sprintf("%#v", b) // 兼容结构体字段打印样式,复制到单元测试方便，todo 输入c语法样式,目前感觉太占空间了
+		dump += "\t//"
+		dump += hex.EncodeToString(b) // 方便复制到rsa解密工具测试
+		dump += hex.Dump(b)
+		if length < 9 {
+			dump = strings.ReplaceAll(dump, "                           |", "  ")
+		}
+		dump = strings.TrimSuffix(dump, "\n")
+		return dump
+	default:
+		if length > 4096 { // for x64dbg big packet
+			fmt.Println("big data", length)
+			b = b[:4096]
+		}
+		dump += formatBytesCode(b)             // todo 对结构体字段左侧的最大字段宽度缩进，以及代码换行
+		dump += "\n//" + hex.EncodeToString(b) // 方便复制到rsa解密工具测试
+		dump += "\n/*"
+		dump += "\n" + hex.Dump(b)
+		dump += "*/"
+		return
+	}
+}
+
+func formatBytesCode(data []byte) string {
+	var buffer bytes.Buffer
+	buffer.WriteString("[]byte{\n")
+	// 使用 slices.Chunk 将数据分为每8个字节一组
+	for chunk := range slices.Chunk(data, 8) {
+		buffer.WriteString("\t") // 添加一层缩进
+		for i, b := range chunk {
+			if i > 0 {
+				buffer.WriteString(", ")
+			}
+			buffer.WriteString(fmt.Sprintf("0x%s", hex.EncodeToString([]byte{b})))
+		}
+		buffer.WriteString(",\n")
+	}
+	buffer.WriteString("}")
+	return buffer.String()
+}
+
 func FormatInteger[T Integer](data T) string {
-	return FormatIntegerHex0x(data) + " (" + fmt.Sprintf("%d", reflect.ValueOf(data).Interface()) + ")"
+	return FormatIntegerHex0x(data) + " //(" + fmt.Sprintf("%d", reflect.ValueOf(data).Interface()) + ")"
 	return FormatIntegerHex0x(data) + " # " + fmt.Sprintf("%d", reflect.ValueOf(data).Interface())
 }
 

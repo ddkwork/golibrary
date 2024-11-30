@@ -16,14 +16,13 @@ import (
 
 type (
 	log struct {
-		kind           kind
-		title          string
-		message        string
-		body           string
-		debug          bool
-		isHttp         bool
-		callBack       func()
-		isShortHexdump bool
+		kind     kind
+		title    string
+		message  string
+		body     string
+		debug    bool
+		isHttp   bool
+		callBack func()
 	}
 )
 
@@ -106,16 +105,8 @@ func ChdirToGithubWorkspace() {
 }
 
 func Reason() (reason string) { return l.Reason() }
-func HexDump[K keyType, V Unsigned | []byte | *bytes.Buffer](title K, buf V) {
-	key := formatKey(title)
-	switch v := any(buf).(type) {
-	case []byte:
-		l.hexDump(key, v)
-	case *bytes.Buffer:
-		l.hexDump(key, v.Bytes())
-	default:
-		panic("unsupported type")
-	}
+func HexDump[K keyType, V []byte | *bytes.Buffer](title K, buf V) {
+	l.hexDump(formatKey(title), DumpHex(buf))
 }
 
 func Todo(body string) {
