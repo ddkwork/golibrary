@@ -6,11 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ddkwork/golibrary/stream"
-
 	"github.com/ddkwork/golibrary/assert"
-
 	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/stream"
 )
 
 func TestNewOrderedMap(t *testing.T) {
@@ -18,7 +16,7 @@ func TestNewOrderedMap(t *testing.T) {
 		A int
 		B int
 	}
-	o := stream.NewOrderedMap("", "")
+	o := new(maps.SafeSliceMap[string, string])
 
 	o.Set("c", "d")
 	o.Set("a", "b")

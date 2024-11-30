@@ -17,7 +17,7 @@ func TestLayer_AssertKind(t *testing.T) {
 }
 
 func TestGeneratedFile_Iota(t *testing.T) {
-	m := stream.NewOrderedMap("", "")
+	m := new(maps.SafeSliceMap[string, string])
 	m.Set("Http", "Http")
 	m.Set("Https", "Https")
 	m.Set("Socket4", "Socket4")

@@ -3,6 +3,7 @@ package stream
 import (
 	_ "embed"
 	"fmt"
+	"github.com/goradd/maps"
 	"go/format"
 	"path/filepath"
 	"reflect"
@@ -86,18 +87,17 @@ func (g *GeneratedFile) SetEnumType(t reflect.Type) *GeneratedFile {
 	return g
 }
 
-func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *OrderedMap[string, string]) {
+func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *maps.SafeSliceMap[string, string]) {
 	mylog.Call(func() {
 		var (
 			names    []string
 			tooltips []string
 		)
-		for _, kv := range TypeTooltipMap.List() {
-			kv.Key = strings.TrimSpace(kv.Key)
-			kv.Value = strings.TrimSpace(kv.Value)
-			names = append(names, kv.Key)
-			tooltips = append(tooltips, kv.Value)
-		}
+		TypeTooltipMap.Range(func(key string, value string) bool {
+			names = append(names, strings.TrimSpace(key))
+			tooltips = append(tooltips, strings.TrimSpace(value))
+			return true
+		})
 		for i, Name := range names {
 			if !g.keepOrigName {
 				names[i] = ToCamelUpper(Name, false)
