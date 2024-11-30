@@ -3,12 +3,13 @@ package stream
 import (
 	_ "embed"
 	"fmt"
-	"github.com/goradd/maps"
 	"go/format"
 	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/goradd/maps"
 
 	"github.com/ddkwork/golibrary/mylog"
 )

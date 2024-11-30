@@ -3,6 +3,8 @@ package httpClient
 import (
 	"testing"
 
+	"github.com/goradd/maps"
+
 	"github.com/ddkwork/golibrary/mylog"
 	"mvdan.cc/gofumpt/format"
 

@@ -12,7 +12,6 @@ import (
 	"github.com/ddkwork/golibrary/mylog"
 )
 
-// github.com/doublepu/orderedmap
 func NewOrderedMap[K comparable, V any](k K, v V) (m *OrderedMap[K, V]) {
 	return &OrderedMap[K, V]{
 		m: map[K]*list.Element{},
