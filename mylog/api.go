@@ -135,7 +135,7 @@ func formatKey[K keyType](title K) (key string) {
 }
 
 func Hex[K keyType, V Unsigned](title K, v V) string {
-	return l.Hex(formatKey(title), FormatInteger(v))
+	return l.hex(formatKey(title), FormatInteger(v))
 }
 func Info[K keyType](title K, msg ...any)     { l.Info(formatKey(title), msg...) }
 func Trace[K keyType](title K, msg ...any)    { l.Trace(formatKey(title), msg...) }
@@ -143,15 +143,18 @@ func Warning[K keyType](title K, msg ...any)  { l.Warning(formatKey(title), msg.
 func MarshalJson[K keyType](title K, msg any) { l.MarshalJson(formatKey(title), msg) }
 func Json[K keyType](title K, msg ...any)     { l.Json(formatKey(title), msg...) }
 func Success[K keyType](title K, msg ...any)  { l.Success(formatKey(title), msg...) }
-func Struct[K keyType](title K, msg any) {
+func Struct[K keyType](title K, object any) {
+	if reflect.Indirect(reflect.ValueOf(object)).Kind() != reflect.Struct {
+		// panic("object must be a struct")//打印单一类型的切片还是必要的
+	}
 	switch t := any(title).(type) {
 	case string:
 		if t == "" {
-			l.Struct(reflect.TypeOf(msg).Name(), msg)
+			l.Struct(reflect.TypeOf(object).Name(), object)
 			return
 		}
 	}
-	l.Struct(formatKey(title), msg)
+	l.Struct(formatKey(title), object)
 }
 func SetDebug(debug bool)                             { l.debug = debug }
 func Request(Request *http.Request, body bool)        { l.Request(Request, body) }

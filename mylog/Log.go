@@ -36,7 +36,7 @@ func (l *log) hexDump(title string, b []byte) {
 	l.printAndWrite()
 }
 
-func (l *log) Hex(title, msg string) string {
+func (l *log) hex(title, msg string) string {
 	*l = log{
 		callBack: l.callBack,
 		kind:     hexKind,
@@ -218,15 +218,15 @@ func (l *log) printAndWrite() {
 	indentTitle := GetTimeNowString() + l.kind.String() + " " + l.textIndent(l.title, false)
 	l.message = strings.TrimSuffix(l.message, "\n")
 	c := " //" + caller()
-	indentTitle += c
 	switch l.kind {
 	case hexDumpKind:
+		indentTitle += c
 		if !l.isShortHexdump {
 			indentTitle += "\n"
 		}
 		l.body = indentTitle + l.message
 	case jsonKind, structKind:
-		indentTitle += "\n"
+		indentTitle += c + "\n"
 		l.body = indentTitle + l.message
 	default:
 		l.body = indentTitle + l.message + c
