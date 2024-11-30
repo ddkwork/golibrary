@@ -237,7 +237,6 @@ func (l *log) printAndWrite() {
 	if l.isHttp {
 		l.body = l.message
 	}
-	// l.body = trimTrailingEmptyLines(l.body) //todo remove bug
 	l.printColorBody()
 	l.body += "\n"
 	if l.callBack != nil {
