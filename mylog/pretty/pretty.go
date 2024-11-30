@@ -137,7 +137,7 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 	case r.Array, r.Slice:
 		l := val.Len()
 		if ValueIsBytesType(val) {
-			io.WriteString(p.Out, strings.ReplaceAll(DumpHex(val.Bytes()), "}", "},"))
+			io.WriteString(p.Out, strings.Replace(DumpHex(val.Bytes()), "}", "},", 1))
 			p.checkStringer(val)
 			return
 		}

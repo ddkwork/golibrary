@@ -68,16 +68,27 @@ func DumpHex[T []byte | *bytes.Buffer](buf T) (dump string) {
 			fmt.Println("big data", length)
 			b = b[:4096]
 		}
-		dump += formatBytesCode(b)             // todo 对结构体字段左侧的最大字段宽度缩进，以及代码换行
+		dump += formatBytesAsGoCode(b)
+		dump += makeMultiLineComment(strings.NewReplacer(
+			"[]byte", "unsigned char b[]=",
+			"}", "};\n",
+		).Replace(formatBytesAsGoCode(b)))
 		dump += "\n//" + hex.EncodeToString(b) // 方便复制到rsa解密工具测试
-		dump += "\n/*"
-		dump += "\n" + hex.Dump(b)
-		dump += "*/"
+		dump += makeMultiLineComment(hex.Dump(b))
 		return
 	}
 }
 
-func formatBytesCode(data []byte) string {
+func makeMultiLineComment(data string) string {
+	s := "\n"
+	s += "/*"
+	s += "\n"
+	s += data
+	s += "*/"
+	return s
+}
+
+func formatBytesAsGoCode(data []byte) string {
 	var buffer bytes.Buffer
 	buffer.WriteString("[]byte{\n")
 	// 使用 slices.Chunk 将数据分为每8个字节一组
@@ -96,7 +107,7 @@ func formatBytesCode(data []byte) string {
 }
 
 func FormatInteger[T Integer](data T) string {
-	return FormatIntegerHex0x(data) + " //(" + fmt.Sprintf("%d", reflect.ValueOf(data).Interface()) + ")"
+	return FormatIntegerHex0x(data) + ", //(" + fmt.Sprintf("%d", reflect.ValueOf(data).Interface()) + ")"
 	return FormatIntegerHex0x(data) + " # " + fmt.Sprintf("%d", reflect.ValueOf(data).Interface())
 }
 
