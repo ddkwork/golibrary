@@ -202,7 +202,7 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 						io.WriteString(p.Out, ": ")
 						p.PrintValue(val.Field(i), level+1)
 						if i < l-1 {
-							io.WriteString(p.Out, ","+newLine) //todo 整数格式化后已经有 , 了，需要移除
+							io.WriteString(p.Out, ","+newLine) // todo 整数格式化后已经有 , 了，需要移除
 						} else {
 							io.WriteString(p.Out, newLine)
 						}
