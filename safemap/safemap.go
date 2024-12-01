@@ -12,7 +12,7 @@ import (
 const Ordered = true
 
 type M[K comparable, V any] struct {
-	sync.RWMutex
+	lock     sync.RWMutex
 	m        map[K]V
 	ordered  bool
 	keys     *list.List
@@ -58,22 +58,7 @@ func New[K comparable, V any](ordered ...bool) (m *M[K, V]) {
 	return sm
 }
 
-func (s *M[K, V]) init(ordered ...bool) *M[K, V] {
-	*s = M[K, V]{
-		RWMutex:  sync.RWMutex{},
-		m:        make(map[K]V),
-		ordered:  false,
-		keys:     list.New(),
-		keyIndex: make(map[K]*list.Element),
-	}
-	s.keys.Init()
-	if len(ordered) > 0 && ordered[0] {
-		s.ordered = true
-	}
-	return s
-}
 func (s *M[K, V]) Collect(seq iter.Seq2[K, V]) *M[K, V] {
-	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	for k, v := range seq {
@@ -85,7 +70,6 @@ func (s *M[K, V]) Collect(seq iter.Seq2[K, V]) *M[K, V] {
 	return s
 }
 func (s *M[K, V]) Reset() {
-	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	s.m = make(map[K]V)
@@ -117,7 +101,6 @@ func NewStringerKeys(keys []string, ordered ...bool) (m *M[string, string]) {
 }
 
 func (s *M[K, V]) Has(key K) (exists bool) {
-	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	_, exists = s.m[key]
@@ -125,7 +108,6 @@ func (s *M[K, V]) Has(key K) (exists bool) {
 }
 
 func (s *M[K, V]) Get(key K) (value V, exist bool) {
-	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	value, exist = s.m[key]
@@ -133,7 +115,6 @@ func (s *M[K, V]) Get(key K) (value V, exist bool) {
 }
 
 func (s *M[K, V]) Update(key K, value V) {
-	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	if elem, exists := s.keyIndex[key]; !exists {
@@ -151,7 +132,6 @@ func (s *M[K, V]) checkInit() {
 }
 
 func (s *M[K, V]) Set(key K, value V) (actual V, exist bool) {
-	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	actual, exist = s.m[key]
@@ -170,7 +150,6 @@ func (s *M[K, V]) Set(key K, value V) (actual V, exist bool) {
 }
 
 func (s *M[K, V]) Range(callback func(k K, v V) bool) {
-	s.checkInit()
 	if s.ordered {
 		for e := s.keys.Front(); e != nil; e = e.Next() {
 			k := e.Value.(K)
@@ -188,7 +167,6 @@ func (s *M[K, V]) Range(callback func(k K, v V) bool) {
 }
 
 func (s *M[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有序遍历keys，使用Keys() 老方案遍历算了
-	s.checkInit()
 	return func(yield func(K) bool) {
 		for k := range s.m {
 			if !yield(k) {
@@ -199,7 +177,6 @@ func (s *M[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有序遍
 }
 
 func (s *M[K, V]) Keys() []K {
-	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	keys := make([]K, s.keys.Len())
@@ -217,7 +194,6 @@ func (s *M[K, V]) Keys() []K {
 	return keys
 }
 func (s *M[K, V]) Values() []V {
-	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 
@@ -236,7 +212,6 @@ func (s *M[K, V]) Values() []V {
 	return values
 }
 func (s *M[K, V]) All() iter.Seq2[K, V] { //todo 移除它，遍历就足够了
-	s.checkInit()
 	return func(yield func(k K, v V) bool) {
 		s.Range(yield)
 	}
@@ -249,7 +224,6 @@ func (s *M[K, V]) Delete(key K) {
 	s.removeKey(key)
 }
 func (s *M[K, V]) removeKey(key K) {
-	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 
@@ -269,7 +243,6 @@ func (s *M[K, V]) GetAndDelete(key K) (value V, exist bool) {
 }
 
 func (s *M[K, V]) Len() int {
-	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return len(s.m)
@@ -280,13 +253,11 @@ func (s *M[K, V]) Empty() bool {
 }
 
 func (s *M[K, V]) Map() map[K]V {
-	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return maps.Clone(s.m)
 }
 func (s *M[K, V]) CopyFromMap(data map[K]V) {
-	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	s.m = maps.Clone(data) //todo add Clone method
@@ -298,14 +269,12 @@ func (s *M[K, V]) CopyFromMap(data map[K]V) {
 }
 
 func (s *M[K, V]) MarshalJSON() (data []byte, err error) {
-	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return json.Marshal(s.m)
 }
 
 func (s *M[K, V]) UnmarshalJSON(data []byte) (err error) {
-	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	var m map[K]V
@@ -318,7 +287,6 @@ func (s *M[K, V]) UnmarshalJSON(data []byte) (err error) {
 	return nil
 }
 func (s *M[K, V]) String() string {
-	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return fmt.Sprintf("%#v", s.m) //todo 使用结构体打印包格式化
