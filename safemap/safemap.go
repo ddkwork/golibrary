@@ -141,47 +141,15 @@ func (s *SafeMap[K, V]) Range(callback func(k K, v V) bool) {
 		}
 	}
 }
-func (s *SafeMap[K, V]) Remove(key K) {
-	s.removeKey(key)
-}
-func (s *SafeMap[K, V]) Delete(key K) {
-	s.removeKey(key)
-}
-func (s *SafeMap[K, V]) removeKey(key K) {
-	s.Lock()
-	defer s.Unlock()
 
-	if elem, exists := s.keyIndex[key]; exists {
-		s.keys.Remove(elem)
-		delete(s.keyIndex, key)
+func (s *SafeMap[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有序遍历keys，使用Keys() 老方案遍历算了
+	return func(yield func(K) bool) {
+		for k := range s.m {
+			if !yield(k) {
+				return
+			}
+		}
 	}
-	delete(s.m, key)
-}
-
-func (s *SafeMap[K, V]) GetAndDelete(key K) (value V, exist bool) {
-	value, exist = s.m[key]
-	if exist {
-		s.removeKey(key)
-	}
-	return value, exist
-}
-
-func (s *SafeMap[K, V]) Reset() {
-	s.Lock()
-	defer s.Unlock()
-	s.m = make(map[K]V)
-	s.keys.Init()
-	s.keyIndex = make(map[K]*list.Element)
-}
-
-func (s *SafeMap[K, V]) Len() int {
-	s.RLock()
-	defer s.RUnlock()
-	return len(s.m)
-}
-
-func (s *SafeMap[K, V]) Empty() bool {
-	return s.Len() == 0
 }
 
 func (s *SafeMap[K, V]) Keys() []K {
@@ -223,6 +191,49 @@ func (s *SafeMap[K, V]) All() iter.Seq2[K, V] { //todo 移除它，遍历就足�
 	return func(yield func(k K, v V) bool) {
 		s.Range(yield)
 	}
+}
+
+func (s *SafeMap[K, V]) Remove(key K) {
+	s.removeKey(key)
+}
+func (s *SafeMap[K, V]) Delete(key K) {
+	s.removeKey(key)
+}
+func (s *SafeMap[K, V]) removeKey(key K) {
+	s.Lock()
+	defer s.Unlock()
+
+	if elem, exists := s.keyIndex[key]; exists {
+		s.keys.Remove(elem)
+		delete(s.keyIndex, key)
+	}
+	delete(s.m, key)
+}
+
+func (s *SafeMap[K, V]) GetAndDelete(key K) (value V, exist bool) {
+	value, exist = s.m[key]
+	if exist {
+		s.removeKey(key)
+	}
+	return value, exist
+}
+
+func (s *SafeMap[K, V]) Reset() {
+	s.Lock()
+	defer s.Unlock()
+	s.m = make(map[K]V)
+	s.keys.Init()
+	s.keyIndex = make(map[K]*list.Element)
+}
+
+func (s *SafeMap[K, V]) Len() int {
+	s.RLock()
+	defer s.RUnlock()
+	return len(s.m)
+}
+
+func (s *SafeMap[K, V]) Empty() bool {
+	return s.Len() == 0
 }
 
 func (s *SafeMap[K, V]) Map() map[K]V {
