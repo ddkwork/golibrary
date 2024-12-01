@@ -3,12 +3,13 @@ package stream
 import (
 	_ "embed"
 	"fmt"
-	"github.com/ddkwork/golibrary/safemap"
 	"go/format"
 	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/ddkwork/golibrary/safemap"
 
 	"github.com/ddkwork/golibrary/mylog"
 )

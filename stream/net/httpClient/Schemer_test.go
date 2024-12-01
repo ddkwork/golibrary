@@ -3,12 +3,12 @@ package httpClient
 import (
 	"testing"
 
-	"github.com/ddkwork/golibrary/mylog"
-	"mvdan.cc/gofumpt/format"
+	"github.com/ddkwork/golibrary/safemap"
 
 	"github.com/ddkwork/golibrary/assert"
-
+	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream"
+	"mvdan.cc/gofumpt/format"
 )
 
 func TestLayer_AssertKind(t *testing.T) {
@@ -17,7 +17,8 @@ func TestLayer_AssertKind(t *testing.T) {
 }
 
 func TestGeneratedFile_Iota(t *testing.T) {
-	m := safemap.NewOrdered[string, string]()
+	m := safemap.NewOrdered[string, string](func(yield func(string, string) bool) {
+	})
 	m.Set("Http", "Http")
 	m.Set("Https", "Https")
 	m.Set("Socket4", "Socket4")

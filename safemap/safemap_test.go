@@ -128,7 +128,7 @@ func TestSafeMap_StoreAndLoad_Ordered(t *testing.T) {
 	sm := New[int, string](Ordered)
 	sm.Update(1, "one")
 
-	value, ok := sm.GetMust(1)
+	value, ok := sm.Get(1)
 	if !ok || value != "one" {
 		t.Errorf("expected 'one', got '%v'", value)
 	}
@@ -233,7 +233,7 @@ func BenchmarkSafeMap_Load(b *testing.B) {
 	sm.Update(1, "value")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		sm.GetMust(1)
+		sm.Get(1)
 	}
 }
 
@@ -257,7 +257,7 @@ func BenchmarkSafeMap_Ordered_Load(b *testing.B) {
 	sm.Update(1, "value")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		sm.GetMust(1)
+		sm.Get(1)
 	}
 }
 

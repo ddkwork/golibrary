@@ -2,9 +2,9 @@ package stream
 
 import (
 	"embed"
-	"github.com/ddkwork/golibrary/safemap"
-
 	"path/filepath"
+
+	"github.com/ddkwork/golibrary/safemap"
 
 	"github.com/ddkwork/golibrary/mylog"
 )

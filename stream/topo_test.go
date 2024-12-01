@@ -2,6 +2,8 @@ package stream
 
 import (
 	"testing"
+
+	"github.com/ddkwork/golibrary/safemap"
 )
 
 func TestTopologicalSort(t *testing.T) {
