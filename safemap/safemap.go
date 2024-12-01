@@ -137,6 +137,7 @@ func (s *M[K, V]) Set(key K, value V) (actual V, exist bool) {
 	defer s.Unlock()
 	actual, exist = s.m[key]
 	if exist {
+		println(key, " exist")
 		return actual, true //todo add log ?
 	}
 	s.m[key] = value
