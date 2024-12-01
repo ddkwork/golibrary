@@ -293,3 +293,11 @@ func (s *M[K, V]) String() string {
 	defer s.RUnlock()
 	return fmt.Sprintf("%#v", s.m) //todo 使用结构体打印包格式化
 }
+
+func (s *M[K, V]) LastKey() K {
+	return s.Keys()[s.Len()-1]
+}
+
+func (s *M[K, V]) LastValue() V {
+	return s.GetMust(s.LastKey())
+}
