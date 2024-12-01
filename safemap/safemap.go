@@ -1,7 +1,6 @@
 package safemap
 
 import (
-	"cmp"
 	"container/list"
 	"encoding/json"
 	"fmt"
@@ -12,7 +11,7 @@ import (
 
 const Ordered = true
 
-type SafeMap[K cmp.Ordered, V any] struct {
+type SafeMap[K comparable, V any] struct {
 	sync.RWMutex
 	m        map[K]V
 	ordered  bool
@@ -22,7 +21,7 @@ type SafeMap[K cmp.Ordered, V any] struct {
 
 //thx github.com/hitsumitomo/safemap
 
-type api[K cmp.Ordered, V any] interface {
+type api[K comparable, V any] interface {
 	New(ordered ...bool) (m *SafeMap[K, V])                                      //实例化
 	NewOrdered(seq iter.Seq2[K, V]) (m *SafeMap[K, V])                           //实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
 	NewStringer(ordered ...bool) (m *SafeMap[string, string])                    //从字符串实例化
@@ -47,7 +46,7 @@ type api[K cmp.Ordered, V any] interface {
 	String() string                                                              //
 }
 
-func New[K cmp.Ordered, V any](ordered ...bool) (m *SafeMap[K, V]) {
+func New[K comparable, V any](ordered ...bool) (m *SafeMap[K, V]) {
 	sm := &SafeMap[K, V]{
 		m:        make(map[K]V),
 		keys:     list.New(),
@@ -59,7 +58,7 @@ func New[K cmp.Ordered, V any](ordered ...bool) (m *SafeMap[K, V]) {
 	return sm
 }
 
-func NewOrdered[K cmp.Ordered, V any](seq iter.Seq2[K, V]) (m *SafeMap[K, V]) {
+func NewOrdered[K comparable, V any](seq iter.Seq2[K, V]) (m *SafeMap[K, V]) {
 	m = New[K, V](true)
 	for k, v := range seq {
 		_, exist := m.Set(k, v)
