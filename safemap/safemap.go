@@ -58,7 +58,7 @@ func New[K comparable, V any](ordered ...bool) (m *SafeMap[K, V]) {
 	return sm
 }
 
-func (s *SafeMap[K, V]) Init(ordered ...bool) *SafeMap[K, V] {
+func (s *SafeMap[K, V]) init(ordered ...bool) *SafeMap[K, V] {
 	*s = SafeMap[K, V]{
 		RWMutex:  sync.RWMutex{},
 		m:        make(map[K]V),
@@ -73,6 +73,9 @@ func (s *SafeMap[K, V]) Init(ordered ...bool) *SafeMap[K, V] {
 	return s
 }
 func (s *SafeMap[K, V]) Collect(seq iter.Seq2[K, V]) *SafeMap[K, V] {
+	s.checkInit()
+	s.Lock()
+	defer s.Unlock()
 	for k, v := range seq {
 		_, exist := s.Set(k, v)
 		if exist {
@@ -82,6 +85,7 @@ func (s *SafeMap[K, V]) Collect(seq iter.Seq2[K, V]) *SafeMap[K, V] {
 	return s
 }
 func (s *SafeMap[K, V]) Reset() {
+	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	s.m = make(map[K]V)
@@ -113,6 +117,7 @@ func NewStringerKeys(keys []string, ordered ...bool) (m *SafeMap[string, string]
 }
 
 func (s *SafeMap[K, V]) Has(key K) (exists bool) {
+	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	_, exists = s.m[key]
@@ -120,6 +125,7 @@ func (s *SafeMap[K, V]) Has(key K) (exists bool) {
 }
 
 func (s *SafeMap[K, V]) Get(key K) (value V, exist bool) {
+	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	value, exist = s.m[key]
@@ -127,6 +133,7 @@ func (s *SafeMap[K, V]) Get(key K) (value V, exist bool) {
 }
 
 func (s *SafeMap[K, V]) Update(key K, value V) {
+	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	if elem, exists := s.keyIndex[key]; !exists {
@@ -137,15 +144,19 @@ func (s *SafeMap[K, V]) Update(key K, value V) {
 	s.m[key] = value
 }
 
+func (s *SafeMap[K, V]) checkInit() {
+	if s.m == nil { //new(safemap.SafeMap[K, V])这种方式实例化代码简洁
+		s.init()
+	}
+}
+
 func (s *SafeMap[K, V]) Set(key K, value V) (actual V, exist bool) {
+	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	actual, exist = s.m[key]
 	if exist {
 		return actual, true //todo add log ?
-	}
-	if s.m == nil {
-		panic("map is nil,外部忘记实例化,一般而言是new方式实例化后忘记调用init方法")
 	}
 	s.m[key] = value
 	if s.ordered {
@@ -159,6 +170,7 @@ func (s *SafeMap[K, V]) Set(key K, value V) (actual V, exist bool) {
 }
 
 func (s *SafeMap[K, V]) Range(callback func(k K, v V) bool) {
+	s.checkInit()
 	if s.ordered {
 		for e := s.keys.Front(); e != nil; e = e.Next() {
 			k := e.Value.(K)
@@ -176,6 +188,7 @@ func (s *SafeMap[K, V]) Range(callback func(k K, v V) bool) {
 }
 
 func (s *SafeMap[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有序遍历keys，使用Keys() 老方案遍历算了
+	s.checkInit()
 	return func(yield func(K) bool) {
 		for k := range s.m {
 			if !yield(k) {
@@ -186,6 +199,7 @@ func (s *SafeMap[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有
 }
 
 func (s *SafeMap[K, V]) Keys() []K {
+	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	keys := make([]K, s.keys.Len())
@@ -203,6 +217,7 @@ func (s *SafeMap[K, V]) Keys() []K {
 	return keys
 }
 func (s *SafeMap[K, V]) Values() []V {
+	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 
@@ -221,6 +236,7 @@ func (s *SafeMap[K, V]) Values() []V {
 	return values
 }
 func (s *SafeMap[K, V]) All() iter.Seq2[K, V] { //todo 移除它，遍历就足够了
+	s.checkInit()
 	return func(yield func(k K, v V) bool) {
 		s.Range(yield)
 	}
@@ -233,6 +249,7 @@ func (s *SafeMap[K, V]) Delete(key K) {
 	s.removeKey(key)
 }
 func (s *SafeMap[K, V]) removeKey(key K) {
+	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 
@@ -252,6 +269,7 @@ func (s *SafeMap[K, V]) GetAndDelete(key K) (value V, exist bool) {
 }
 
 func (s *SafeMap[K, V]) Len() int {
+	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return len(s.m)
@@ -262,11 +280,13 @@ func (s *SafeMap[K, V]) Empty() bool {
 }
 
 func (s *SafeMap[K, V]) Map() map[K]V {
+	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return maps.Clone(s.m)
 }
 func (s *SafeMap[K, V]) CopyFromMap(data map[K]V) {
+	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	s.m = maps.Clone(data) //todo add Clone method
@@ -278,12 +298,14 @@ func (s *SafeMap[K, V]) CopyFromMap(data map[K]V) {
 }
 
 func (s *SafeMap[K, V]) MarshalJSON() (data []byte, err error) {
+	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return json.Marshal(s.m)
 }
 
 func (s *SafeMap[K, V]) UnmarshalJSON(data []byte) (err error) {
+	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
 	var m map[K]V
@@ -296,6 +318,7 @@ func (s *SafeMap[K, V]) UnmarshalJSON(data []byte) (err error) {
 	return nil
 }
 func (s *SafeMap[K, V]) String() string {
+	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return fmt.Sprintf("%#v", s.m) //todo 使用结构体打印包格式化
