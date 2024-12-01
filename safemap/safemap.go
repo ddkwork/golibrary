@@ -11,7 +11,7 @@ import (
 
 const Ordered = true
 
-type SafeMap[K comparable, V any] struct {
+type M[K comparable, V any] struct {
 	sync.RWMutex
 	m        map[K]V
 	ordered  bool
@@ -22,32 +22,32 @@ type SafeMap[K comparable, V any] struct {
 //thx github.com/hitsumitomo/safemap
 
 type api[K comparable, V any] interface {
-	New(ordered ...bool) (m *SafeMap[K, V])                                      //实例化
-	NewOrdered(seq iter.Seq2[K, V]) (m *SafeMap[K, V])                           //实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
-	NewStringer(ordered ...bool) (m *SafeMap[string, string])                    //从字符串实例化
-	NewStringerKeys(keys []string, ordered ...bool) (m *SafeMap[string, string]) //从字符串切片实例化
-	Has(key K) (exists bool)                                                     //是否存在
-	Get(key K) (value V, exist bool)                                             //获取
-	Update(key K, value V)                                                       //更新
-	Delete(key K)                                                                //删除
-	Remove(key K)                                                                //移除key
-	Set(key K, value V) (actual V, exist bool)                                   //设置，如果存在则不更新
-	GetAndDelete(key K) (value V, exist bool)                                    //获取后删除
-	removeKey(key K)                                                             //移除key
-	Range(f func(k K, v V) bool)                                                 //遍历，todo 回调内执行删除会死锁,vt调试器bind的时候需要
-	Reset()                                                                      //清空
-	Len() int                                                                    //大小
-	Empty() bool                                                                 //大小为0
-	Keys() []K                                                                   //键列表
-	Map() map[K]V                                                                //原始map
-	CopyFromMap(data map[K]V)                                                    //从map复制
-	MarshalJSON() (data []byte, err error)                                       //
-	UnmarshalJSON(data []byte) (err error)                                       //
-	String() string                                                              //
+	New(ordered ...bool) (m *M[K, V])                                      //实例化
+	NewOrdered(seq iter.Seq2[K, V]) (m *M[K, V])                           //实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
+	NewStringer(ordered ...bool) (m *M[string, string])                    //从字符串实例化
+	NewStringerKeys(keys []string, ordered ...bool) (m *M[string, string]) //从字符串切片实例化
+	Has(key K) (exists bool)                                               //是否存在
+	Get(key K) (value V, exist bool)                                       //获取
+	Update(key K, value V)                                                 //更新
+	Delete(key K)                                                          //删除
+	Remove(key K)                                                          //移除key
+	Set(key K, value V) (actual V, exist bool)                             //设置，如果存在则不更新
+	GetAndDelete(key K) (value V, exist bool)                              //获取后删除
+	removeKey(key K)                                                       //移除key
+	Range(f func(k K, v V) bool)                                           //遍历，todo 回调内执行删除会死锁,vt调试器bind的时候需要
+	Reset()                                                                //清空
+	Len() int                                                              //大小
+	Empty() bool                                                           //大小为0
+	Keys() []K                                                             //键列表
+	Map() map[K]V                                                          //原始map
+	CopyFromMap(data map[K]V)                                              //从map复制
+	MarshalJSON() (data []byte, err error)                                 //
+	UnmarshalJSON(data []byte) (err error)                                 //
+	String() string                                                        //
 }
 
-func New[K comparable, V any](ordered ...bool) (m *SafeMap[K, V]) {
-	sm := &SafeMap[K, V]{
+func New[K comparable, V any](ordered ...bool) (m *M[K, V]) {
+	sm := &M[K, V]{
 		m:        make(map[K]V),
 		keys:     list.New(),
 		keyIndex: make(map[K]*list.Element),
@@ -58,8 +58,8 @@ func New[K comparable, V any](ordered ...bool) (m *SafeMap[K, V]) {
 	return sm
 }
 
-func (s *SafeMap[K, V]) init(ordered ...bool) *SafeMap[K, V] {
-	*s = SafeMap[K, V]{
+func (s *M[K, V]) init(ordered ...bool) *M[K, V] {
+	*s = M[K, V]{
 		RWMutex:  sync.RWMutex{},
 		m:        make(map[K]V),
 		ordered:  false,
@@ -72,7 +72,7 @@ func (s *SafeMap[K, V]) init(ordered ...bool) *SafeMap[K, V] {
 	}
 	return s
 }
-func (s *SafeMap[K, V]) Collect(seq iter.Seq2[K, V]) *SafeMap[K, V] {
+func (s *M[K, V]) Collect(seq iter.Seq2[K, V]) *M[K, V] {
 	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
@@ -84,7 +84,7 @@ func (s *SafeMap[K, V]) Collect(seq iter.Seq2[K, V]) *SafeMap[K, V] {
 	}
 	return s
 }
-func (s *SafeMap[K, V]) Reset() {
+func (s *M[K, V]) Reset() {
 	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
@@ -93,7 +93,7 @@ func (s *SafeMap[K, V]) Reset() {
 	s.keyIndex = make(map[K]*list.Element)
 }
 
-func NewOrdered[K comparable, V any](seq iter.Seq2[K, V]) (m *SafeMap[K, V]) {
+func NewOrdered[K comparable, V any](seq iter.Seq2[K, V]) (m *M[K, V]) {
 	m = New[K, V](true)
 	for k, v := range seq {
 		_, exist := m.Set(k, v)
@@ -104,11 +104,11 @@ func NewOrdered[K comparable, V any](seq iter.Seq2[K, V]) (m *SafeMap[K, V]) {
 	return
 }
 
-func NewStringer(ordered ...bool) (m *SafeMap[string, string]) {
+func NewStringer(ordered ...bool) (m *M[string, string]) {
 	return New[string, string](ordered...)
 }
 
-func NewStringerKeys(keys []string, ordered ...bool) (m *SafeMap[string, string]) {
+func NewStringerKeys(keys []string, ordered ...bool) (m *M[string, string]) {
 	m = NewStringer(ordered...)
 	for _, key := range keys {
 		m.Set(key, key)
@@ -116,7 +116,7 @@ func NewStringerKeys(keys []string, ordered ...bool) (m *SafeMap[string, string]
 	return
 }
 
-func (s *SafeMap[K, V]) Has(key K) (exists bool) {
+func (s *M[K, V]) Has(key K) (exists bool) {
 	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
@@ -124,7 +124,7 @@ func (s *SafeMap[K, V]) Has(key K) (exists bool) {
 	return exists
 }
 
-func (s *SafeMap[K, V]) Get(key K) (value V, exist bool) {
+func (s *M[K, V]) Get(key K) (value V, exist bool) {
 	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
@@ -132,7 +132,7 @@ func (s *SafeMap[K, V]) Get(key K) (value V, exist bool) {
 	return value, exist
 }
 
-func (s *SafeMap[K, V]) Update(key K, value V) {
+func (s *M[K, V]) Update(key K, value V) {
 	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
@@ -144,13 +144,13 @@ func (s *SafeMap[K, V]) Update(key K, value V) {
 	s.m[key] = value
 }
 
-func (s *SafeMap[K, V]) checkInit() {
-	if s.m == nil { //new(safemap.SafeMap[K, V])这种方式实例化代码简洁
+func (s *M[K, V]) checkInit() {
+	if s.m == nil { //new(safemap.M[K, V])这种方式实例化代码简洁
 		s.init()
 	}
 }
 
-func (s *SafeMap[K, V]) Set(key K, value V) (actual V, exist bool) {
+func (s *M[K, V]) Set(key K, value V) (actual V, exist bool) {
 	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
@@ -169,7 +169,7 @@ func (s *SafeMap[K, V]) Set(key K, value V) (actual V, exist bool) {
 	return value, false
 }
 
-func (s *SafeMap[K, V]) Range(callback func(k K, v V) bool) {
+func (s *M[K, V]) Range(callback func(k K, v V) bool) {
 	s.checkInit()
 	if s.ordered {
 		for e := s.keys.Front(); e != nil; e = e.Next() {
@@ -187,7 +187,7 @@ func (s *SafeMap[K, V]) Range(callback func(k K, v V) bool) {
 	}
 }
 
-func (s *SafeMap[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有序遍历keys，使用Keys() 老方案遍历算了
+func (s *M[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有序遍历keys，使用Keys() 老方案遍历算了
 	s.checkInit()
 	return func(yield func(K) bool) {
 		for k := range s.m {
@@ -198,7 +198,7 @@ func (s *SafeMap[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有
 	}
 }
 
-func (s *SafeMap[K, V]) Keys() []K {
+func (s *M[K, V]) Keys() []K {
 	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
@@ -216,7 +216,7 @@ func (s *SafeMap[K, V]) Keys() []K {
 	}
 	return keys
 }
-func (s *SafeMap[K, V]) Values() []V {
+func (s *M[K, V]) Values() []V {
 	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
@@ -235,20 +235,20 @@ func (s *SafeMap[K, V]) Values() []V {
 	}
 	return values
 }
-func (s *SafeMap[K, V]) All() iter.Seq2[K, V] { //todo 移除它，遍历就足够了
+func (s *M[K, V]) All() iter.Seq2[K, V] { //todo 移除它，遍历就足够了
 	s.checkInit()
 	return func(yield func(k K, v V) bool) {
 		s.Range(yield)
 	}
 }
 
-func (s *SafeMap[K, V]) Remove(key K) {
+func (s *M[K, V]) Remove(key K) {
 	s.removeKey(key)
 }
-func (s *SafeMap[K, V]) Delete(key K) {
+func (s *M[K, V]) Delete(key K) {
 	s.removeKey(key)
 }
-func (s *SafeMap[K, V]) removeKey(key K) {
+func (s *M[K, V]) removeKey(key K) {
 	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
@@ -260,7 +260,7 @@ func (s *SafeMap[K, V]) removeKey(key K) {
 	delete(s.m, key)
 }
 
-func (s *SafeMap[K, V]) GetAndDelete(key K) (value V, exist bool) {
+func (s *M[K, V]) GetAndDelete(key K) (value V, exist bool) {
 	value, exist = s.m[key]
 	if exist {
 		s.removeKey(key)
@@ -268,24 +268,24 @@ func (s *SafeMap[K, V]) GetAndDelete(key K) (value V, exist bool) {
 	return value, exist
 }
 
-func (s *SafeMap[K, V]) Len() int {
+func (s *M[K, V]) Len() int {
 	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return len(s.m)
 }
 
-func (s *SafeMap[K, V]) Empty() bool {
+func (s *M[K, V]) Empty() bool {
 	return s.Len() == 0
 }
 
-func (s *SafeMap[K, V]) Map() map[K]V {
+func (s *M[K, V]) Map() map[K]V {
 	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return maps.Clone(s.m)
 }
-func (s *SafeMap[K, V]) CopyFromMap(data map[K]V) {
+func (s *M[K, V]) CopyFromMap(data map[K]V) {
 	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
@@ -297,14 +297,14 @@ func (s *SafeMap[K, V]) CopyFromMap(data map[K]V) {
 	}
 }
 
-func (s *SafeMap[K, V]) MarshalJSON() (data []byte, err error) {
+func (s *M[K, V]) MarshalJSON() (data []byte, err error) {
 	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()
 	return json.Marshal(s.m)
 }
 
-func (s *SafeMap[K, V]) UnmarshalJSON(data []byte) (err error) {
+func (s *M[K, V]) UnmarshalJSON(data []byte) (err error) {
 	s.checkInit()
 	s.Lock()
 	defer s.Unlock()
@@ -317,7 +317,7 @@ func (s *SafeMap[K, V]) UnmarshalJSON(data []byte) (err error) {
 	s.keyIndex = make(map[K]*list.Element)
 	return nil
 }
-func (s *SafeMap[K, V]) String() string {
+func (s *M[K, V]) String() string {
 	s.checkInit()
 	s.RLock()
 	defer s.RUnlock()

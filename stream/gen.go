@@ -87,7 +87,7 @@ func (g *GeneratedFile) SetEnumType(t reflect.Type) *GeneratedFile {
 	return g
 }
 
-func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *safemap.SafeMap[string, string]) {
+func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *safemap.M[string, string]) {
 	mylog.Call(func() {
 		var (
 			names    []string

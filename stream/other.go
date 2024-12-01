@@ -14,8 +14,8 @@ func GoReleaser() {
 	RunCommand("goreleaser release --snapshot")
 }
 
-func ReadEmbedFileMap(embedFiles embed.FS, dir string) *safemap.SafeMap[string, []byte] {
-	fileContents := new(safemap.SafeMap[string, []byte])
+func ReadEmbedFileMap(embedFiles embed.FS, dir string) *safemap.M[string, []byte] {
+	fileContents := new(safemap.M[string, []byte])
 	fileList := mylog.Check2(embedFiles.ReadDir(dir))
 	for _, file := range fileList {
 		uncPath := FixFilePath(filepath.Join(dir, file.Name()))

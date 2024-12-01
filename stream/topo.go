@@ -6,10 +6,10 @@ import (
 	"github.com/ddkwork/golibrary/safemap"
 )
 
-func TopologicalSort[T comparable](m *safemap.SafeMap[T, []T], allowCyclicDependency bool) (sorted []T) {
+func TopologicalSort[T comparable](m *safemap.M[T, []T], allowCyclicDependency bool) (sorted []T) {
 	// 说白了就是树形结构转为去重+处理优先级的线性结构
-	visited := new(safemap.SafeMap[T, bool]) // 用于检查孩子节点是否在容器节点中
-	temp := new(safemap.SafeMap[T, bool])    // 用于检测循环依赖
+	visited := new(safemap.M[T, bool]) // 用于检查孩子节点是否在容器节点中
+	temp := new(safemap.M[T, bool])    // 用于检测循环依赖
 	var visitAll func(T)
 
 	visitAll = func(id T) {
