@@ -42,7 +42,7 @@ func TestSafeMap_StoreAndLoad(t *testing.T) {
 	sm := New[int, string]()
 	sm.Update(1, "one")
 
-	value, ok := sm.GetMust(1)
+	value, ok := sm.Get(1)
 	if !ok || value != "one" {
 		t.Errorf("expected 'one', got '%v'", value)
 	}
