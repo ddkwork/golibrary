@@ -142,7 +142,6 @@ func (s *SafeMap[K, V]) Range(callback func(k K, v V) bool) {
 	}
 }
 
-// todo remove it
 func (s *SafeMap[K, V]) RangeKeys() iter.Seq[K] { //todo test 这种不支持有序遍历keys，使用Keys() 老方案遍历算了
 	return func(yield func(K) bool) {
 		for k := range s.m {
