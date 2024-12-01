@@ -22,13 +22,12 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
 
 	"github.com/dc0d/caseconv"
-
+	
 	"github.com/rivo/uniseg"
 	"mvdan.cc/gofumpt/format"
 )
@@ -612,21 +611,6 @@ func ReflectVisibleFields(object any) []reflect.StructField {
 	}
 	return exportedFields
 }
-
-type Pool[T any] struct{ pool sync.Pool }
-
-func NewPool[T any](fn func() T) *Pool[T] {
-	return &Pool[T]{
-		pool: sync.Pool{
-			New: func() any {
-				return fn()
-			},
-		},
-	}
-}
-
-func (p *Pool[T]) Put(v T) { p.pool.Put(v) }
-func (p *Pool[T]) Get() T  { return p.pool.Get().(T) }
 
 func SwapAdjacent[T Type](data T) *Buffer { // 硬盘序列号交换字节
 	b := NewBuffer(data)
