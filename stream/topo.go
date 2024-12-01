@@ -2,16 +2,14 @@ package stream
 
 import (
 	"fmt"
-
-	"github.com/goradd/maps"
-
 	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/safemap"
 )
 
-func TopologicalSort[T comparable](m *maps.SafeSliceMap[T, []T], allowCyclicDependency bool) (sorted []T) {
+func TopologicalSort[T comparable](m *safemap.SafeMap[T, []T], allowCyclicDependency bool) (sorted []T) {
 	// 说白了就是树形结构转为去重+处理优先级的线性结构
-	visited := new(maps.SafeSliceMap[T, bool]) // 用于检查孩子节点是否在容器节点中
-	temp := new(maps.SafeSliceMap[T, bool])    // 用于检测循环依赖
+	visited := new(safemap.SafeMap[T, bool]) // 用于检查孩子节点是否在容器节点中
+	temp := new(safemap.SafeMap[T, bool])    // 用于检测循环依赖
 	var visitAll func(T)
 
 	visitAll = func(id T) {
@@ -23,8 +21,8 @@ func TopologicalSort[T comparable](m *maps.SafeSliceMap[T, []T], allowCyclicDepe
 		}
 		if !visited.Has(id) { // 递归处理node及其children,最终得到一个拓扑排序sorted
 			temp.Set(id, true)
-			deps := m.Get(id)
-			if deps != nil {
+			deps, ok := m.Get(id)
+			if !ok {
 				for _, depID := range deps {
 					visitAll(depID)
 				}

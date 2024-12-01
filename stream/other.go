@@ -2,10 +2,11 @@ package stream
 
 import (
 	"embed"
+	"github.com/ddkwork/golibrary/safemap"
+
 	"path/filepath"
 
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/goradd/maps"
 )
 
 func GoReleaser() {
@@ -13,8 +14,8 @@ func GoReleaser() {
 	RunCommand("goreleaser release --snapshot")
 }
 
-func ReadEmbedFileMap(embedFiles embed.FS, dir string) *maps.SafeMap[string, []byte] {
-	fileContents := new(maps.SafeMap[string, []byte])
+func ReadEmbedFileMap(embedFiles embed.FS, dir string) *safemap.SafeMap[string, []byte] {
+	fileContents := new(safemap.SafeMap[string, []byte])
 	fileList := mylog.Check2(embedFiles.ReadDir(dir))
 	for _, file := range fileList {
 		uncPath := FixFilePath(filepath.Join(dir, file.Name()))

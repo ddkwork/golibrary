@@ -3,8 +3,6 @@ package httpClient
 import (
 	"testing"
 
-	"github.com/goradd/maps"
-
 	"github.com/ddkwork/golibrary/mylog"
 	"mvdan.cc/gofumpt/format"
 
@@ -19,7 +17,7 @@ func TestLayer_AssertKind(t *testing.T) {
 }
 
 func TestGeneratedFile_Iota(t *testing.T) {
-	m := new(maps.SafeSliceMap[string, string])
+	m := safemap.NewOrdered[string, string]()
 	m.Set("Http", "Http")
 	m.Set("Https", "Https")
 	m.Set("Socket4", "Socket4")

@@ -58,12 +58,7 @@ func New[K comparable, V any](ordered ...bool) (m *SafeMap[K, V]) {
 	return sm
 }
 
-// 看起来这些写法还不如第一种
-//
-//	new(safemap.SafeMap[string, string]).Init(true).Collect(func(yield func(string, string) bool) {
-//		yield("", "")
-//	})
-func (s *SafeMap[K, V]) Init(ordered ...bool) *SafeMap[K, V] { //这将允许更短的实例化代码,配合Collect(seq iter.Seq2[K, V])  方法使用
+func (s *SafeMap[K, V]) Init(ordered ...bool) *SafeMap[K, V] {
 	*s = SafeMap[K, V]{
 		RWMutex:  sync.RWMutex{},
 		m:        make(map[K]V),
@@ -148,6 +143,9 @@ func (s *SafeMap[K, V]) Set(key K, value V) (actual V, exist bool) {
 	actual, exist = s.m[key]
 	if exist {
 		return actual, true //todo add log ?
+	}
+	if s.m == nil {
+		panic("map is nil,外部忘记实例化,一般而言是new方式实例化后忘记调用init方法")
 	}
 	s.m[key] = value
 	if s.ordered {
