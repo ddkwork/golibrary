@@ -15,7 +15,7 @@ func (s *M[K, V]) RUnlock() { s.lock.RUnlock() }
 
 func (s *M[K, V]) checkInit() {
 	if s.m == nil { //new(safemap.M[K, V])这种方式实例化代码简洁
-		s.init()
+		s.init(true)
 	}
 }
 func (s *M[K, V]) init(ordered ...bool) {
