@@ -3,13 +3,12 @@ package stream
 import (
 	_ "embed"
 	"fmt"
+	"github.com/ddkwork/golibrary/safemap"
 	"go/format"
 	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/goradd/maps"
 
 	"github.com/ddkwork/golibrary/mylog"
 )
@@ -88,7 +87,7 @@ func (g *GeneratedFile) SetEnumType(t reflect.Type) *GeneratedFile {
 	return g
 }
 
-func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *maps.SafeSliceMap[string, string]) {
+func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *safemap.SafeMap[string, string]) {
 	mylog.Call(func() {
 		var (
 			names    []string

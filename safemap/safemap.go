@@ -58,6 +58,42 @@ func New[K comparable, V any](ordered ...bool) (m *SafeMap[K, V]) {
 	return sm
 }
 
+// 看起来这些写法还不如第一种
+//
+//	new(safemap.SafeMap[string, string]).Init(true).Collect(func(yield func(string, string) bool) {
+//		yield("", "")
+//	})
+func (s *SafeMap[K, V]) Init(ordered ...bool) *SafeMap[K, V] { //这将允许更短的实例化代码,配合Collect(seq iter.Seq2[K, V])  方法使用
+	*s = SafeMap[K, V]{
+		RWMutex:  sync.RWMutex{},
+		m:        make(map[K]V),
+		ordered:  false,
+		keys:     list.New(),
+		keyIndex: make(map[K]*list.Element),
+	}
+	s.keys.Init()
+	if len(ordered) > 0 && ordered[0] {
+		s.ordered = true
+	}
+	return s
+}
+func (s *SafeMap[K, V]) Collect(seq iter.Seq2[K, V]) *SafeMap[K, V] {
+	for k, v := range seq {
+		_, exist := s.Set(k, v)
+		if exist {
+			panic("duplicate key")
+		}
+	}
+	return s
+}
+func (s *SafeMap[K, V]) Reset() {
+	s.Lock()
+	defer s.Unlock()
+	s.m = make(map[K]V)
+	s.keys.Init()
+	s.keyIndex = make(map[K]*list.Element)
+}
+
 func NewOrdered[K comparable, V any](seq iter.Seq2[K, V]) (m *SafeMap[K, V]) {
 	m = New[K, V](true)
 	for k, v := range seq {
@@ -215,14 +251,6 @@ func (s *SafeMap[K, V]) GetAndDelete(key K) (value V, exist bool) {
 		s.removeKey(key)
 	}
 	return value, exist
-}
-
-func (s *SafeMap[K, V]) Reset() {
-	s.Lock()
-	defer s.Unlock()
-	s.m = make(map[K]V)
-	s.keys.Init()
-	s.keyIndex = make(map[K]*list.Element)
 }
 
 func (s *SafeMap[K, V]) Len() int {
