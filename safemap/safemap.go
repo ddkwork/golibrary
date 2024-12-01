@@ -125,12 +125,6 @@ func (s *M[K, V]) Update(key K, value V) {
 	s.m[key] = value
 }
 
-func (s *M[K, V]) checkInit() {
-	if s.m == nil { //new(safemap.M[K, V])这种方式实例化代码简洁
-		s.init()
-	}
-}
-
 func (s *M[K, V]) Set(key K, value V) (actual V, exist bool) {
 	s.Lock()
 	defer s.Unlock()

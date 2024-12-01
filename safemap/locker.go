@@ -13,6 +13,11 @@ func (s *M[K, V]) RLock() {
 }
 func (s *M[K, V]) RUnlock() { s.lock.RUnlock() }
 
+func (s *M[K, V]) checkInit() {
+	if s.m == nil { //new(safemap.M[K, V])这种方式实例化代码简洁
+		s.init()
+	}
+}
 func (s *M[K, V]) init(ordered ...bool) {
 	*s = M[K, V]{
 		m:        make(map[K]V),
