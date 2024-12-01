@@ -107,6 +107,13 @@ func (s *M[K, V]) Has(key K) (exists bool) {
 	return exists
 }
 
+func (s *M[K, V]) GetMust(key K) (value V) {
+	get, exist := s.Get(key)
+	if !exist {
+		panic("key not found")
+	}
+	return get
+}
 func (s *M[K, V]) Get(key K) (value V, exist bool) {
 	s.RLock()
 	defer s.RUnlock()
