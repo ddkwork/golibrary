@@ -57,6 +57,9 @@ func (p *Pretty) Println(i interface{}) {
 }
 
 func (p *Pretty) checkStringer(val r.Value) {
+	if !val.CanInterface() {
+		return //todo test not exported
+	}
 	m, ok := val.Interface().(fmt.Stringer)
 	if ok {
 		io.WriteString(p.Out, " //"+strconv.Quote(m.String()))
