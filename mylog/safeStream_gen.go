@@ -27,7 +27,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/dc0d/caseconv"
-
+	
 	"github.com/rivo/uniseg"
 	"mvdan.cc/gofumpt/format"
 )
@@ -735,22 +735,22 @@ func trimTrailingEmptyLines(s string) string {
 	return re.ReplaceAllString(s, "")
 }
 
-func ToCamel(data string, isCommit bool) string {
+func ToCamel(data string, hasComment bool) string {
 	s := fmt.Sprintf("%-50s", caseconv.ToCamel(data))
-	if isCommit {
+	if hasComment {
 		s += "//" + s
 	}
 	return s
 }
 
-func ToCamelUpper(s string, isCommit bool) string {
-	camel := ToCamel(s, isCommit)
+func ToCamelUpper(s string, hasComment bool) string {
+	camel := ToCamel(s, hasComment)
 	camel = strings.TrimSpace(camel)
 	return strings.ToUpper(string(camel[0])) + camel[1:]
 }
 
-func ToCamelToLower(s string, isCommit bool) string {
-	camel := ToCamel(s, isCommit)
+func ToCamelToLower(s string, hasComment bool) string {
+	camel := ToCamel(s, hasComment)
 	camel = strings.TrimSpace(camel)
 	return strings.ToLower(string(camel[0])) + camel[1:]
 }

@@ -3,13 +3,14 @@ package stream
 import (
 	_ "embed"
 	"fmt"
-	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/safemap"
-	"mvdan.cc/gofumpt/format"
 	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/safemap"
+	"mvdan.cc/gofumpt/format"
 )
 
 type GeneratedFile struct {
