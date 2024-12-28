@@ -47,7 +47,7 @@ func xx() {
 	mylog.Trace("key", "kkkkkkkkkkkkkkkkkkkk")
 	mylog.Warning("key", "mmmmmmmmmmmmmmmmmmmmmmmmmmmkkkkkkkkkkkkkkkkkkkkkkkkkkk")
 	mylog.Json("key", `{"manifestVersion":"1.1","engineVersion":"3.3.2180.8236","info":{"id":"VisualStudio/17.3.0+32804.467","buildBranch":"d17.3","buildVersion":"17.3.32804.467","localBuild":"build-lab","manifestName":"VisualStudio","manifestType":"installer","productDisplayVersion":"17.3.0","productLine":"Dev17","productLineVersion":"2022","productMilestone":"RTW","`)
-	mylog.Success("key", "vgoTest pass")
+	mylog.Success("中文网", "vgoTest pass")
 	mylog.Struct("todo",
 		struct {
 			A int

@@ -9,9 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
-
-	"gioui.org/app"
-	_ "gioui.org/app/permission/storage"
 )
 
 type (
@@ -40,9 +37,8 @@ func LogPath() (path string) {
 
 func DataDir() string {
 	if IsAndroid() {
-		dir := Check2(app.DataDir())
-
-		return dir
+		// dir := Check2(app.DataDir())
+		// return dir
 	}
 	if IsTermux() {
 		return "/data/data/com.termux/files/usr" // todo choose another dir

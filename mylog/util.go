@@ -6,6 +6,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ddkwork/golibrary/stream/align"
+
 	"golang.org/x/text/width"
 	"mvdan.cc/gofumpt/format"
 )
@@ -39,7 +41,7 @@ func WriteGoFileWithDiff[T []byte](path string, data T) {
 func (l *log) textIndent(src string, isLeftAlign bool) string {
 	const hexDumpIndentLen = 26
 	Separate := ` │ `
-	spaceLen := hexDumpIndentLen - l.width(src)
+	spaceLen := hexDumpIndentLen - align.StringWidth(src)
 	spaceStr := ``
 	if spaceLen > 0 {
 		spaceStr = strings.Repeat(" ", spaceLen)

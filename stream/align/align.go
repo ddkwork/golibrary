@@ -3,15 +3,13 @@ package align
 import (
 	"strings"
 	"unicode"
-
-	"gioui.org/unit"
 )
 
 func isChinese(r rune) bool {
 	return unicode.Is(unicode.Han, r)
 }
 
-func StringWidth(s string) (width unit.Dp) {
+func StringWidth(s string) (width int) {
 	for _, char := range s {
 		if isChinese(char) {
 			width += 2 // 中文字符宽度

@@ -27,7 +27,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/dc0d/caseconv"
-	
+
 	"github.com/rivo/uniseg"
 	"mvdan.cc/gofumpt/format"
 )
