@@ -26,9 +26,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/ddkwork/golibrary/stream/align"
+
 	"github.com/dc0d/caseconv"
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/rivo/uniseg"
 	"mvdan.cc/gofumpt/format"
 )
 
@@ -636,7 +637,7 @@ func swapBytes(data []byte) []byte {
 
 func AlignString(s string, length int) (ss string) {
 	runes := []rune(s)
-	width := uniseg.StringWidth(string(runes))
+	width := align.StringWidth[int](string(runes))
 	if width < length {
 		repeat := strings.Repeat(" ", length-width)
 		ss = string(runes) + repeat
