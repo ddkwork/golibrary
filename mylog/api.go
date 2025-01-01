@@ -84,8 +84,8 @@ func init() {
 		Check2(exec.Command("go", "env", "-w", "GOFLAGS=-buildmode=exe").CombinedOutput())
 	}
 	Check2(exec.Command("go", "env", "-w", "GOPROXY=https://goproxy.cn").CombinedOutput())
-	GitProxy(true)
-	FormatAllFiles()
+	//GitProxy(true)
+	//FormatAllFiles()
 }
 
 var (
