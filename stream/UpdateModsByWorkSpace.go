@@ -48,23 +48,21 @@ func updateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 
 	var mutex sync.Mutex
 	g := new(errgroup.Group)
-	for i, mod := range mods {
+	for _, mod := range mods {
 		g.Go(func() error {
-			go func(abs string, index int) {
-				mutex.Lock()
-				defer mutex.Unlock()
-				mylog.Check(os.Chdir(abs))
-				for _, s := range modWithCommitID {
-					RunCommand("go get -v  " + s)
-				}
-				if isTidy {
-					RunCommand("go mod tidy -v")
-				}
-				if isUpdateAll {
-					RunCommand("go get -v -u all")
-				}
-				modChan <- abs
-			}(mod, i)
+			mutex.Lock()
+			defer mutex.Unlock()
+			mylog.Check(os.Chdir(mod))
+			for _, s := range modWithCommitID {
+				RunCommand("go get -v  " + s)
+			}
+			if isTidy {
+				RunCommand("go mod tidy -v")
+			}
+			if isUpdateAll {
+				RunCommand("go get -v -u all")
+			}
+			modChan <- mod
 			return nil
 		})
 	}
@@ -74,6 +72,6 @@ func updateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 		}
 		close(modChan)
 	}()
-	g.Wait()
+	mylog.Check(g.Wait())
 	mylog.Success("all work finished")
 }
