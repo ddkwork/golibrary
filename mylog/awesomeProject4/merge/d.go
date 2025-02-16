@@ -18,7 +18,6 @@ Split(src, lineBreak)
 `
 
 	mergedSrc := mergeLines(src, ".", "\n")
-
 	fmt.Println(mergedSrc)
 }
 

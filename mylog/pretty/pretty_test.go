@@ -85,7 +85,7 @@ func TestPrettyLevel(test *testing.T) {
 	test.Log(out.String())
 }
 
-func ExampleTabPrint() {
+func Example_tabPrint() {
 	tp := NewTabPrinter(8)
 
 	for i := 0; i < 33; i++ {
@@ -109,7 +109,7 @@ func ExampleTabPrint() {
 	// one	two	three	four	five	six
 }
 
-func ExampleTabPrintTwoFullLines() {
+func Example_tabPrintTwoFullLines() {
 	tp := NewTabPrinter(4)
 
 	for _, v := range []string{"one", "two", "three", "four", "five", "six", "seven", "eight"} {
@@ -124,7 +124,7 @@ func ExampleTabPrintTwoFullLines() {
 	//
 }
 
-func ExampleTabPrintWider() {
+func Example_tabPrintWider() {
 	tp := NewTabPrinter(2)
 	tp.TabWidth(10)
 

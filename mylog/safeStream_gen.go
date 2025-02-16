@@ -29,7 +29,7 @@ import (
 	"github.com/ddkwork/golibrary/stream/align"
 
 	"github.com/dc0d/caseconv"
-	
+
 	"mvdan.cc/gofumpt/format"
 )
 
@@ -152,42 +152,40 @@ func NewHexDump(hexdumpStr HexDumpString) (data *Buffer) {
 		// HexDump("recovery go buffer", data.Bytes())
 	}()
 	hexdump = strings.TrimSuffix(hexdump, newLine)
+	hexdump = strings.TrimPrefix(hexdump, newLine)
+	hexString := new(bytes.Buffer)
 	switch {
 	case !hasAddress(hexdump) && !strings.Contains(hexdump, sep):
-		hexdump = strings.ReplaceAll(hexdump, " ", "")
-		hexdump = strings.ReplaceAll(hexdump, "\n", "")
-		hexdump = strings.ReplaceAll(hexdump, "\t", "")
-		decodeString := Check2(hex.DecodeString(hexdump))
+		for s := range strings.FieldsSeq(hexdump) {
+			hexString.WriteString(s)
+		}
+		decodeString := Check2(hex.DecodeString(hexString.String()))
 		data = NewBuffer(decodeString)
 	case strings.Contains(hexdump, sep):
-		split := strings.Split(hexdump, newLine)
-		noAddress := make([]string, len(split))
-		hexString := new(bytes.Buffer)
-		for i, s := range split {
+		for s := range strings.Lines(hexdump) {
 			if s == "" {
 				continue
 			}
-			noAddress[i] = s[addressLen:strings.Index(s, sep)]
-			noAddress[i] = strings.ReplaceAll(noAddress[i], " ", "")
-			hexString.WriteString(noAddress[i])
+			s = s[addressLen:strings.Index(s, sep)]
+			hexString.WriteString(strings.ReplaceAll(s, " ", ""))
 		}
 		decodeString := Check2(hex.DecodeString(hexString.String()))
 		data = NewBuffer(decodeString)
 	default:
-		split := strings.Split(hexdump, newLine)
-		hexString := new(bytes.Buffer)
-		for _, s := range split {
+		for s := range strings.Lines(hexdump) {
 			if s == "" {
 				continue
 			}
-			fields := strings.Split(s, " ")
-			for j, field := range fields {
-				if j > 0 && field == "" {
-					fields = fields[1:j]
-					break
-				}
+			indexAscii := strings.Index(s, "  ")
+			if indexAscii > 0 {
+				s = s[:indexAscii] //skip ascii
 			}
-			for _, field := range fields {
+			for field := range strings.FieldsSeq(s) {
+				if len(field) > 2 {
+					//08A73200 57 61 72 68 61 6D 6D 65 72 20 34 30 2C 30 30 30  Warhammer 40,000
+					//跳过地址和ascii
+					continue
+				}
 				hexString.WriteString(field)
 			}
 		}
@@ -211,7 +209,7 @@ func hasAddress(s string) bool {
 	case strings.Contains(s, address):
 		return true
 	}
-	return s[len("00000000")+1] == ' '
+	return s[len("00000000")] == ' '
 }
 
 func WriteGoFile[T Type](name string, data T) {
@@ -474,17 +472,6 @@ func (b *Buffer) AppendByteSlice(bytesSlice ...[]byte) []byte {
 
 func (b *Buffer) Contains(substr string) bool      { return strings.Contains(b.String(), substr) }
 func ReadFileToLines(path string) (lines []string) { return NewBuffer(path).ToLines() }
-
-func Lines(x []byte) []string {
-	l := strings.SplitAfter(string(x), "\n")
-	CheckNil(l)
-	if l[len(l)-1] == "" {
-		l = l[:len(l)-1]
-	} else {
-		l[len(l)-1] += "\n\\ No newline at end of file\n"
-	}
-	return l
-}
 
 func (b *Buffer) ReplaceLine(index int, line string) *Buffer {
 	lines := NewBuffer(b.String()).ToLines()

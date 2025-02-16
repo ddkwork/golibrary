@@ -567,58 +567,16 @@ func identEqual(expr ast.Expr, name string) bool {
 	return ok && id.Name == name
 }
 
-func mergeOk() {
-	src := `
-package main
-
-import "fmt"
-
-func main() {
-	lines := strings.
-Split(src, lineBreak)
-}
-`
-
-	mergedSrc := mergeLines(src, ".", "\n")
-
-	fmt.Println(mergedSrc)
-}
-
-func mergeLines(src, mergeToken, lineBreak string) string {
-	lines := strings.Split(src, lineBreak)
-	var mergedLines []string
-	mergeBuffer := ""
-	for _, line := range lines {
-		if strings.HasSuffix(line, mergeToken) && mergeBuffer == "" {
-			mergeBuffer = line
-		} else {
-			if mergeBuffer != "" {
-				mergedLines = append(mergedLines, mergeBuffer+line)
-				mergeBuffer = ""
-			} else {
-				mergedLines = append(mergedLines, line)
-			}
-		}
-	}
-	if mergeBuffer != "" {
-		mergedLines = append(mergedLines, mergeBuffer)
-	}
-	return strings.Join(mergedLines, lineBreak)
-}
-
 func getAstLine() {
 	src := ``
 	fset := token.NewFileSet()
 	node := Check2(parser.ParseFile(fset, "demo", src, 0))
-
 	for _, group := range node.Decls {
 		start := fset.Position(group.Pos())
 		end := fset.Position(group.End())
-		lines := strings.Split(src[start.Offset:end.Offset], "\n")
-		for i, line := range lines {
-			fmt.Printf("Line %d: %s\n", start.Line+i, line)
+		for s := range strings.Lines(src[start.Offset:end.Offset]) {
+			fmt.Printf("Line %d: %s\n", start.Line, s)
 		}
-
 	}
 }
 

@@ -23,14 +23,12 @@ type Sheet struct {
 
 func Load(path string) ([]Sheet, error) {
 	r := mylog.Check2(zip.OpenReader(path))
-
 	defer r.Close()
 	return load(&r.Reader)
 }
 
 func Read(in io.ReaderAt, size int64) ([]Sheet, error) {
 	r := mylog.Check2(zip.NewReader(in, size))
-
 	return load(r)
 }
 

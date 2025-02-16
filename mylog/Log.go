@@ -186,10 +186,9 @@ func (l *log) Reason() (reason string) {
 	}
 	re := regexp.MustCompile(`(\.|\?|!)`)
 	splitStr := re.ReplaceAllString(l.message, "$1\n")
-	lines := strings.Split(splitStr, "\n")
 	r := bytes.NewBuffer(nil)
-	for _, line := range lines {
-		trimSpace := strings.TrimSpace(line)
+	for s := range strings.Lines(splitStr) {
+		trimSpace := strings.TrimSpace(s)
 		r.WriteString(trimSpace)
 		r.WriteString("\n")
 		for english, chinese := range english2Chinese {

@@ -21,6 +21,13 @@ func TestNewHexDump(t *testing.T) {
 	stream.NewHexDump(stream.HexDumpString(bugBuf))
 }
 
+const (
+	address    = "00000000  "
+	sep        = "|"
+	newLine    = "\n"
+	addressLen = len(address)
+)
+
 func TestHexDumpToGoBytes(t *testing.T) {
 	ss := `00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00 8E 6A 64 01 15 4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47 00`
 	stream.NewBuffer(stream.HexDumpString(ss))
@@ -218,7 +225,7 @@ func BenchmarkByBufioReaderReadLine(b *testing.B) {
 func BenchmarkByStringsSplitAfter(b *testing.B) {
 	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
 	for i := 0; i < b.N; i++ {
-		strings.SplitAfter(s.String(), "\n")
+		strings.Lines(s.String())
 	}
 }
 
@@ -235,12 +242,6 @@ func BenchmarkByRegexp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		re.Split(s.String(), -1)
 	}
-}
-
-func SplitLines(s string) []string {
-	lines := strings.SplitAfter(s, "\n")
-	lines[len(lines)-1] += "\n"
-	return lines
 }
 
 func TestWrite(t *testing.T) {

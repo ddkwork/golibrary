@@ -14,7 +14,6 @@ type TabPrinter struct {
 }
 
 // create a TabPrinter
-//
 // max specifies the maximum number of 'words' per line
 func NewTabPrinter(max int) *TabPrinter {
 	tp := &TabPrinter{w: new(tabwriter.Writer), max: max}
@@ -29,7 +28,6 @@ func (tp *TabPrinter) TabWidth(n int) {
 }
 
 // print a 'word'
-//
 // when the maximum number of words per lines is reached, this will print the formatted line
 func (tp *TabPrinter) Print(arg interface{}) {
 	if tp.current > 0 {
@@ -47,7 +45,6 @@ func (tp *TabPrinter) Print(arg interface{}) {
 }
 
 // print current line
-//
 // terminate current line and print - call this after all words have been printed
 func (tp *TabPrinter) Println() {
 	if tp.current > 0 {

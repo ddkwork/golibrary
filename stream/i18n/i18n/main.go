@@ -96,11 +96,9 @@ func main() {
 `, time.Now().Format(time.RFC1123))
 	for _, key := range keys {
 		fmt.Fprintln(out)
-		for _, p := range strings.Split(key, "\n") {
-			mylog.Check2(fmt.Fprintf(out, "k:%q\n", p))
-		}
-		for _, p := range strings.Split(key, "\n") {
-			mylog.Check2(fmt.Fprintf(out, "v:%q\n", p))
+		for s := range strings.Lines(key) {
+			mylog.Check2(fmt.Fprintf(out, "k:%q\n", s))
+			mylog.Check2(fmt.Fprintf(out, "v:%q\n", s))
 		}
 	}
 	mylog.Check(out.Close())

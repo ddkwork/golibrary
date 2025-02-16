@@ -1,14 +1,13 @@
 package stream
 
 import (
+	"github.com/ddkwork/golibrary/mylog"
+	"golang.org/x/sync/errgroup"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/ddkwork/golibrary/mylog"
-	"golang.org/x/sync/errgroup"
 )
 
 func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) {
@@ -75,3 +74,36 @@ func updateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 	mylog.Check(g.Wait())
 	mylog.Success("all work finished")
 }
+
+//type Cache struct {
+//	store map[string]string
+//	mu    sync.RWMutex
+//}
+//
+//func TestCacheConsistency(t *testing.T) {
+//	cache := &Cache{store: make(map[string]string)}
+//
+//	synctest.Run(t, func(sc *synctest.Scenario) {
+//		// 并发写入
+//		for i := 0; i < 10; i++ {
+//			sc.Go(func() {
+//				cache.mu.Lock()
+//				defer cache.mu.Unlock()
+//				cache.store["key"] = time.Now().String()
+//			})
+//		}
+//
+//		// 并发读取
+//		for i := 0; i < 100; i++ {
+//			sc.Go(func() {
+//				cache.mu.RLock()
+//				defer cache.mu.RUnlock()
+//				_ = cache.store["key"]
+//			})
+//		}
+//	}, synctest.WithOptions(
+//		synctest.EnableRaceDetection(),
+//		synctest.MaxGoroutines(200),
+//		synctest.Timeout(10*time.Second),
+//	))
+//}
