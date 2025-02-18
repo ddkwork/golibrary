@@ -3,6 +3,7 @@ package mylog
 import (
 	"bytes"
 	"fmt"
+	"gioui.org/app"
 	"io"
 	"net/http"
 	"os"
@@ -35,18 +36,18 @@ func LogPath() (path string) {
 	return filepath.Join(DataDir(), "log.log")
 }
 
-var ApkDataDir = ""
+//var ApkDataDir = ""
 
 func DataDir() string {
-	if IsAndroid() {
-		// dir := Check2(app.DataDir())
-		// return dir
-		return ApkDataDir
-	}
-	if IsTermux() {
+	switch {
+	case IsAndroid():
+		return Check2(app.DataDir())
+	//return ApkDataDir
+	case IsTermux():
 		return "/data/data/com.termux/files/usr" // todo choose another dir
+	default: //windows,linux
+		return "."
 	}
-	return "."
 }
 
 func LogFileBody() string {
