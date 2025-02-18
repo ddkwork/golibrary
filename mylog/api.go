@@ -35,10 +35,13 @@ func LogPath() (path string) {
 	return filepath.Join(DataDir(), "log.log")
 }
 
+var ApkDataDir = ""
+
 func DataDir() string {
 	if IsAndroid() {
 		// dir := Check2(app.DataDir())
 		// return dir
+		return ApkDataDir
 	}
 	if IsTermux() {
 		return "/data/data/com.termux/files/usr" // todo choose another dir
