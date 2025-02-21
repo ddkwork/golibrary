@@ -1,13 +1,14 @@
 package stream
 
 import (
-	"github.com/ddkwork/golibrary/mylog"
-	"golang.org/x/sync/errgroup"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/ddkwork/golibrary/mylog"
+	"golang.org/x/sync/errgroup"
 )
 
 func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) {

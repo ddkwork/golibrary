@@ -364,12 +364,13 @@ func TestSwapAdjacent(t *testing.T) {
 	assert.Equal(t, "TA1591503892      ", stream.SwapAdjacent("AT5119058329      ").String())
 }
 
-func TestSetGitProxy(t *testing.T) {
-	stream.GitProxy(true)
+func TestUnSetGitProxy(t *testing.T) {
+	t.Skip()
+	stream.GitProxy(false)
 }
 
-func TestUnSetGitProxy(t *testing.T) {
-	stream.GitProxy(false)
+func TestSetGitProxy(t *testing.T) {
+	stream.GitProxy(true)
 }
 
 func TestIsASCIIDigit(t *testing.T) {

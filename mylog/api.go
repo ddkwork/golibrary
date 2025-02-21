@@ -3,13 +3,14 @@ package mylog
 import (
 	"bytes"
 	"fmt"
-	"gioui.org/app"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
+
+	"gioui.org/app"
 )
 
 type (
@@ -42,7 +43,7 @@ func DataDir() string {
 		return Check2(app.DataDir())
 	case IsTermux():
 		return "/data/data/com.termux/files/usr" // todo choose another dir
-	default: //windows,linux
+	default: // windows,linux
 		return "."
 	}
 }
@@ -85,8 +86,8 @@ func init() {
 		Check2(exec.Command("go", "env", "-w", "GOFLAGS=-buildmode=exe").CombinedOutput())
 	}
 	Check2(exec.Command("go", "env", "-w", "GOPROXY=https://goproxy.cn").CombinedOutput())
-	//GitProxy(true)
-	//FormatAllFiles()
+	// GitProxy(true)
+	// FormatAllFiles()
 }
 
 var (

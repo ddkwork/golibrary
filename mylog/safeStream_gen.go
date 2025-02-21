@@ -178,12 +178,12 @@ func NewHexDump(hexdumpStr HexDumpString) (data *Buffer) {
 			}
 			indexAscii := strings.Index(s, "  ")
 			if indexAscii > 0 {
-				s = s[:indexAscii] //skip ascii
+				s = s[:indexAscii] // skip ascii
 			}
 			for field := range strings.FieldsSeq(s) {
 				if len(field) > 2 {
-					//08A73200 57 61 72 68 61 6D 6D 65 72 20 34 30 2C 30 30 30  Warhammer 40,000
-					//跳过地址和ascii
+					// 08A73200 57 61 72 68 61 6D 6D 65 72 20 34 30 2C 30 30 30  Warhammer 40,000
+					// 跳过地址和ascii
 					continue
 				}
 				hexString.WriteString(field)
@@ -543,7 +543,7 @@ func ReflectVisibleFields(object any) []reflect.StructField {
 			//	continue  //todo
 		}
 		if !field.IsExported() {
-			Trace("field name is not exported: ", field.Name) //用于树形表格序列化json保存到文件，没有导出则json会失败
+			Trace("field name is not exported: ", field.Name) // 用于树形表格序列化json保存到文件，没有导出则json会失败
 			continue
 		}
 		exportedFields = append(exportedFields, field)
@@ -798,18 +798,23 @@ func RunDir() string {
 func ParseFloat(sizeStr string) (size float64) {
 	return Check2(strconv.ParseFloat(sizeStr, 64))
 }
+
 func Float64ToString(f float64, prec int) string {
 	return strconv.FormatFloat(f, 'f', prec, 64)
 }
+
 func Float64Cut(value float64, bits int) (float64, error) {
 	return strconv.ParseFloat(fmt.Sprintf("%."+strconv.Itoa(bits)+"f", value), 64)
 }
+
 func ParseInt(s string) int64 {
 	return Check2(strconv.ParseInt(s, 10, 64))
 }
+
 func ParseUint(s string) uint64 {
 	return Check2(strconv.ParseUint(s, 10, 64))
 }
+
 func Atoi(s string) int {
 	return Check2(strconv.Atoi(s))
 }

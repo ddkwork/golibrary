@@ -11,7 +11,7 @@ import (
 type pair struct{ x, y int }
 
 func Diff(oldName string, old []byte, newName string, new []byte) []byte {
-	if slices.Equal(old, new) { //return  //todo diff 太耗时了？导致频繁需要goland确认是否重新加载文件,原因是 bytes.Equal性能太差？
+	if slices.Equal(old, new) { // return  //todo diff 太耗时了？导致频繁需要goland确认是否重新加载文件,原因是 bytes.Equal性能太差？
 		return nil
 	}
 	x := lines(old)
