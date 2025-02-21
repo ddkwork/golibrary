@@ -472,6 +472,7 @@ func (b *Buffer) AppendByteSlice(bytesSlice ...[]byte) []byte {
 }
 
 func (b *Buffer) Contains(substr string) bool { return strings.Contains(b.String(), substr) }
+
 func ReadFileToLines(path string) iter.Seq[string] {
 	return strings.Lines(string(mylog.Check2(os.ReadFile(path))))
 }
@@ -991,4 +992,10 @@ func GitProxy(isSetProxy bool) {
 		path := JoinHomeFile(".gitconfig")
 		WriteTruncate(path, s.String())
 	})
+}
+
+func trimTrailingEmptyLines(s string) string {
+	// 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符
+	re := regexp.MustCompile(`\s*\n*$`)
+	return re.ReplaceAllString(s, "")
 }
