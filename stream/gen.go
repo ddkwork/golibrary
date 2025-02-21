@@ -100,10 +100,10 @@ func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *safemap.M[string,
 		})
 		for i, Name := range names {
 			if !g.keepOrigName {
-				names[i] = ToCamelUpper(Name, false)
+				names[i] = ToCamelUpper(Name)
 			}
 		}
-		TypeNameUpper := ToCamelUpper(name, false)
+		TypeNameUpper := ToCamelUpper(name)
 		if g.packageName == "" {
 			g.packageName = GetPackageName()
 		}

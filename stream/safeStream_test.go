@@ -288,7 +288,7 @@ func TestInsert(t *testing.T) {
 
 func TestCaseconv(t *testing.T) {
 	for _, s := range name {
-		println(stream.ToCamelUpper(s, true))
+		println(stream.ToCamelUpper(s))
 	}
 }
 
@@ -352,7 +352,7 @@ var name = []string{
 }
 
 func TestToCamelUpper(t *testing.T) {
-	println(stream.ToCamelUpper("PAGE_SIZE", false))
+	println(stream.ToCamelUpper("PAGE_SIZE"))
 }
 
 func TestSwapAdjacent(t *testing.T) {

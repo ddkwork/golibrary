@@ -594,29 +594,17 @@ func GetWindowsLogicalDrives() []string {
 	return driveLetters
 }
 
-func trimTrailingEmptyLines(s string) string {
-	// 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符
-	re := regexp.MustCompile(`\s*\n*$`)
-	return re.ReplaceAllString(s, "")
+func ToCamel(data string) string {
+	return strings.TrimSpace(fmt.Sprintf("%-50s", caseconv.ToCamel(data)))
 }
 
-func ToCamel(data string, hasComment bool) string {
-	s := fmt.Sprintf("%-50s", caseconv.ToCamel(data))
-	if hasComment {
-		s += "//" + s
-	}
-	return s
-}
-
-func ToCamelUpper(s string, hasComment bool) string {
-	camel := ToCamel(s, hasComment)
-	camel = strings.TrimSpace(camel)
+func ToCamelUpper(s string) string {
+	camel := ToCamel(s)
 	return strings.ToUpper(string(camel[0])) + camel[1:]
 }
 
-func ToCamelToLower(s string, hasComment bool) string {
-	camel := ToCamel(s, hasComment)
-	camel = strings.TrimSpace(camel)
+func ToCamelToLower(s string) string {
+	camel := ToCamel(s)
 	return strings.ToLower(string(camel[0])) + camel[1:]
 }
 
