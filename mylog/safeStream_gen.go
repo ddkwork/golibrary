@@ -29,7 +29,7 @@ import (
 	"github.com/ddkwork/golibrary/stream/align"
 
 	"github.com/dc0d/caseconv"
-
+	
 	"mvdan.cc/gofumpt/format"
 )
 
