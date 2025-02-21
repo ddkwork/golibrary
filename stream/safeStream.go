@@ -25,7 +25,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-	"unicode/utf8"
 
 	"github.com/ddkwork/golibrary/stream/align"
 
@@ -414,7 +413,7 @@ func (b *Buffer) BigNumXorWithAlign(arg1, arg2 []byte, align int) (xorStream []b
 	return b.Bytes()
 }
 
-// AppendHeader InsertToStart
+// AppendHeader insert to start,packetHeader
 func (b *Buffer) AppendHeader(buf []byte) *Buffer {
 	concat := slices.Concat(buf, b.Bytes())
 	b.Reset()
@@ -422,20 +421,23 @@ func (b *Buffer) AppendHeader(buf []byte) *Buffer {
 	return b
 }
 
-func (b *Buffer) InsertBytes(index int, insert []byte) []byte {
-	return slices.Insert(b.Bytes(), index, insert...)
+func (b *Buffer) InsertString(index int, s string) *Buffer {
+	buf := slices.Insert(b.Bytes(), index, []byte(s)...)
+	b.Reset()
+	b.Write(buf)
+	return b
 }
 
-func (b *Buffer) InsertByte(index int, ch byte) { b.InsertBytes(index, []byte{ch}) }
+func (b *Buffer) InsertBytes(index int, insert []byte) {
+	buf := slices.Insert(b.Bytes(), index, insert...)
+	b.Reset()
+	b.Write(buf)
+}
 
-func (b *Buffer) InsertRune(index int, r rune) {
-	if uint32(r) < utf8.RuneSelf {
-		b.InsertByte(index, byte(r))
-		return
-	}
-	var buffer [4]byte
-	n := utf8.EncodeRune(buffer[:], r)
-	b.InsertBytes(index, buffer[:n])
+func (b *Buffer) InsertByte(index int, ch byte) {
+	buf := slices.Insert(b.Bytes(), index, ch)
+	b.Reset()
+	b.Write(buf)
 }
 
 func isAllLetters(s string) bool {
@@ -456,14 +458,6 @@ func (b *Buffer) Join(sep string, size int) string {
 	return strings.TrimSuffix(result, sep)
 }
 
-func (b *Buffer) InsertString(index int, s string) *Buffer {
-	buf := slices.Insert(b.Bytes(), index, []byte(s)...)
-	b.Reset()
-	b.Write(buf)
-	return b
-	// return string(b.InsertBytes(index, []byte(s)))
-}
-
 func (b *Buffer) AppendByteSlice(bytesSlice ...[]byte) []byte {
 	for _, slice := range bytesSlice {
 		b.Write(slice)
@@ -479,6 +473,54 @@ func ReadFileToLines(path string) iter.Seq[string] {
 
 func (b *Buffer) ToLines() (lines iter.Seq[string]) {
 	return strings.Lines(b.String())
+}
+
+// Lines returns an iterator over the newline-terminated lines in the string s.
+// The lines yielded by the iterator include their terminating newlines.
+// If s is empty, the iterator yields no lines at all.
+// If s does not end in a newline, the final yielded line will not end in a newline.
+// It returns a single-use iterator with both line number and line content.
+func Lines(s string) iter.Seq2[int, string] {
+	return func(yield func(int, string) bool) {
+		lineNumber := 1
+		for len(s) > 0 {
+			var line string
+			if i := strings.IndexByte(s, '\n'); i >= 0 {
+				line, s = s[:i+1], s[i+1:]
+			} else {
+				line, s = s, ""
+			}
+			if !yield(lineNumber, line) {
+				return
+			}
+			lineNumber++
+		}
+		return
+	}
+}
+
+// LinesBytes returns an iterator over the newline-terminated lines in the byte slice s.
+// The lines yielded by the iterator include their terminating newlines.
+// If s is empty, the iterator yields no lines at all.
+// If s does not end in a newline, the final yielded line will not end in a newline.
+// It returns a single-use iterator.
+func LinesBytes(s []byte) iter.Seq2[int, []byte] {
+	return func(yield func(int, []byte) bool) {
+		lineNumber := 1
+		for len(s) > 0 {
+			var line []byte
+			if i := bytes.IndexByte(s, '\n'); i >= 0 {
+				line, s = s[:i+1], s[i+1:]
+			} else {
+				line, s = s, nil
+			}
+			if !yield(lineNumber, line[:len(line):len(line)]) {
+				return
+			}
+			lineNumber++
+		}
+		return
+	}
 }
 
 func (b *Buffer) Reverse() *Buffer {
