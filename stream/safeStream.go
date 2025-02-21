@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iter"
 	"math/big"
 	"math/rand"
 	"os"
@@ -470,15 +471,9 @@ func (b *Buffer) AppendByteSlice(bytesSlice ...[]byte) []byte {
 	return b.Bytes()
 }
 
-func (b *Buffer) Contains(substr string) bool      { return strings.Contains(b.String(), substr) }
-func ReadFileToLines(path string) (lines []string) { return NewBuffer(path).ToLines() }
-
-func (b *Buffer) ReplaceLine(index int, line string) *Buffer {
-	lines := NewBuffer(b.String()).ToLines()
-	lines[index] = line
-	b.Reset()
-	b.WriteString(b.LinesToString(lines)) // todo not working
-	return b
+func (b *Buffer) Contains(substr string) bool { return strings.Contains(b.String(), substr) }
+func ReadFileToLines(path string) iter.Seq[string] {
+	return strings.Lines(string(mylog.Check2(os.ReadFile(path))))
 }
 
 func (b *Buffer) LinesToString(lines []string) string {
@@ -488,38 +483,13 @@ func (b *Buffer) LinesToString(lines []string) string {
 	return b.String()
 }
 
-func (b *Buffer) ToLines() (lines []string) {
-	lines = make([]string, 0)
-	newScanner := bufio.NewScanner(b.Buffer)
-	for newScanner.Scan() {
-		lines = append(lines, newScanner.Text())
-	}
-	return
+func (b *Buffer) ToLines() (lines iter.Seq[string]) {
+	return strings.Lines(b.String())
 }
 
 func (b *Buffer) Reverse() *Buffer {
 	slices.Reverse(b.Bytes())
 	return b
-}
-
-func SplitFileByLines(filePath string, size int) {
-	lines := ReadFileToLines(filePath)
-	if lines == nil {
-		return
-	}
-	count := len(lines) / size
-	div := len(lines) % size
-	if div != 0 {
-		count++
-	}
-	for i := range count {
-		startIndex := i * size
-		endIndex := (i + 1) * size
-		if endIndex > len(lines) {
-			endIndex = len(lines)
-		}
-		WriteTruncate(fmt.Sprint(i)+".txt", NewBuffer("").LinesToString(lines[startIndex:endIndex]))
-	}
 }
 
 func ToLines[T string | []byte | *os.File | *bytes.Buffer](data T) (lines []string) {
@@ -553,30 +523,6 @@ func ToLines[T string | []byte | *os.File | *bytes.Buffer](data T) (lines []stri
 	}
 }
 
-func ReadLines(fullPath string) ([]string, error) {
-	f := mylog.Check2(os.Open(fullPath))
-	defer f.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines, scanner.Err()
-}
-
-func WriteLines(lines []string, fullPath string) error {
-	f := mylog.Check2(os.Create(fullPath))
-	defer f.Close()
-
-	w := bufio.NewWriter(f)
-	for _, line := range lines {
-		mylog.Check2(fmt.Fprintln(w, line))
-	}
-
-	return w.Flush()
-}
-
 func IsZero(v reflect.Value) bool {
 	if v.IsValid() {
 		return true
@@ -592,7 +538,7 @@ func ReflectVisibleFields(object any) []reflect.StructField {
 			//	continue  //todo
 		}
 		if !field.IsExported() {
-			mylog.Trace("field name is not exported: ", field.Name)
+			mylog.Trace("field name is not exported: ", field.Name) //用于树形表格序列化json保存到文件，没有导出则json会失败
 			continue
 		}
 		exportedFields = append(exportedFields, field)
@@ -629,42 +575,11 @@ func AlignString(s string, length int) (ss string) {
 		repeat := strings.Repeat(" ", length-width)
 		ss = string(runes) + repeat
 		return ss
-	} else {
-		if length <= len(runes) {
-			return string(runes[:length])
-		}
-		return s
+	}
+	if length <= len(runes) {
+		return string(runes[:length])
 	}
 	return s
-}
-
-func SlicesIndex(slice any, item any) int {
-	s := reflect.ValueOf(slice)
-	if s.Kind() != reflect.Slice {
-		panic("findIndex: not slice")
-	}
-	for i := range s.Len() {
-		if reflect.DeepEqual(s.Index(i).Interface(), item) {
-			return i
-		}
-	}
-	return -1
-}
-
-func SlicesInsert(slice any, index int, value any) any {
-	s := reflect.ValueOf(slice)
-	if s.Kind() != reflect.Slice {
-		panic("Insert: not slice")
-	}
-
-	t := reflect.MakeSlice(s.Type(), s.Len()+1, s.Cap()+1)
-
-	reflect.Copy(t.Slice(0, index), s.Slice(0, index))
-
-	t.Index(index).Set(reflect.ValueOf(value))
-
-	reflect.Copy(t.Slice(index+1, s.Len()+1), s.Slice(index, s.Len()))
-	return t.Interface()
 }
 
 func MarshalJSON(v any) []byte {
@@ -890,23 +805,18 @@ func RunDir() string {
 func ParseFloat(sizeStr string) (size float64) {
 	return mylog.Check2(strconv.ParseFloat(sizeStr, 64))
 }
-
 func Float64ToString(f float64, prec int) string {
 	return strconv.FormatFloat(f, 'f', prec, 64)
 }
-
 func Float64Cut(value float64, bits int) (float64, error) {
 	return strconv.ParseFloat(fmt.Sprintf("%."+strconv.Itoa(bits)+"f", value), 64)
 }
-
 func ParseInt(s string) int64 {
 	return mylog.Check2(strconv.ParseInt(s, 10, 64))
 }
-
 func ParseUint(s string) uint64 {
 	return mylog.Check2(strconv.ParseUint(s, 10, 64))
 }
-
 func Atoi(s string) int {
 	return mylog.Check2(strconv.Atoi(s))
 }
@@ -1100,41 +1010,25 @@ var (
 func GitProxy(isSetProxy bool) {
 	mylog.Call(func() {
 		s := NewBuffer("")
-		SetProxy(s, isSetProxy)
-		SetNameAndEmail(s)
-		SetSafecrlf(s)
-		path := JoinHomeFile(".gitconfig")
-		WriteTruncate(path, s.String())
-	})
-}
-
-func SetProxy(s *Buffer, isSetProxy bool) {
-	if !isSetProxy {
-		return
-	}
-	// socks5
-	//.py --mode socks5 -p 7890
-	// git config --global http.sslVerify false
-	s.WriteStringLn(`
+		if isSetProxy {
+			// socks5
+			//.py --mode socks5 -p 7890
+			// git config --global http.sslVerify false
+			s.WriteStringLn(`
 [http]
     proxy = http://127.0.0.1:7890
     sslVerify = false
 [https]
     proxy = http://127.0.0.1:7890
 `)
-}
-
-func SetNameAndEmail(s *Buffer) {
-	s.WriteStringLn(`
+		}
+		s.WriteStringLn(`
 [user]
 	name = Admin
 	email = 2762713521@qq.com
 `)
-}
-
-func SetSafecrlf(s *Buffer) {
-	if IsWindows() {
-		s.WriteStringLn(`
+		if IsWindows() {
+			s.WriteStringLn(`
 [core]
 	autocrlf = false
 
@@ -1142,7 +1036,9 @@ func SetSafecrlf(s *Buffer) {
 	directory = *
 
 `)
-	}
-}
+		}
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		path := JoinHomeFile(".gitconfig")
+		WriteTruncate(path, s.String())
+	})
+}

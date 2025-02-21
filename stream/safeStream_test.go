@@ -216,9 +216,8 @@ func BenchmarkName(b *testing.B) {
 
 func BenchmarkByBufioReaderReadLine(b *testing.B) {
 	path := "D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js"
-	s := stream.NewBuffer(path)
 	for i := 0; i < b.N; i++ {
-		s.ToLines()
+		stream.ReadFileToLines(path)
 	}
 }
 

@@ -244,8 +244,7 @@ func (g *GeneratedFile) ReadTemplates(path, pkg string) {
 
 		s.WriteStringLn("func generateIR(path string,callBack func(b*stream.Buffer)) {")
 		s.WriteStringLn("g := stream.NewGeneratedFile()")
-		lines := NewBuffer(path).ToLines()
-		for _, line := range lines {
+		for line := range ReadFileToLines(path) {
 			needNewLine := false
 			if line == "" {
 				needNewLine = true

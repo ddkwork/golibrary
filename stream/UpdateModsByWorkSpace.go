@@ -27,9 +27,8 @@ func updateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 		return
 	}
 	RunCommandArgs("go work use -r .")
-	lines := NewBuffer("go.work").ToLines()
 	mods := make([]string, 0)
-	for _, line := range lines {
+	for line := range ReadFileToLines("go.work") {
 		for _, skip := range skips {
 			if line == skip {
 				mylog.Warning("skip", skip)
