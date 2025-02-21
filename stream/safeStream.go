@@ -476,13 +476,6 @@ func ReadFileToLines(path string) iter.Seq[string] {
 	return strings.Lines(string(mylog.Check2(os.ReadFile(path))))
 }
 
-func (b *Buffer) LinesToString(lines []string) string {
-	for _, line := range lines {
-		b.WriteStringLn(line)
-	}
-	return b.String()
-}
-
 func (b *Buffer) ToLines() (lines iter.Seq[string]) {
 	return strings.Lines(b.String())
 }
@@ -490,37 +483,6 @@ func (b *Buffer) ToLines() (lines iter.Seq[string]) {
 func (b *Buffer) Reverse() *Buffer {
 	slices.Reverse(b.Bytes())
 	return b
-}
-
-func ToLines[T string | []byte | *os.File | *bytes.Buffer](data T) (lines []string) {
-	var r io.Reader
-	switch data := any(data).(type) {
-	case string:
-		r = strings.NewReader(data)
-		if IsFilePath(data) {
-			b := mylog.Check2(os.ReadFile(data))
-			r = bytes.NewReader(b)
-		}
-	case []byte:
-		r = bytes.NewReader(data)
-	case *os.File:
-		r = data
-	case *bytes.Buffer:
-		r = data
-	default:
-		mylog.Check(fmt.Errorf("unsupported type %T", data))
-	}
-
-	lines = make([]string, 0)
-	newReader := bufio.NewReader(r)
-
-	for {
-		line, _, e := newReader.ReadLine()
-		if mylog.CheckEof(e) {
-			return lines
-		}
-		lines = append(lines, string(line))
-	}
 }
 
 func IsZero(v reflect.Value) bool {
