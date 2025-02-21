@@ -47,24 +47,9 @@ func newHandle(path string, noComments bool) *handle {
 	if noComments {
 		h.removeComments()
 	}
-	buf := Check2(os.ReadFile(path))
-	var lines []string
-	scanner := bufio.NewReaderSize(bytes.NewReader(buf), 100*bufio.MaxScanTokenSize)
-	for {
-		line, _, e := scanner.ReadLine()
-		if CheckEof(e) {
-			break
-		}
-		fuck := ""
-		if e != nil {
-			fuck = path + ": " + e.Error() // todo not work
-		}
-		if fuck != "" {
-			Check(fuck)
-		}
-		lines = append(lines, string(line))
+	for s := range ReadFileToLines(path) {
+		h.lines = append(h.lines, s)
 	}
-	h.lines = lines
 	return h
 }
 

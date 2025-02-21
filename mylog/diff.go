@@ -109,7 +109,10 @@ func Diff(oldName string, old []byte, newName string, new []byte) []byte {
 }
 
 func lines(x []byte) []string {
-	l := strings.SplitAfter(string(x), "\n")
+	var l []string
+	for s := range strings.Lines(string(x)) {
+		l = append(l, s)
+	}
 	if l[len(l)-1] == "" {
 		l = l[:len(l)-1]
 	} else {
