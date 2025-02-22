@@ -96,9 +96,6 @@ func (h *handle) removeComments() {
 	h.root.Comments = newComments
 }
 
-func FormatAllFiles()           { formatAllFiles(false, "") }
-func FormatAllFilesNoComments() { formatAllFiles(true, "") }
-
 var Skips = []string{
 	`vendor`,
 	`\gioview\`,
@@ -111,7 +108,7 @@ var Skips = []string{
 	`\ux\patch\`,
 }
 
-func formatAllFiles(noComments bool, path string) {
+func FormatAllFiles(noComments bool, path string) {
 	if path == "" {
 		path = "."
 	}

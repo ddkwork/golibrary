@@ -12,8 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ddkwork/golibrary/stream"
+
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/stream/txt"
 )
 
 func main() {
@@ -78,7 +79,7 @@ func main() {
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) bool {
-		return txt.NaturalLess(keys[i], keys[j], true)
+		return stream.NaturalLess(keys[i], keys[j], true)
 	})
 	out := mylog.Check2(os.OpenFile(outPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644))
 

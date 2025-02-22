@@ -14,9 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ddkwork/websocket"
-	"github.com/hupe1980/socks"
-
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream"
 )
@@ -165,12 +162,12 @@ func (c *Client) SetProxy(layer SchemerType, hostPort string) *Client {
 	}
 	switch layer {
 	case Socket4Type:
-		c.Client.Transport = &http.Transport{
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				d := socks.NewSocks4Dialer("tcp", net.JoinHostPort(host, port))
-				return d.DialContext(ctx, network, addr)
-			},
-		}
+		//c.Client.Transport = &http.Transport{
+		//	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+		//		d := socks.NewSocks4Dialer("tcp", net.JoinHostPort(host, port))
+		//		return d.DialContext(ctx, network, addr)
+		//	},
+		//}
 	case Socket5Type:
 		c.Client.Transport = &http.Transport{
 			Proxy: func(request *http.Request) (*url.URL, error) {
@@ -217,26 +214,26 @@ func (c *Client) SetProxy(layer SchemerType, hostPort string) *Client {
 			ForceAttemptHTTP2:      false,
 		}
 	case WebsocketTlsType:
-		endpointURL := "wss://localhost:12345"
-
-		proxyURL := "http://" + net.JoinHostPort(host, port)
-
-		surl := mylog.Check2(url.Parse(proxyURL))
-		dialer := websocket.Dialer{
-			NetDial:           nil,
-			NetDialContext:    nil,
-			NetDialTLSContext: nil,
-			Proxy:             http.ProxyURL(surl), // todo need tls can be work
-
-			HandshakeTimeout:  0,
-			ReadBufferSize:    bufferSize,
-			WriteBufferSize:   bufferSize,
-			WriteBufferPool:   nil,
-			Subprotocols:      []string{"p1"},
-			EnableCompression: false,
-			Jar:               nil,
-		}
-		mylog.Check3(dialer.Dial(endpointURL, nil))
+		//endpointURL := "wss://localhost:12345"
+		//
+		//proxyURL := "http://" + net.JoinHostPort(host, port)
+		//
+		//surl := mylog.Check2(url.Parse(proxyURL))
+		//dialer := websocket.Dialer{
+		//	NetDial:           nil,
+		//	NetDialContext:    nil,
+		//	NetDialTLSContext: nil,
+		//	Proxy:             http.ProxyURL(surl), // todo need tls can be work
+		//
+		//	HandshakeTimeout:  0,
+		//	ReadBufferSize:    bufferSize,
+		//	WriteBufferSize:   bufferSize,
+		//	WriteBufferPool:   nil,
+		//	Subprotocols:      []string{"p1"},
+		//	EnableCompression: false,
+		//	Jar:               nil,
+		//}
+		//mylog.Check3(dialer.Dial(endpointURL, nil))
 	default:
 		mylog.Check("unhandled default case")
 	}

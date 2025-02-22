@@ -10,8 +10,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ddkwork/golibrary/stream"
+
 	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/stream/txt"
 )
 
 type Sheet struct {
@@ -48,7 +49,7 @@ func load(r *zip.Reader) ([]Sheet, error) {
 		}
 	}
 	sort.Slice(files, func(i, j int) bool {
-		return txt.NaturalLess(files[i].Name, files[j].Name, true)
+		return stream.NaturalLess(files[i].Name, files[j].Name, true)
 	})
 	sheets := make([]Sheet, 0, len(files))
 	for i, f := range files {

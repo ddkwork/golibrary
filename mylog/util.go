@@ -2,12 +2,14 @@ package mylog
 
 import (
 	"fmt"
+	"go/format"
 	"os"
 	"strings"
 	"sync"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/ddkwork/golibrary/stream/align"
-	"mvdan.cc/gofumpt/format"
 )
 
 func sprint(msg_ ...any) string {
@@ -23,16 +25,16 @@ func sprint(msg_ ...any) string {
 }
 
 func WriteGoFileWithDiff[T []byte](path string, data T) {
-	source, e := format.Source(data, format.Options{})
+	source, e := format.Source(data)
 	CheckIgnore(e)
 	if e != nil {
 		write(path, false, data)
 		return
 	}
 	write(path, false, source)
-	diff := Diff(path, Check2(os.ReadFile(path)), path, source)
-	if diff != nil {
-		println(string(diff))
+	diff := cmp.Diff(Check2(os.ReadFile(path)), source)
+	if diff != "" {
+		println(diff)
 	}
 }
 

@@ -3,6 +3,7 @@ package stream
 import (
 	_ "embed"
 	"fmt"
+	"go/format"
 	"path/filepath"
 	"reflect"
 	"strconv"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/safemap"
-	"mvdan.cc/gofumpt/format"
 )
 
 type GeneratedFile struct {
@@ -55,7 +55,7 @@ func NewGeneratedFile() (g *GeneratedFile) {
 }
 
 func (g *GeneratedFile) Format() string {
-	return string(mylog.Check2(format.Source(g.Bytes(), format.Options{})))
+	return string(mylog.Check2(format.Source(g.Bytes())))
 }
 
 func (g *GeneratedFile) PC(is64Bit bool, v string) {
@@ -269,24 +269,4 @@ func (g *GeneratedFile) ReadTemplates(path, pkg string) {
 		s.WriteStringLn("}")
 		println(s.String())
 	})
-}
-
-func Unquote(line string) string {
-	begin := strings.Index(line, `\"`)
-	if begin < 0 {
-		return line
-	}
-	split := strings.Split(line, `\"`)
-	ss := NewBuffer("")
-	for _, s := range split {
-		if strings.Contains(s, `"`) {
-			s = strings.ReplaceAll(s, `"`, ``)
-			ss.WriteString(s)
-		} else {
-			ss.WriteString("strconv.Quote(")
-			ss.WriteString(strconv.Quote(s))
-			ss.WriteString(")")
-		}
-	}
-	return ss.String()
 }

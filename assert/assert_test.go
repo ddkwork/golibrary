@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ddkwork/golibrary/mylog"
-
 	"github.com/ddkwork/golibrary/assert"
 	"github.com/ddkwork/golibrary/assert/common"
 	"github.com/google/go-cmp/cmp"
@@ -362,25 +360,23 @@ func TestGreater(t *testing.T) {
 }
 
 func TestError(t *testing.T) {
-	mylog.Call(func() {
+	t.Parallel()
+	t.Run("error", func(t *testing.T) {
 		t.Parallel()
-		t.Run("error", func(t *testing.T) {
-			t.Parallel()
-			assert.Error(t, fmt.Errorf("new error"))
-			mt := &common.MockT{}
-			assert.Error(mt, nil)
-			assert.True(t, mt.Failed())
-			assert.False(t, mt.FailedNow())
-		})
-		t.Run("nil", func(t *testing.T) {
-			t.Parallel()
-			assert.Nil(t, nil)
+		assert.Error(t, fmt.Errorf("new error"))
+		mt := &common.MockT{}
+		assert.Error(mt, nil)
+		assert.True(t, mt.Failed())
+		assert.False(t, mt.FailedNow())
+	})
+	t.Run("nil", func(t *testing.T) {
+		t.Parallel()
+		assert.Nil(t, nil)
 
-			mt := &common.MockT{}
-			assert.Nil(mt, fmt.Errorf("new error"))
-			assert.True(t, mt.Failed())
-			assert.False(t, mt.FailedNow())
-		})
+		mt := &common.MockT{}
+		assert.Nil(mt, fmt.Errorf("new error"))
+		assert.True(t, mt.Failed())
+		assert.False(t, mt.FailedNow())
 	})
 }
 

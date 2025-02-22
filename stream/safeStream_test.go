@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -15,6 +14,26 @@ import (
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream"
 )
+
+func TestWrap(t *testing.T) {
+	table := []struct {
+		Prefix string
+		Text   string
+		Out    string
+		Max    int
+	}{
+		{Prefix: "// ", Text: "short", Max: 78, Out: "// short"},
+		{Prefix: "// ", Text: "some text that is longer", Max: 12, Out: "// some text\n// that is\n// longer"},
+		{Prefix: "// ", Text: "some text\nwith embedded line feeds", Max: 16, Out: "// some text\n// with embedded\n// line feeds"},
+		{Prefix: "", Text: "some text that is longer", Max: 12, Out: "some text\nthat is\nlonger"},
+		{Prefix: "", Text: "some text that is longer", Max: 4, Out: "some\ntext\nthat\nis\nlonger"},
+		{Prefix: "", Text: "some text that is longer, yep", Max: 4, Out: "some\ntext\nthat\nis\nlonger,\nyep"},
+		{Prefix: "", Text: "some text\nwith embedded line feeds", Max: 16, Out: "some text\nwith embedded\nline feeds"},
+	}
+	for _, one := range table {
+		assert.Equal(t, one.Out, stream.Wrap(one.Prefix, one.Text, one.Max))
+	}
+}
 
 func TestNewHexDump(t *testing.T) {
 	stream.NewHexDump(stream.HexDumpString(dump))
@@ -277,15 +296,6 @@ func TestReverse(t *testing.T) {
 	assert.Equal(t, stream.HexString("8877665544332211"), stream.NewHexString("1122334455667788").Reverse().HexStringUpper())
 }
 
-func apply[T any](v T, f func(T)) {
-	f(v)
-}
-
-func TestInsert(t *testing.T) {
-	mylog.Struct("todo", slices.Insert([]int{1, 2, 3}, 0, 1))
-	mylog.Struct("todo", slices.Insert([]byte{1, 2, 3}, 2, 1))
-}
-
 func TestCaseconv(t *testing.T) {
 	for _, s := range name {
 		println(stream.ToCamelUpper(s))
@@ -362,11 +372,6 @@ func TestSwapAdjacent(t *testing.T) {
 	assert.Equal(t, []byte{'b', 'a', 'd', 'c', 'f', 'e', 'g'}, stream.SwapAdjacent(bytes).Bytes())
 	assert.Equal(t, "ET5AA5Q3N2KTR8      ", stream.SwapAdjacent("TEA55A3Q2NTK8R      ").String())
 	assert.Equal(t, "TA1591503892      ", stream.SwapAdjacent("AT5119058329      ").String())
-}
-
-func TestUnSetGitProxy(t *testing.T) {
-	t.Skip()
-	stream.GitProxy(false)
 }
 
 func TestSetGitProxy(t *testing.T) {

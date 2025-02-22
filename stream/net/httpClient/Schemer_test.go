@@ -1,6 +1,7 @@
 package httpClient
 
 import (
+	"go/format"
 	"testing"
 
 	"github.com/ddkwork/golibrary/safemap"
@@ -8,7 +9,6 @@ import (
 	"github.com/ddkwork/golibrary/assert"
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream"
-	"mvdan.cc/gofumpt/format"
 )
 
 func TestLayer_AssertKind(t *testing.T) {
@@ -36,7 +36,7 @@ func TestGeneratedFile_Iota(t *testing.T) {
 	stream.NewGeneratedFile().EnumTypes("Schemer", m)
 	b := stream.NewBuffer("Schemer_types_gen.go")
 	b.WriteStringLn(expansions)
-	f := mylog.Check2(format.Source(b.Bytes(), format.Options{}))
+	f := mylog.Check2(format.Source(b.Bytes()))
 	stream.WriteTruncate("Schemer_types_gen.go", f)
 }
 

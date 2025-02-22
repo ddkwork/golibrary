@@ -10,7 +10,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"go/format"
 	"io"
+	"io/fs"
 	"iter"
 	"math/big"
 	"math/rand"
@@ -26,11 +28,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/ddkwork/golibrary/stream/align"
-
-	"github.com/dc0d/caseconv"
 	"github.com/ddkwork/golibrary/mylog"
-	"mvdan.cc/gofumpt/format"
+	"github.com/ddkwork/golibrary/stream/align"
 )
 
 // 全排列
@@ -214,7 +213,7 @@ func hasAddress(s string) bool {
 
 func WriteGoFile[T Type](name string, data T) {
 	s := NewBuffer(data)
-	source, e := format.Source(s.Bytes(), format.Options{})
+	source, e := format.Source(s.Bytes())
 	mylog.CheckIgnore(e)
 	if e != nil {
 		write(name, false, s.Bytes())
@@ -637,188 +636,6 @@ func GetWindowsLogicalDrives() []string {
 	return driveLetters
 }
 
-func ToCamel(data string) string {
-	return strings.TrimSpace(fmt.Sprintf("%-50s", caseconv.ToCamel(data)))
-}
-
-func ToCamelUpper(s string) string {
-	camel := ToCamel(s)
-	return strings.ToUpper(string(camel[0])) + camel[1:]
-}
-
-func ToCamelToLower(s string) string {
-	camel := ToCamel(s)
-	return strings.ToLower(string(camel[0])) + camel[1:]
-}
-
-func CurrentDirName(path string) (currentDirName string) {
-	if path == "" {
-		path = mylog.Check2(os.Getwd())
-	}
-	split := strings.Split(path, "\\")
-	if split == nil {
-		return BaseName(filepath.Dir(path))
-	}
-	return split[len(split)-1]
-}
-
-func CopyDir(dst, src string) {
-	mylog.Check(os.CopyFS(dst, os.DirFS(src)))
-}
-
-func copyFile(dst, src string) {
-	s := mylog.Check2(os.Open(src))
-	defer func() { mylog.Check(s.Close()) }()
-	d := mylog.Check2(os.Create(dst))
-	defer func() { mylog.Check(d.Close()) }()
-	mylog.Check2(io.Copy(d, s))
-}
-
-func CopyFile(path, dstPath string) {
-	mylog.Check(IsFilePathEx(path))
-	WriteTruncate(dstPath, NewBuffer(path).Bytes())
-}
-
-func MoveFile(src, dst string) {
-	srcInfo := mylog.Check2(os.Stat(src))
-	if !srcInfo.Mode().IsRegular() {
-		mylog.Check(fmt.Sprintf("%s is not a regular file", src))
-	}
-	dstInfo := mylog.Check2(os.Stat(dst))
-	if !dstInfo.Mode().IsRegular() {
-		mylog.Check(fmt.Sprintf("%s is not a regular file", dst))
-	}
-	mylog.Check(os.SameFile(srcInfo, dstInfo))
-	mylog.Check(os.Rename(src, dst))
-	var in, out *os.File
-	out = mylog.Check2(os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, srcInfo.Mode()))
-	defer func() { mylog.Check(out.Close()) }()
-	in = mylog.Check2(os.Open(src))
-	mylog.Check2(io.Copy(out, in))
-	mylog.Check(os.Remove(src))
-}
-
-func IsFilePathEx(path string) (ok bool) {
-	return isFilePath(path, true)
-}
-
-func IsFilePath(path string) bool {
-	return isFilePath(path, false)
-}
-
-func isFilePath(path string, debug bool) bool {
-	pattern := []string{"://", "\n", "*", "?", "<", ">", "|"}
-	for _, s := range pattern {
-		if strings.Contains(path, s) {
-			return false
-		}
-	}
-	stat, e := os.Stat(path)
-	if e != nil {
-		if debug {
-			mylog.CheckIgnore(e)
-		}
-		return false
-	}
-	// strings.Has(path, "/") || strings.Has(path, "\\")
-	mode := stat.Mode()
-	return !mode.IsDir() && mode.IsRegular()
-}
-
-func DirDepth(dirPath string) (depth int) {
-	return strings.Count(dirPath, string(filepath.Separator))
-}
-
-func IsDirRoot(path string) bool {
-	return !strings.Contains(path, string(filepath.Separator))
-}
-
-func IsDirEx(path string) (ok bool) {
-	return isDir(path, true)
-}
-
-func IsDir(path string) bool {
-	return isDir(path, false)
-}
-
-func isDir(path string, debug bool) bool {
-	if strings.HasPrefix(path, ".") && IsDirRoot(path) {
-		return true
-	}
-	fi, e := os.Stat(path)
-	if e != nil {
-		return false
-	}
-	return fi != nil && fi.IsDir()
-}
-
-func FixFilePath(path string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(path, "\\", "/"), "//", "/")
-}
-
-func BaseName(path string) string {
-	return TrimExtension(filepath.Base(mylog.Check2(filepath.Abs(path))))
-}
-
-func TrimExtension(path string) string {
-	path = strings.ReplaceAll(path, "-", "_")
-	return path[:len(path)-len(filepath.Ext(path))]
-}
-
-func JoinHomeDir(path string) (join string)  { return joinHome(path, true) }
-func JoinHomeFile(path string) (join string) { return joinHome(path, false) }
-func joinHome(path string, isDir bool) (join string) {
-	join = filepath.Join(HomeDir(), path)
-	if !IsFilePath(join) {
-		switch isDir {
-		case true:
-			mylog.Check(os.MkdirAll(join, os.ModePerm))
-		default:
-			f := mylog.Check2(os.Create(join))
-			mylog.Check(f.Close())
-		}
-	}
-	return
-}
-
-func HomeDir() string {
-	if u, e := user.Current(); e == nil {
-		return u.HomeDir
-	}
-	if dir, e := os.UserHomeDir(); e == nil {
-		return dir
-	}
-	return "."
-}
-
-func RunDir() string {
-	return mylog.Check2(os.Getwd())
-}
-
-func ParseFloat(sizeStr string) (size float64) {
-	return mylog.Check2(strconv.ParseFloat(sizeStr, 64))
-}
-
-func Float64ToString(f float64, prec int) string {
-	return strconv.FormatFloat(f, 'f', prec, 64)
-}
-
-func Float64Cut(value float64, bits int) (float64, error) {
-	return strconv.ParseFloat(fmt.Sprintf("%."+strconv.Itoa(bits)+"f", value), 64)
-}
-
-func ParseInt(s string) int64 {
-	return mylog.Check2(strconv.ParseInt(s, 10, 64))
-}
-
-func ParseUint(s string) uint64 {
-	return mylog.Check2(strconv.ParseUint(s, 10, 64))
-}
-
-func Atoi(s string) int {
-	return mylog.Check2(strconv.Atoi(s))
-}
-
 func IsTermux() bool {
 	r0, e := os.Stat("/data/data/com.termux/files/usr")
 	if e == nil {
@@ -1005,6 +822,217 @@ var (
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+func trimTrailingEmptyLines(s string) string {
+	// 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符
+	re := regexp.MustCompile(`\s*\n*$`)
+	return re.ReplaceAllString(s, "")
+}
+
+func CurrentDirName(path string) (currentDirName string) {
+	if path == "" {
+		path = mylog.Check2(os.Getwd())
+	}
+	split := strings.Split(path, "\\")
+	if split == nil {
+		return BaseName(filepath.Dir(path))
+	}
+	return split[len(split)-1]
+}
+
+func CopyDir(dst, src string) {
+	mylog.Check(os.CopyFS(dst, os.DirFS(src)))
+}
+
+// Copy src to dst. src may be a directory, file, or symlink.
+func Copy(src, dst string) { CopyWithMask(src, dst, 0o777) }
+
+// CopyWithMask src to dst. src may be a directory, file, or symlink.
+func CopyWithMask(src, dst string, mask fs.FileMode) {
+	generalCopy(src, dst, mylog.Check2(os.Lstat(src)).Mode(), mask)
+}
+
+func generalCopy(src, dst string, srcMode, mask fs.FileMode) {
+	switch {
+	case srcMode&os.ModeSymlink != 0:
+		linkCopy(src, dst)
+	case srcMode.IsDir():
+		dirCopy(src, dst, srcMode, mask)
+	default:
+		fileCopy(src, dst, srcMode, mask)
+	}
+}
+
+func fileCopy(src, dst string, srcMode, mask fs.FileMode) {
+	mylog.Check(os.MkdirAll(filepath.Dir(dst), 0o755&mask))
+	f := mylog.Check2(os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, (srcMode&mask)|0o200))
+	s := mylog.Check2(os.Open(src))
+	defer mylog.Check(s.Close())
+	mylog.Check2(io.Copy(f, s))
+	mylog.Check(f.Close())
+}
+
+func dirCopy(srcDir, dstDir string, srcMode, mask fs.FileMode) {
+	mylog.Check(os.MkdirAll(dstDir, srcMode&mask))
+	list := mylog.Check2(os.ReadDir(srcDir))
+	for _, one := range list {
+		name := one.Name()
+		generalCopy(filepath.Join(srcDir, name), filepath.Join(dstDir, name), one.Type(), mask)
+	}
+}
+
+func linkCopy(src, dst string) {
+	os.Symlink(mylog.Check2(os.Readlink(src)), dst)
+}
+
+func CopyFile(path, dstPath string) {
+	mylog.Check(IsFilePathEx(path))
+	WriteTruncate(dstPath, NewBuffer(path).Bytes())
+}
+
+// IsDir returns true if the specified path exists and is a directory.
+func IsDir(path string) bool {
+	fi, e := os.Stat(path)
+	return e == nil && fi.IsDir()
+}
+
+// FileExists returns true if the path points to a regular file.
+func FileExists(path string) bool {
+	if fi, e := os.Stat(path); e == nil {
+		mode := fi.Mode()
+		return !mode.IsDir() && mode.IsRegular()
+	}
+	return false
+}
+
+// MoveFile moves a file in the file system or across volumes, using rename if possible, but falling back to copying the
+// file if not. This will error if either src or dst are not regular files.
+func MoveFile(src, dst string) {
+	var srcInfo, dstInfo os.FileInfo
+	srcInfo = mylog.Check2(os.Stat(src))
+	if !srcInfo.Mode().IsRegular() {
+		mylog.Check(fmt.Sprintf("%s is not a regular file", src))
+	}
+	dstInfo, err := os.Stat(dst)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			mylog.Check(err)
+		}
+	} else {
+		if !dstInfo.Mode().IsRegular() {
+			mylog.Check(fmt.Sprintf("%s is not a regular file", dst))
+		}
+		if os.SameFile(srcInfo, dstInfo) {
+			return
+		}
+	}
+	if os.Rename(src, dst) == nil {
+		return
+	}
+	var in, out *os.File
+	out = mylog.Check2(os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, srcInfo.Mode()))
+	defer func() {
+		if closeErr := out.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
+	in = mylog.Check2(os.Open(src))
+	mylog.Check2(io.Copy(out, in))
+	defer mylog.Check(in.Close())
+	mylog.Check(os.Remove(src))
+}
+
+func IsFilePathEx(path string) (ok bool) {
+	return isFilePath(path, true)
+}
+
+func IsFilePath(path string) bool {
+	return isFilePath(path, false)
+}
+
+func isFilePath(path string, debug bool) bool {
+	pattern := []string{"://", "\n", "*", "?", "<", ">", "|"}
+	for _, s := range pattern {
+		if strings.Contains(path, s) {
+			return false
+		}
+	}
+	stat, e := os.Stat(path)
+	if e != nil {
+		if debug {
+			mylog.CheckIgnore(e)
+		}
+		return false
+	}
+	// strings.Has(path, "/") || strings.Has(path, "\\")
+	mode := stat.Mode()
+	return !mode.IsDir() && mode.IsRegular()
+}
+
+func DirDepth(dirPath string) (depth int) {
+	return strings.Count(dirPath, string(filepath.Separator))
+}
+
+func IsDirRoot(path string) bool {
+	return !strings.Contains(path, string(filepath.Separator))
+}
+
+func IsDirEx(path string) (ok bool) {
+	return isDir(path, true)
+}
+
+func isDir(path string, debug bool) bool {
+	if strings.HasPrefix(path, ".") && IsDirRoot(path) {
+		return true
+	}
+	fi, e := os.Stat(path)
+	if e != nil {
+		return false
+	}
+	return fi != nil && fi.IsDir()
+}
+
+func FixFilePath(path string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(path, "\\", "/"), "//", "/")
+}
+
+func BaseName(path string) string {
+	return TrimExtension(filepath.Base(mylog.Check2(filepath.Abs(path))))
+}
+
+func TrimExtension(path string) string {
+	path = strings.ReplaceAll(path, "-", "_")
+	return path[:len(path)-len(filepath.Ext(path))]
+}
+func JoinHomeDir(path string) (join string)  { return joinHome(path, true) }
+func JoinHomeFile(path string) (join string) { return joinHome(path, false) }
+func joinHome(path string, isDir bool) (join string) {
+	join = filepath.Join(HomeDir(), path)
+	if !IsFilePath(join) {
+		switch isDir {
+		case true:
+			mylog.Check(os.MkdirAll(join, os.ModePerm))
+		default:
+			f := mylog.Check2(os.Create(join))
+			mylog.Check(f.Close())
+		}
+	}
+	return
+}
+
+func HomeDir() string {
+	if u, e := user.Current(); e == nil {
+		return u.HomeDir
+	}
+	if dir, e := os.UserHomeDir(); e == nil {
+		return dir
+	}
+	return "."
+}
+
+func RunDir() string {
+	return mylog.Check2(os.Getwd())
+}
+
 func GitProxy(isSetProxy bool) {
 	mylog.Call(func() {
 		s := NewBuffer("")
@@ -1039,10 +1067,4 @@ func GitProxy(isSetProxy bool) {
 		path := JoinHomeFile(".gitconfig")
 		WriteTruncate(path, s.String())
 	})
-}
-
-func trimTrailingEmptyLines(s string) string {
-	// 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符
-	re := regexp.MustCompile(`\s*\n*$`)
-	return re.ReplaceAllString(s, "")
 }
