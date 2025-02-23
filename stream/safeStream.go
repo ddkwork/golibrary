@@ -466,12 +466,50 @@ func (b *Buffer) AppendByteSlice(bytesSlice ...[]byte) []byte {
 
 func (b *Buffer) Contains(substr string) bool { return strings.Contains(b.String(), substr) }
 
-func ReadFileToLines(path string) iter.Seq[string] {
-	return strings.Lines(string(mylog.Check2(os.ReadFile(path))))
-}
-
 func (b *Buffer) ToLines() (lines iter.Seq[string]) {
 	return strings.Lines(b.String())
+}
+
+func ReadFileToLines(path string) iter.Seq[string] {
+	reader := mylog.Check2(os.Open(path))
+	defer func() { mylog.Check(reader.Close()) }()
+	return readLines(reader)
+}
+
+func ReadLines[T ~string | ~[]byte | ~*bytes.Buffer | *Buffer](data T) iter.Seq[string] {
+	var reader io.Reader
+	switch v := any(data).(type) {
+	case string:
+		reader = strings.NewReader(v)
+		if IsFilePath(v) {
+			f := mylog.Check2(os.Open(v))
+			defer func() { mylog.Check(f.Close()) }()
+			reader = f
+		}
+	case []byte:
+		reader = bytes.NewReader(v)
+	case *bytes.Buffer:
+		reader = v
+	case *Buffer:
+		reader = v
+	default:
+		mylog.Check(fmt.Errorf("unknown type %T", data))
+	}
+	return readLines(reader)
+}
+
+func readLines(r io.Reader) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		scanner := bufio.NewScanner(r)
+		// scanner.Split(bufio.ScanLines)
+		// scanner.Buffer(nil, 1024*1024)
+		lineNumber := 1
+		for scanner.Scan() {
+			yield(scanner.Text())
+			lineNumber++
+		}
+		mylog.Check(scanner.Err())
+	}
 }
 
 // Lines returns an iterator over the newline-terminated lines in the string s.

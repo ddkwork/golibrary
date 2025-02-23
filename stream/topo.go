@@ -34,11 +34,10 @@ func TopologicalSort[T comparable](m *safemap.M[T, []T], allowCyclicDependency b
 			sorted = append(sorted, id)
 		}
 	}
-	m.Range(func(key T, value []T) bool {
-		if !visited.Has(key) {
-			visitAll(key)
+	for k := range m.Range() {
+		if !visited.Has(k) {
+			visitAll(k)
 		}
-		return true
-	})
+	}
 	return
 }

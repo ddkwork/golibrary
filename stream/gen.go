@@ -93,11 +93,10 @@ func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *safemap.M[string,
 			names    []string
 			tooltips []string
 		)
-		TypeTooltipMap.Range(func(key string, value string) bool {
+		for key, value := range TypeTooltipMap.Range() {
 			names = append(names, strings.TrimSpace(key))
 			tooltips = append(tooltips, strings.TrimSpace(value))
-			return true
-		})
+		}
 		for i, Name := range names {
 			if !g.keepOrigName {
 				names[i] = ToCamelUpper(Name)

@@ -20,18 +20,17 @@ func TestName(t *testing.T) {
 		yield("j", 10)
 		yield("k", 11)
 	})
-	m.Range(func(k string, v int) bool {
+	for k := range m.Range() {
 		if k == "c" {
 			m.Delete(k)
 		}
 		// println(strconv.Quote(k), v)
-		return true
-	})
+	}
+
 	println(m.Empty())
-	m.Range(func(k string, v int) bool {
+	for k, v := range m.Range() {
 		println(strconv.Quote(k), v)
-		return true
-	})
+	}
 
 	//for k, v := range m.All() {
 	//	println(strconv.Quote(k), v)
@@ -104,10 +103,9 @@ func TestSafeMap_Range(t *testing.T) {
 	sm.Update(2, "two")
 
 	keys := make(map[int]bool)
-	sm.Range(func(k int, v string) bool {
+	for k := range sm.Range() {
 		keys[k] = true
-		return true
-	})
+	}
 
 	if len(keys) != 2 || !keys[1] || !keys[2] {
 		t.Errorf("expected keys 1 and 2, got '%v'", keys)
@@ -190,10 +188,9 @@ func TestSafeMap_Range_Ordered(t *testing.T) {
 	sm.Update(2, "two")
 
 	keys := make(map[int]bool)
-	sm.Range(func(k int, v string) bool {
+	for k := range sm.Range() {
 		keys[k] = true
-		return true
-	})
+	}
 
 	if len(keys) != 2 || !keys[1] || !keys[2] {
 		t.Errorf("expected keys 1 and 2, got '%v'", keys)

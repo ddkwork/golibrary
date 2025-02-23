@@ -8,6 +8,8 @@ import (
 	"maps"
 	"sync"
 
+	"github.com/ddkwork/golibrary/mylog/pretty"
+
 	"github.com/ddkwork/golibrary/mylog"
 )
 
@@ -35,7 +37,7 @@ type api[K comparable, V any] interface {
 	Set(key K, value V) (actual V, exist bool)                             // 设置，如果存在则不更新
 	GetAndDelete(key K) (value V, exist bool)                              // 获取后删除
 	removeKey(key K)                                                       // 移除key
-	Range(f func(k K, v V) bool)                                           // 遍历，todo 回调内执行删除会死锁,vt调试器bind的时候需要
+	Range() iter.Seq2[K, V]                                                // 遍历，todo 回调内执行删除会死锁,vt调试器bind的时候需要
 	Reset()                                                                // 清空
 	Len() int                                                              // 大小
 	Empty() bool                                                           // 大小为0
@@ -65,7 +67,7 @@ func (s *M[K, V]) Collect(seq iter.Seq2[K, V]) *M[K, V] {
 	for k, v := range seq {
 		_, exist := s.Set(k, v)
 		if exist {
-			panic("duplicate key")
+			panic("duplicate key: " + fmt.Sprint(k))
 		}
 	}
 	return s
@@ -84,7 +86,7 @@ func NewOrdered[K comparable, V any](seq iter.Seq2[K, V]) (m *M[K, V]) {
 	for k, v := range seq {
 		_, exist := m.Set(k, v)
 		if exist {
-			panic("duplicate key")
+			panic("duplicate key: " + fmt.Sprint(k))
 		}
 	}
 	return
@@ -112,7 +114,7 @@ func (s *M[K, V]) Has(key K) (exists bool) {
 func (s *M[K, V]) GetMust(key K) (value V) {
 	get, exist := s.Get(key)
 	if !exist {
-		panic("key: " + fmt.Sprint(key) + " not found")
+		mylog.Check("key: " + fmt.Sprint(key) + " not found")
 	}
 	return get
 }
@@ -154,32 +156,26 @@ func (s *M[K, V]) Set(key K, value V) (actual V, exist bool) {
 	return value, false
 }
 
-func (s *M[K, V]) Range(callback func(k K, v V) bool) {
-	if s.ordered {
-		for e := s.keys.Front(); e != nil; e = e.Next() {
-			k := e.Value.(K)
-			if !callback(k, s.m[k]) {
+func (s *M[K, V]) Range() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		if s.ordered {
+			for e := s.keys.Front(); e != nil; e = e.Next() {
+				k := e.Value.(K)
+				if !yield(k, s.m[k]) {
+					return
+				}
+			}
+			return
+		}
+		for k, v := range maps.All(s.m) {
+			if !yield(k, v) {
 				return
 			}
-		}
-		return
-	}
-	for k, v := range maps.All(s.m) {
-		if !callback(k, v) {
-			return
 		}
 	}
 }
 
-func (s *M[K, V]) RangeKeys() iter.Seq[K] { // todo test 这种不支持有序遍历keys，使用Keys() 老方案遍历算了
-	return func(yield func(K) bool) {
-		for k := range s.m {
-			if !yield(k) {
-				return
-			}
-		}
-	}
-}
+func (s *M[K, V]) RangeKeys() iter.Seq[K] { return maps.Keys(s.m) } // todo test 这种不支持有序遍历keys，使用Keys() 老方案遍历算了
 
 func (s *M[K, V]) Keys() []K {
 	s.RLock()
@@ -202,7 +198,6 @@ func (s *M[K, V]) Keys() []K {
 func (s *M[K, V]) Values() []V {
 	s.RLock()
 	defer s.RUnlock()
-
 	values := make([]V, s.keys.Len())
 	i := 0
 	if s.ordered {
@@ -218,24 +213,12 @@ func (s *M[K, V]) Values() []V {
 	return values
 }
 
-func (s *M[K, V]) All() iter.Seq2[K, V] { // todo 移除它，遍历就足够了
-	return func(yield func(k K, v V) bool) {
-		s.Range(yield)
-	}
-}
-
-func (s *M[K, V]) Remove(key K) {
-	s.removeKey(key)
-}
-
-func (s *M[K, V]) Delete(key K) {
-	s.removeKey(key)
-}
-
+func (s *M[K, V]) Empty() bool  { return s.Len() == 0 }
+func (s *M[K, V]) Remove(key K) { s.removeKey(key) }
+func (s *M[K, V]) Delete(key K) { s.removeKey(key) }
 func (s *M[K, V]) removeKey(key K) {
 	s.Lock()
 	defer s.Unlock()
-
 	if elem, exists := s.keyIndex[key]; exists {
 		s.keys.Remove(elem)
 		delete(s.keyIndex, key)
@@ -257,10 +240,6 @@ func (s *M[K, V]) Len() int {
 	return len(s.m)
 }
 
-func (s *M[K, V]) Empty() bool {
-	return s.Len() == 0
-}
-
 func (s *M[K, V]) Map() map[K]V {
 	s.RLock()
 	defer s.RUnlock()
@@ -270,7 +249,7 @@ func (s *M[K, V]) Map() map[K]V {
 func (s *M[K, V]) CopyFromMap(data map[K]V) {
 	s.Lock()
 	defer s.Unlock()
-	s.m = maps.Clone(data) // todo add Clone method
+	s.m = maps.Clone(data) // todo add Clone method,use deepcopy pkg
 	s.keys.Init()
 	s.keyIndex = make(map[K]*list.Element)
 	for k := range data {
@@ -288,9 +267,7 @@ func (s *M[K, V]) UnmarshalJSON(data []byte) (err error) {
 	s.Lock()
 	defer s.Unlock()
 	var m map[K]V
-	if mylog.Check(json.Unmarshal(data, &m)); err != nil {
-		return err
-	}
+	mylog.Check(json.Unmarshal(data, &m))
 	s.m = m
 	s.keys.Init()
 	s.keyIndex = make(map[K]*list.Element)
@@ -300,13 +277,10 @@ func (s *M[K, V]) UnmarshalJSON(data []byte) (err error) {
 func (s *M[K, V]) String() string {
 	s.RLock()
 	defer s.RUnlock()
-	return fmt.Sprintf("%#v", s.m) // todo 使用结构体打印包格式化
+	return pretty.Format(s.m)
 }
 
-func (s *M[K, V]) LastKey() K {
-	return s.Keys()[s.Len()-1]
-}
-
+func (s *M[K, V]) LastKey() K { return s.Keys()[s.Len()-1] }
 func (s *M[K, V]) LastValue() V {
 	return s.GetMust(s.LastKey())
 }
