@@ -476,6 +476,27 @@ func ReadFileToLines(path string) iter.Seq[string] {
 	return readLines(reader)
 }
 
+func ReadFileToChunks(path string, n int) iter.Seq[[]byte] {
+	reader := Check2(os.Open(path))
+	defer func() { Check(reader.Close()) }()
+	r := bufio.NewReader(reader)
+	return func(yield func([]byte) bool) {
+		buffer := make([]byte, n)
+		for {
+			size, err := r.Read(buffer)
+			if CheckEof(err) {
+				break
+			}
+			if size > 0 {
+				// Yield the slice of the buffer that contains the data read
+				if !yield(buffer[:size]) {
+					break
+				}
+			}
+		}
+	}
+}
+
 func ReadLines[T ~string | ~[]byte | ~*bytes.Buffer | *Buffer](data T) iter.Seq[string] {
 	var reader io.Reader
 	switch v := any(data).(type) {
