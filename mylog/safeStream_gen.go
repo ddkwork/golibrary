@@ -471,16 +471,26 @@ func (b *Buffer) ToLines() (lines iter.Seq[string]) {
 }
 
 func ReadFileToLines(path string) iter.Seq[string] {
-	reader := Check2(os.Open(path))
-	defer func() { Check(reader.Close()) }()
-	return readLines(reader)
+	return func(yield func(string) bool) {
+		f := Check2(os.Open(path))
+		defer func() { Check(f.Close()) }()
+		scanner := bufio.NewScanner(f)
+		// scanner.Split(bufio.ScanLines)
+		// scanner.Buffer(nil, 1024*1024)
+		lineNumber := 1
+		for scanner.Scan() {
+			yield(scanner.Text())
+			lineNumber++
+		}
+		Check(scanner.Err())
+	}
 }
 
 func ReadFileToChunks(path string, n int) iter.Seq[[]byte] {
-	reader := Check2(os.Open(path))
-	defer func() { Check(reader.Close()) }()
-	r := bufio.NewReader(reader)
 	return func(yield func([]byte) bool) {
+		reader := Check2(os.Open(path))
+		defer func() { Check(reader.Close()) }()
+		r := bufio.NewReader(reader)
 		buffer := make([]byte, n)
 		for {
 			size, err := r.Read(buffer)
@@ -498,29 +508,25 @@ func ReadFileToChunks(path string, n int) iter.Seq[[]byte] {
 }
 
 func ReadLines[T ~string | ~[]byte | ~*bytes.Buffer | *Buffer](data T) iter.Seq[string] {
-	var reader io.Reader
-	switch v := any(data).(type) {
-	case string:
-		reader = strings.NewReader(v)
-		if IsFilePath(v) {
-			f := Check2(os.Open(v))
-			defer func() { Check(f.Close()) }()
-			reader = f
-		}
-	case []byte:
-		reader = bytes.NewReader(v)
-	case *bytes.Buffer:
-		reader = v
-	case *Buffer:
-		reader = v
-	default:
-		Check(fmt.Errorf("unknown type %T", data))
-	}
-	return readLines(reader)
-}
-
-func readLines(r io.Reader) iter.Seq[string] {
 	return func(yield func(string) bool) {
+		var r io.Reader
+		switch v := any(data).(type) {
+		case string:
+			r = strings.NewReader(v)
+			if IsFilePath(v) {
+				f := Check2(os.Open(v))
+				defer func() { Check(f.Close()) }()
+				r = f
+			}
+		case []byte:
+			r = bytes.NewReader(v)
+		case *bytes.Buffer:
+			r = v
+		case *Buffer:
+			r = v
+		default:
+			Check(fmt.Errorf("unknown type %T", data))
+		}
 		scanner := bufio.NewScanner(r)
 		// scanner.Split(bufio.ScanLines)
 		// scanner.Buffer(nil, 1024*1024)
