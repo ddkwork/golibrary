@@ -26,7 +26,7 @@ type M[K comparable, V any] struct {
 // thx github.com/hitsumitomo/safemap
 type api[K comparable, V any] interface {
 	New(ordered ...bool) (m *M[K, V])                                      // 实例化
-	NewOrdered(seq iter.Seq2[K, V]) (m *M[K, V])                           // 实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
+	NewOrdered(yield iter.Seq2[K, V]) (m *M[K, V])                         // 实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
 	NewStringer(ordered ...bool) (m *M[string, string])                    // 从字符串实例化
 	NewStringerKeys(keys []string, ordered ...bool) (m *M[string, string]) // 从字符串切片实例化
 	Has(key K) (exists bool)                                               // 是否存在
@@ -81,9 +81,9 @@ func (s *M[K, V]) Reset() {
 	s.keyIndex = make(map[K]*list.Element)
 }
 
-func NewOrdered[K comparable, V any](seq iter.Seq2[K, V]) (m *M[K, V]) {
+func NewOrdered[K comparable, V any](yield iter.Seq2[K, V]) (m *M[K, V]) {
 	m = New[K, V](true)
-	for k, v := range seq {
+	for k, v := range yield {
 		_, exist := m.Set(k, v)
 		if exist {
 			panic("duplicate key: " + fmt.Sprint(k))
