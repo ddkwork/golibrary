@@ -120,11 +120,7 @@ func (s *M[K, V]) GetMust(key K) (value V) {
 }
 
 func (s *M[K, V]) GetMustCallback(key K, callback func(value V) V) (value V) {
-	get, exist := s.Get(key)
-	if !exist {
-		mylog.Check("key: " + fmt.Sprint(key) + " not found")
-	}
-	return callback(get)
+	return callback(s.GetMust(key))
 }
 
 func (s *M[K, V]) Get(key K) (value V, exist bool) {
