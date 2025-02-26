@@ -169,7 +169,7 @@ import (
 		g.P("func (t ", method, ") AssertBy(name string) ", method, " {")
 		g.P("name=strings.TrimSuffix(name,\"Type\")")
 		g.P(" for _, n := range t.EnumTypes() {")
-		g.P("  if strings.ToLower(name) == strings.ToLower(n.String()) {")
+		g.P("  if strings.EqualFold(name,n.String()) {")
 		g.P("   return n")
 		g.P("  }")
 		g.P(" }")

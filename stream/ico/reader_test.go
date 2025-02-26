@@ -29,7 +29,7 @@ func fastCompare(img1, img2 *image.NRGBA) (int64, error) {
 	return int64(math.Sqrt(float64(accumError))), nil
 }
 
-func aTestDecodeConfig(t *testing.T) {
+func TestDecodeConfig(t *testing.T) {
 	t.Parallel()
 	mylog.Call(func() {
 		file := "testdata/golang.ico"

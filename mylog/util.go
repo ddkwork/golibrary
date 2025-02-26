@@ -5,7 +5,6 @@ import (
 	"go/format"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/google/go-cmp/cmp"
 
@@ -50,35 +49,4 @@ func (l *log) textIndent(src string, isLeftAlign bool) string {
 		return src + spaceStr + Separate
 	}
 	return spaceStr + src + Separate
-}
-
-var (
-	count int64
-	lock  = new(sync.Mutex)
-)
-
-func main() {
-	ch := make(chan struct{}, 2)
-	go func() {
-		for i := 0; i < 100000; i++ {
-			lock.Lock()
-			count++
-			lock.Unlock()
-		}
-		ch <- struct{}{}
-	}()
-
-	go func() {
-		for i := 0; i < 100000; i++ {
-			lock.Lock()
-			count--
-			lock.Unlock()
-		}
-		ch <- struct{}{}
-	}()
-
-	<-ch
-	<-ch
-	close(ch)
-	fmt.Println(count)
 }

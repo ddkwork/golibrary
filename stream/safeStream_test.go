@@ -1,7 +1,6 @@
 package stream_test
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"os"
@@ -39,13 +38,6 @@ func TestNewHexDump(t *testing.T) {
 	stream.NewHexDump(stream.HexDumpString(dump))
 	stream.NewHexDump(stream.HexDumpString(bugBuf))
 }
-
-const (
-	address    = "00000000  "
-	sep        = "|"
-	newLine    = "\n"
-	addressLen = len(address)
-)
 
 func TestHexDumpToGoBytes(t *testing.T) {
 	ss := `00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00 8E 6A 64 01 15 4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47 00`
@@ -95,10 +87,6 @@ var dump = `
 
 func TestIsFilePath(t *testing.T) {
 	assert.False(t, stream.IsFilePath("wss://alive.github.com/_sockets/u/19886504/ws?ses"))
-}
-
-func Test_trimSlash(t *testing.T) {
-	stream.TrimSlash("asserts\\1.jpg")
 }
 
 func TestAlignString(t *testing.T) {
@@ -209,28 +197,6 @@ func TestStream_SliceEnd(t *testing.T) {
 	s.NewLine()
 	s.SliceEnd()
 	println(s.String())
-}
-
-func main() {
-	file := mylog.Check2(os.Open("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js"))
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
-	var lines []string
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		lines = append(lines, line)
-	}
-
-	mylog.Check(scanner.Err())
-}
-
-func BenchmarkName(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		main()
-	}
 }
 
 func BenchmarkByBufioReaderReadLine(b *testing.B) {
@@ -367,9 +333,9 @@ func TestToCamelUpper(t *testing.T) {
 
 func TestSwapAdjacent(t *testing.T) {
 	str := "abcdefg"
-	bytes := []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g'}
+	b := []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g'}
 	assert.Equal(t, "badcfeg", stream.SwapAdjacent(str).String())
-	assert.Equal(t, []byte{'b', 'a', 'd', 'c', 'f', 'e', 'g'}, stream.SwapAdjacent(bytes).Bytes())
+	assert.Equal(t, []byte{'b', 'a', 'd', 'c', 'f', 'e', 'g'}, stream.SwapAdjacent(b).Bytes())
 	assert.Equal(t, "ET5AA5Q3N2KTR8      ", stream.SwapAdjacent("TEA55A3Q2NTK8R      ").String())
 	assert.Equal(t, "TA1591503892      ", stream.SwapAdjacent("AT5119058329      ").String())
 }

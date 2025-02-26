@@ -46,11 +46,9 @@ func (b BitField) SetX(index int, v int) BitField {
 }
 
 func (b BitField) GetX(index int) BitField {
-	field := New(0)
 	for i := range b {
 		if i+1 == len(b)-index {
-			field = b[i+1 : i+1+index]
-			return field
+			return b[i+1 : i+1+index]
 		}
 	}
 	return nil

@@ -559,7 +559,6 @@ func Lines(s string) iter.Seq2[int, string] {
 			}
 			lineNumber++
 		}
-		return
 	}
 }
 
@@ -583,7 +582,6 @@ func LinesBytes(s []byte) iter.Seq2[int, []byte] {
 			}
 			lineNumber++
 		}
-		return
 	}
 }
 
@@ -708,87 +706,13 @@ func IsTermux() bool {
 	}
 	return false
 }
-func IsAix() bool       { return runtime.GOOS == "aix" }
-func IsAndroid() bool   { return runtime.GOOS == "android" }
-func IsDarwin() bool    { return runtime.GOOS == "darwin" }
-func IsDragonfly() bool { return runtime.GOOS == "dragonfly" }
-func IsFreebsd() bool   { return runtime.GOOS == "freebsd" }
-func IsHurd() bool      { return runtime.GOOS == "hurd" }
-func IsIllumos() bool   { return runtime.GOOS == "illumos" }
-func IsIos() bool       { return runtime.GOOS == "ios" }
-func IsJs() bool        { return runtime.GOOS == "js" }
-func IsLinux() bool     { return runtime.GOOS == "linux" }
-func IsNacl() bool      { return runtime.GOOS == "nacl" }
-func IsNetbsd() bool    { return runtime.GOOS == "netbsd" }
-func IsOpenbsd() bool   { return runtime.GOOS == "openbsd" }
-func IsPlan9() bool     { return runtime.GOOS == "plan9" }
-func IsSolaris() bool   { return runtime.GOOS == "solaris" }
-func IsWasip1() bool    { return runtime.GOOS == "wasip1" }
-func IsWindows() bool   { return runtime.GOOS == "windows" }
-func IsZos() bool       { return runtime.GOOS == "zos" }
-
-var knownOS = map[string]bool{
-	"aix":       true,
-	"android":   true,
-	"darwin":    true,
-	"dragonfly": true,
-	"freebsd":   true,
-	"hurd":      true,
-	"illumos":   true,
-	"ios":       true,
-	"js":        true,
-	"linux":     true,
-	"nacl":      true,
-	"netbsd":    true,
-	"openbsd":   true,
-	"plan9":     true,
-	"solaris":   true,
-	"wasip1":    true,
-	"windows":   true,
-	"zos":       true,
-}
-
-var unixOS = map[string]bool{
-	"aix":       true,
-	"android":   true,
-	"darwin":    true,
-	"dragonfly": true,
-	"freebsd":   true,
-	"hurd":      true,
-	"illumos":   true,
-	"ios":       true,
-	"linux":     true,
-	"netbsd":    true,
-	"openbsd":   true,
-	"solaris":   true,
-}
-
-var knownArch = map[string]bool{
-	"386":         true,
-	"amd64":       true,
-	"amd64p32":    true,
-	"arm":         true,
-	"armbe":       true,
-	"arm64":       true,
-	"arm64be":     true,
-	"loong64":     true,
-	"mips":        true,
-	"mipsle":      true,
-	"mips64":      true,
-	"mips64le":    true,
-	"mips64p32":   true,
-	"mips64p32le": true,
-	"ppc":         true,
-	"ppc64":       true,
-	"ppc64le":     true,
-	"riscv":       true,
-	"riscv64":     true,
-	"s390":        true,
-	"s390x":       true,
-	"sparc":       true,
-	"sparc64":     true,
-	"wasm":        true,
-}
+func IsAndroid() bool { return runtime.GOOS == "android" }
+func IsDarwin() bool  { return runtime.GOOS == "darwin" }
+func IsFreebsd() bool { return runtime.GOOS == "freebsd" }
+func IsIos() bool     { return runtime.GOOS == "ios" }
+func IsJs() bool      { return runtime.GOOS == "js" }
+func IsLinux() bool   { return runtime.GOOS == "linux" }
+func IsWindows() bool { return runtime.GOOS == "windows" }
 
 const TimeLayout = "2006-01-02 15:04:05"
 
@@ -811,7 +735,8 @@ func GetTimeStamp() string { return strconv.FormatInt(time.Now().UnixNano()/1000
 
 func GetDiffDays(dstTime string) string {
 	t := Check2(time.Parse("2006-01-02", dstTime))
-	now := t.Sub(time.Now())
+	now := time.Until(t)
+	// now := t.Sub(time.Now())
 	days := int(now.Hours() / 24)
 	years := days / 365
 	months := (days % 365) / 30

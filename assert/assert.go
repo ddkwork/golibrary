@@ -364,28 +364,28 @@ func NotIn[T any](t common.T, element T, slice []T, opts ...cmp.Option) {
 func ContainsString(t common.T, s, v string) {
 	t.Helper()
 	if !strings.Contains(s, v) {
-		t.Error(fmt.Sprintf("expected to contain string, but does not\n"))
+		t.Error("expected to contain string, but does not")
 	}
 }
 
 func Contains[S ~[]E, E comparable](t common.T, s S, v E) {
 	t.Helper()
 	if !slices.Contains(s, v) {
-		t.Error(fmt.Sprintf("expected to contain element, but does not\n"))
+		t.Error("expected to contain element, but does not\n")
 	}
 }
 
 func NotContainsString(t common.T, s, v string) { // todo remove ? use true api ?
 	t.Helper()
 	if strings.Contains(s, v) {
-		t.Error(fmt.Sprintf("expected to not contain string, but does\n"))
+		t.Error("expected to not contain string, but does")
 	}
 }
 
 func NotContains[S ~[]E, E comparable](t common.T, s S, v E) {
 	t.Helper()
 	if slices.Contains(s, v) {
-		t.Error(fmt.Sprintf("expected to not contain element, but does\n"))
+		t.Error("expected to not contain element, but does")
 	}
 }
 

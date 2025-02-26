@@ -156,9 +156,12 @@ func (l *log) DumpResponse(Response *http.Response, body bool) string {
 	dumpResponse, e := httputil.DumpResponse(Response, body)
 	if e != nil {
 		dumpResponse, e = httputil.DumpResponse(Response, false)
+		if e != nil {
+			panic(e)
+		}
 	}
-	s := outHttp + strings.TrimSuffix(string(dumpResponse), "\n") + "\n"
-	s += endHttp
+	s := outHttp + strings.TrimSuffix(string(dumpResponse), "\n")
+	s += "\n" + endHttp
 	return s
 }
 

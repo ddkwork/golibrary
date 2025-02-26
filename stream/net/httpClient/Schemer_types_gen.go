@@ -37,7 +37,7 @@ func SchemerTypeBy[T stream.Integer](v T) SchemerType {
 func (t SchemerType) AssertBy(name string) SchemerType {
 	name = strings.TrimSuffix(name, "Type")
 	for _, n := range t.EnumTypes() {
-		if strings.ToLower(name) == strings.ToLower(n.String()) {
+		if strings.EqualFold(name, n.String()) {
 			return n
 		}
 	}

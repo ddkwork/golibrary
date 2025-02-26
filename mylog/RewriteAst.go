@@ -1,7 +1,6 @@
 package mylog
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"go/ast"
@@ -9,10 +8,8 @@ import (
 	"go/parser"
 	"go/token"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"golang.org/x/tools/go/ast/astutil"
 )
@@ -53,31 +50,31 @@ func newHandle(path string, noComments bool) *handle {
 	return h
 }
 
-func newCodeHandle(code string, noComments bool) *handle {
-	path := "testHandle.go"
-	fileSet := token.NewFileSet()
-	h := &handle{
-		fileSet:  fileSet,
-		root:     Check2(parser.ParseFile(fileSet, path, code, parser.ParseComments)),
-		path:     "testHandle.go",
-		lines:    nil,
-		lineInfo: "",
-		line:     0,
-		mod:      "github.com/ddkwork/golibrary/mylog",
-		file:     nil,
-	}
-	if noComments {
-		h.removeComments()
-	}
-	lines := []string{""}
-	scanner := bufio.NewScanner(strings.NewReader(code))
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	Check(scanner.Err())
-	h.lines = lines
-	return h
-}
+//func newCodeHandle(code string, noComments bool) *handle {
+//	path := "testHandle.go"
+//	fileSet := token.NewFileSet()
+//	h := &handle{
+//		fileSet:  fileSet,
+//		root:     Check2(parser.ParseFile(fileSet, path, code, parser.ParseComments)),
+//		path:     "testHandle.go",
+//		lines:    nil,
+//		lineInfo: "",
+//		line:     0,
+//		mod:      "github.com/ddkwork/golibrary/mylog",
+//		file:     nil,
+//	}
+//	if noComments {
+//		h.removeComments()
+//	}
+//	lines := []string{""}
+//	scanner := bufio.NewScanner(strings.NewReader(code))
+//	for scanner.Scan() {
+//		lines = append(lines, scanner.Text())
+//	}
+//	Check(scanner.Err())
+//	h.lines = lines
+//	return h
+//}
 
 func (h *handle) removeComments() {
 	Todo("https://github.com/Greyh4t/nocomment")
@@ -494,25 +491,25 @@ func isIfError(stmt *ast.IfStmt) (isError bool) {
 	return
 }
 
-func (h *handle) debug(title string, n ast.Node) {
-	Trace(title+" start", h.fileSet.Position(n.Pos()).String())
-	Warning(title+" end", h.fileSet.Position(n.End()).String())
-}
+//func (h *handle) debug(title string, n ast.Node) {
+//	Trace(title+" start", h.fileSet.Position(n.Pos()).String())
+//	Warning(title+" end", h.fileSet.Position(n.End()).String())
+//}
 
 func (h *handle) Position(p token.Pos) token.Position {
 	return h.file.PositionFor(p, false)
 }
 
-func (h *handle) removeLines(fromLine, toLine int) {
-	for fromLine < toLine {
-		h.file.MergeLine(fromLine)
-		toLine--
-	}
-}
-
-func (h *handle) removeLinesBetween(from, to token.Pos) {
-	h.removeLines(h.Line(from)+1, h.Line(to))
-}
+//func (h *handle) removeLines(fromLine, toLine int) {
+//	for fromLine < toLine {
+//		h.file.MergeLine(fromLine)
+//		toLine--
+//	}
+//}
+//
+//func (h *handle) removeLinesBetween(from, to token.Pos) {
+//	h.removeLines(h.Line(from)+1, h.Line(to))
+//}
 
 func (h *handle) Line(p token.Pos) int {
 	return h.Position(p).Line
@@ -542,56 +539,4 @@ func GetLastReturnType(assignStmt *ast.AssignStmt) (lastReturnType string, b boo
 		}
 	}
 	return
-}
-
-func identEqual(expr ast.Expr, name string) bool {
-	id, ok := expr.(*ast.Ident)
-	return ok && id.Name == name
-}
-
-func getAstLine() {
-	src := ``
-	fset := token.NewFileSet()
-	node := Check2(parser.ParseFile(fset, "demo", src, 0))
-	for _, group := range node.Decls {
-		start := fset.Position(group.Pos())
-		end := fset.Position(group.End())
-		for s := range strings.Lines(src[start.Offset:end.Offset]) {
-			fmt.Printf("Line %d: %s\n", start.Line, s)
-		}
-	}
-}
-
-func getFuncAndMethod() {
-	src := Check2(os.ReadFile("D:\\workspace\\workspace\\app\\widget\\TreeTable.go"))
-
-	fset := token.NewFileSet()
-	node := Check2(parser.ParseFile(fset, "D:\\workspace\\workspace\\app\\widget\\TreeTable.go", src, 0))
-
-	for _, decl := range node.Decls {
-		switch d := decl.(type) {
-		case *ast.FuncDecl:
-			body := fmt.Sprintf("%s\n", src[d.Pos()-1:d.End()-1])
-			before, _, found := strings.Cut(body, "{")
-			if found {
-				if unicode.IsUpper(rune(before[5])) {
-					println(before)
-				}
-			}
-		case *ast.GenDecl:
-			for _, spec := range d.Specs {
-				if typeSpec, ok := spec.(*ast.TypeSpec); ok {
-					if _, ok := typeSpec.Type.(*ast.FuncType); ok {
-						body := fmt.Sprintf("%s\n", src[typeSpec.Pos()-1:typeSpec.End()-1])
-						before, _, found := strings.Cut(body, "{")
-						if found {
-							if unicode.IsUpper(rune(before[5])) {
-								println(before)
-							}
-						}
-					}
-				}
-			}
-		}
-	}
 }

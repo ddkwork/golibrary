@@ -42,12 +42,12 @@ func DecodeConfig(r io.Reader) (image.Config, error) {
 	mylog.Check(d.decodeEntries(r))
 	e := d.entries[0]
 	buf := make([]byte, e.Size+14)
-	n := mylog.Check2(io.ReadFull(r, buf[14:]))
+	n, err := io.ReadFull(r, buf[14:])
 	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
 		return cfg, err
 	}
 	buf = buf[:14+n]
-	if n > 8 && bytes.Compare(buf[14:22], pngHeader) == 0 {
+	if n > 8 && bytes.Equal(buf[14:22], pngHeader) {
 		return png.DecodeConfig(bytes.NewReader(buf[14:]))
 	}
 
@@ -87,7 +87,7 @@ func (d *decoder) decode(r io.Reader) (err error) {
 		data := make([]byte, e.Size+14)
 		n := mylog.Check2(io.ReadFull(r, data[14:]))
 		data = data[:14+n]
-		if n > 8 && bytes.Compare(data[14:22], pngHeader) == 0 {
+		if n > 8 && bytes.Equal(data[14:22], pngHeader) {
 			p := mylog.Check2(png.Decode(bytes.NewReader(data[14:])))
 			d.images[i] = p
 		} else {

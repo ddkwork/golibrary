@@ -13,18 +13,15 @@ func Iface(iface any) any {
 	return Copy(iface)
 }
 
+// tree node clone and tls ca clone
 func Copy[T any](src T) T {
 	if any(src) == nil {
 		var zero T
 		return zero
 	}
-
 	original := reflect.ValueOf(src)
-
 	cpy := reflect.New(original.Type()).Elem()
-
 	copyRecursive(original, cpy)
-
 	return cpy.Interface().(T)
 }
 

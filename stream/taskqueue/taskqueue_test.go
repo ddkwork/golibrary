@@ -60,8 +60,3 @@ func submitParallel(q *taskqueue.Queue, i int) {
 		atomic.AddInt32(&count, 1)
 	})
 }
-
-func boom() {
-	var bad *int
-	*bad = 1
-}

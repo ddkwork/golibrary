@@ -7,21 +7,21 @@ import (
 )
 
 func reason(err any) string {
-	switch err.(type) {
+	switch e := err.(type) {
 	case error:
-		return err.(error).Error()
+		return e.Error()
 	case string:
 		return strings.TrimSuffix(err.(string), "\n")
 	}
 	return ""
 }
 
-type errorX interface {
-	Error() string
-	Zero() bool
-}
-
-var errType = reflect.TypeFor[error]
+//type errorX interface {
+//	Error() string
+//	Zero() bool
+//}
+//
+//var errType = reflect.TypeFor[error]
 
 func Check2ForJsonNumberNodeType[T any](ret T, err error) bool {
 	return err == nil
