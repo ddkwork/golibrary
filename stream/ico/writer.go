@@ -13,7 +13,7 @@ import (
 )
 
 func Encode(w io.Writer, im image.Image) {
-	mylog.Check(w == nil)
+	mylog.CheckNil(w)
 	b := im.Bounds()
 	m := image.NewRGBA(b)
 	draw.Draw(m, b, im, b.Min, draw.Src)
