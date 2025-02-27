@@ -1,11 +1,15 @@
 package caseconv
 
-import "strings"
+import (
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"strings"
+)
 
 func ToPascal(str string) string {
 	chunks := chunk(str)
 	for i, c := range chunks {
-		chunks[i] = strings.Title(c)
+		chunks[i] = cases.Title(language.English).String(c)
 	}
 	return strings.Join(chunks, "")
 }

@@ -24,30 +24,30 @@ type M[K comparable, V any] struct {
 }
 
 // thx github.com/hitsumitomo/safemap
-type api[K comparable, V any] interface {
-	New(ordered ...bool) (m *M[K, V])                                      // 实例化
-	NewOrdered(yield iter.Seq2[K, V]) (m *M[K, V])                         // 实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
-	NewStringer(ordered ...bool) (m *M[string, string])                    // 从字符串实例化
-	NewStringerKeys(keys []string, ordered ...bool) (m *M[string, string]) // 从字符串切片实例化
-	Has(key K) (exists bool)                                               // 是否存在
-	Get(key K) (value V, exist bool)                                       // 获取
-	Update(key K, value V)                                                 // 更新
-	Delete(key K)                                                          // 删除
-	Remove(key K)                                                          // 移除key
-	Set(key K, value V) (actual V, exist bool)                             // 设置，如果存在则不更新
-	GetAndDelete(key K) (value V, exist bool)                              // 获取后删除
-	removeKey(key K)                                                       // 移除key
-	Range() iter.Seq2[K, V]                                                // 遍历，todo 回调内执行删除会死锁,vt调试器bind的时候需要
-	Reset()                                                                // 清空
-	Len() int                                                              // 大小
-	Empty() bool                                                           // 大小为0
-	Keys() []K                                                             // 键列表
-	Map() map[K]V                                                          // 原始map
-	CopyFromMap(data map[K]V)                                              // 从map复制
-	MarshalJSON() (data []byte, err error)                                 //
-	UnmarshalJSON(data []byte) (err error)                                 //
-	String() string                                                        //
-}
+//type api[K comparable, V any] interface {
+//	New(ordered ...bool) (m *M[K, V])                                      // 实例化
+//	NewOrdered(yield iter.Seq2[K, V]) (m *M[K, V])                         // 实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
+//	NewStringer(ordered ...bool) (m *M[string, string])                    // 从字符串实例化
+//	NewStringerKeys(keys []string, ordered ...bool) (m *M[string, string]) // 从字符串切片实例化
+//	Has(key K) (exists bool)                                               // 是否存在
+//	Get(key K) (value V, exist bool)                                       // 获取
+//	Update(key K, value V)                                                 // 更新
+//	Delete(key K)                                                          // 删除
+//	Remove(key K)                                                          // 移除key
+//	Set(key K, value V) (actual V, exist bool)                             // 设置，如果存在则不更新
+//	GetAndDelete(key K) (value V, exist bool)                              // 获取后删除
+//	removeKey(key K)                                                       // 移除key
+//	Range() iter.Seq2[K, V]                                                // 遍历，todo 回调内执行删除会死锁,vt调试器bind的时候需要
+//	Reset()                                                                // 清空
+//	Len() int                                                              // 大小
+//	Empty() bool                                                           // 大小为0
+//	Keys() []K                                                             // 键列表
+//	Map() map[K]V                                                          // 原始map
+//	CopyFromMap(data map[K]V)                                              // 从map复制
+//	MarshalJSON() (data []byte, err error)                                 //
+//	UnmarshalJSON(data []byte) (err error)                                 //
+//	String() string                                                        //
+//}
 
 func New[K comparable, V any](ordered ...bool) (m *M[K, V]) {
 	sm := &M[K, V]{

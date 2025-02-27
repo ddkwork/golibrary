@@ -398,22 +398,16 @@ func (b *Buffer) Append(others ...*Buffer) *Buffer {
 	return b
 }
 
-func (b *Buffer) BigNumXorWithAlign(arg1, arg2 []byte, align int) (xorStream []byte) {
+func (b *Buffer) BigNumXorWithAlign(arg1, arg2 []byte, align int) []byte {
 	xor := new(big.Int).Xor(new(big.Int).SetBytes(arg1), new(big.Int).SetBytes(arg2))
-	alignBuf := make([]byte, align-len(xor.Bytes()))
-	switch len(xor.Bytes()) {
-	case 0:
-		xorStream = alignBuf
-	case align:
-		xorStream = xor.Bytes()
-	default:
-		b.AppendByteSlice(xorStream, alignBuf, xor.Bytes())
+	if len(xor.Bytes()) != align {
+		panic("not enough bytes for align")
 	}
-	return b.Bytes()
+	return xor.Bytes()
 }
 
-// AppendHeader insert to start,packetHeader
-func (b *Buffer) AppendHeader(buf []byte) *Buffer {
+// InsertHeader insert to start,packetHeader
+func (b *Buffer) InsertHeader(buf []byte) *Buffer {
 	concat := slices.Concat(buf, b.Bytes())
 	b.Reset()
 	b.Write(concat)

@@ -26,5 +26,6 @@ func (o *object) readDstBuf() {
 		o.Reset()
 		o.BufSize = mylog.Check2(o.DstConn.Read(o.Bytes()))
 		DstBufChan <- o.Bytes()[:o.BufSize]
+	default:
 	}
 }
