@@ -28,7 +28,7 @@ var (
 
 	x = struct{}{}
 
-	arry = []Bag{bag, bag, bag}
+	array = []Bag{bag, bag, bag}
 
 	strutty = Struct{N: 42, S: "Hello", B: true, A: []int{1, 2, 3}}
 
@@ -52,7 +52,7 @@ var (
 
 func TestPrettyPrint(test *testing.T) {
 	test.Skip()
-	Print(arry)
+	Print(array)
 }
 
 func TestPrettyFormat(test *testing.T) {
