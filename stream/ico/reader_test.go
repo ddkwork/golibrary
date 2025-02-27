@@ -34,12 +34,14 @@ func TestDecodeConfig(t *testing.T) {
 	mylog.Call(func() {
 		file := "testdata/golang.ico"
 		copyFile := "testdata/golang.png"
+
 		reader := mylog.Check2(os.Open(file))
 		icoImage := mylog.Check2(DecodeConfig(reader))
-		defer func() { mylog.Check(reader.Close()) }()
+		mylog.Check(reader.Close())
+
 		reader = mylog.Check2(os.Open(copyFile))
 		pngImage := mylog.Check2(png.DecodeConfig(reader))
-		defer func() { mylog.Check(reader.Close()) }()
+		mylog.Check(reader.Close())
 		if icoImage != pngImage {
 			t.Errorf("%v - %v", icoImage, pngImage)
 		}

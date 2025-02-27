@@ -22,14 +22,14 @@ func init() {
 
 func Decode(r io.Reader) (image.Image, error) {
 	var d decoder
-	mylog.Check(d.decode(r))
+	d.decode(r)
 	return d.images[0], nil
 }
 
-func DecodeAll(r io.Reader) ([]image.Image, error) {
+func DecodeAll(r io.Reader) []image.Image {
 	var d decoder
-	mylog.Check(d.decode(r))
-	return d.images, nil
+	d.decode(r)
+	return d.images
 }
 
 func DecodeConfig(r io.Reader) (image.Config, error) {
@@ -38,8 +38,8 @@ func DecodeConfig(r io.Reader) (image.Config, error) {
 		cfg image.Config
 		err error
 	)
-	mylog.Check(d.decodeHeader(r))
-	mylog.Check(d.decodeEntries(r))
+	d.decodeHeader(r)
+	d.decodeEntries(r)
 	e := d.entries[0]
 	buf := make([]byte, e.Size+14)
 	n, err := io.ReadFull(r, buf[14:])
@@ -78,9 +78,9 @@ type decoder struct {
 	images  []image.Image
 }
 
-func (d *decoder) decode(r io.Reader) (err error) {
-	mylog.Check(d.decodeHeader(r))
-	mylog.Check(d.decodeEntries(r))
+func (d *decoder) decode(r io.Reader) {
+	d.decodeHeader(r)
+	d.decodeEntries(r)
 	d.images = make([]image.Image, d.head.Number)
 	for i := range d.entries {
 		e := &(d.entries[i])
@@ -125,24 +125,21 @@ func (d *decoder) decode(r io.Reader) (err error) {
 			d.images[i] = masked
 		}
 	}
-	return nil
 }
 
-func (d *decoder) decodeHeader(r io.Reader) error {
-	binary.Read(r, binary.LittleEndian, &(d.head))
+func (d *decoder) decodeHeader(r io.Reader) {
+	mylog.Check(binary.Read(r, binary.LittleEndian, &(d.head)))
 	if d.head.Zero != 0 || d.head.Type != 1 {
-		return fmt.Errorf("corrupted head: [%x,%x]", d.head.Zero, d.head.Type)
+		mylog.Check(fmt.Errorf("corrupted head: [%x,%x]", d.head.Zero, d.head.Type))
 	}
-	return nil
 }
 
-func (d *decoder) decodeEntries(r io.Reader) error {
+func (d *decoder) decodeEntries(r io.Reader) {
 	n := int(d.head.Number)
 	d.entries = make([]direntry, n)
 	for i := range n {
 		mylog.Check(binary.Read(r, binary.LittleEndian, &(d.entries[i])))
 	}
-	return nil
 }
 
 func (d *decoder) forgeBMPHead(buf []byte, e *direntry) (mask []byte) {
