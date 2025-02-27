@@ -1,9 +1,10 @@
 package caseconv
 
 import (
+	"strings"
+
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"strings"
 )
 
 func ToCamel(str string) string {
@@ -13,7 +14,7 @@ func ToCamel(str string) string {
 			chunks[i] = strings.ToLower(c)
 			continue
 		}
-		chunks[i] = cases.Title(language.AmericanEnglish).String(c) //分词并把首字母大写
+		chunks[i] = cases.Title(language.AmericanEnglish).String(c) // 分词并把首字母大写
 	}
 	return strings.Join(chunks, "")
 }

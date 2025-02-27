@@ -21,9 +21,9 @@ const (
 	PB      = TB << 10
 	EB      = PB << 10
 
-	//fnUnmarshalText string = "UnmarshalText"
-	//maxUint64       uint64 = (1 << 64) - 1
-	//cutoff          uint64 = maxUint64 / 10
+	// fnUnmarshalText string = "UnmarshalText"
+	// maxUint64       uint64 = (1 << 64) - 1
+	// cutoff          uint64 = maxUint64 / 10
 )
 
 var ErrBits = errors.New("unit with capital unit prefix and lower case unit (b) - bits, not bytes")

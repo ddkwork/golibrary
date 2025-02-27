@@ -79,7 +79,7 @@ func (l *log) printColorBody() {
 
 type Attribute int
 
-//const escape = "\x1b"
+// const escape = "\x1b"
 
 // Base attributes
 //const (
