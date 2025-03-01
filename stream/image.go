@@ -2,6 +2,7 @@ package stream
 
 import (
 	"bytes"
+	"embed"
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream/ico"
 	"golang.org/x/image/bmp"
@@ -9,7 +10,6 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
-	"os"
 	"path/filepath"
 )
 
@@ -25,8 +25,10 @@ import (
 //	}.Layout(gtx)
 //}
 
-func LoadImage(fileName string) image.Image { //一般而言，我们使用embed
-	b := mylog.Check2(os.ReadFile(fileName))
+// LoadImage 一般而言，我们使用embed,对于进程图标，制作任务管理器和音速启动，直接得到image.Image
+// 所以我们不用懒解码探测图片格式
+func LoadImage(fileName string, fs embed.FS) image.Image {
+	b := mylog.Check2(fs.ReadFile(fileName))
 	var img image.Image
 	switch filepath.Ext(fileName) {
 	case ".png":
@@ -39,7 +41,7 @@ func LoadImage(fileName string) image.Image { //一般而言，我们使用embed
 		img = mylog.Check2(ico.Decode(bytes.NewReader(b)))
 	case ".bmp":
 		img = mylog.Check2(bmp.Decode(bytes.NewReader(b)))
-	//case ".svg": //svg的话是giosvg直接解码元数据实现layout方法渲染
+	// case ".svg": //svg的话是giosvg直接解码元数据实现layout方法渲染
 	default:
 		mylog.Check("unsupported image format")
 	}
