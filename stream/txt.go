@@ -127,9 +127,8 @@ func Unquote(line string) string {
 	if begin < 0 {
 		return line
 	}
-	split := strings.Split(line, `\"`)
 	ss := NewBuffer("")
-	for _, s := range split {
+	for s := range strings.SplitSeq(line, `\"`) {
 		if strings.Contains(s, `"`) {
 			s = strings.ReplaceAll(s, `"`, ``)
 			ss.WriteString(s)

@@ -4,3 +4,5 @@ reset git.cmd
 golibrary.json
 golibrary.txt
 /cache/
+/coverage
+/coverage.txt
