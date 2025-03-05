@@ -47,10 +47,8 @@ func UpdateDependencies() {
 	go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 `) {
-		if s == "" {
-			continue
-		}
-		if strings.HasPrefix(s, "::") {
+		s = strings.TrimSpace(s)
+		if strings.HasPrefix(s, "::") || strings.HasPrefix(s, "//") || s == "" {
 			continue
 		}
 		RunCommand(s)

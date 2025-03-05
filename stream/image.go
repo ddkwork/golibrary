@@ -3,17 +3,18 @@ package stream
 import (
 	"bytes"
 	"embed"
-	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/stream/ico"
-	"golang.org/x/image/bmp"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"path/filepath"
+
+	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/stream/ico"
+	"golang.org/x/image/bmp"
 )
 
-//实现任意图片格式作为按钮图标
+// 实现任意图片格式作为按钮图标
 
 // paint.NewImageOp(LoadImage(src))
 //func (i *Image) Layout(gtx layout.Context) layout.Dimensions {
