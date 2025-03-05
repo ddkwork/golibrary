@@ -38,7 +38,15 @@ func UpdateDependencies() {
 	 go get -x github.com/ebitengine/purego@main
 	 go get -x github.com/saferwall/pe@main
 	 ::go get -u -x all
-	 go mod tidy`) {
+	 go mod tidy
+
+	go install mvdan.cc/gofumpt@latest
+	gofumpt -l -w .
+	go install honnef.co/go/tools/cmd/staticcheck@latest
+	staticcheck ./...
+	go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+`) {
 		if s == "" {
 			continue
 		}
