@@ -16,7 +16,6 @@ func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 }
 
 var skips = []string{
-	"module github.com/oligo/gioview",
 	"module gioui.org",
 	"module gioui.org/cmd",
 	"module gioui.org/example",
