@@ -1,14 +1,15 @@
 package stream
 
 import (
-	"github.com/ddkwork/golibrary/safemap"
-	"golang.org/x/mod/modfile"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/ddkwork/golibrary/safemap"
+	"golang.org/x/mod/modfile"
 
 	"github.com/ddkwork/golibrary/mylog"
 	"golang.org/x/sync/errgroup"
@@ -96,8 +97,8 @@ func GetDesktopDir() string {
 	}
 }
 
-func UpdateDependencies() { //模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
-	for s := range ReadFileToLines(filepath.Join(GetDesktopDir(), "dep.txt")) { //因为要经常更新，我们不embed
+func UpdateDependencies() { // 模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
+	for s := range ReadFileToLines(filepath.Join(GetDesktopDir(), "dep.txt")) { // 因为要经常更新，我们不embed
 		s = strings.TrimSpace(s)
 		if strings.HasPrefix(s, "::") || strings.HasPrefix(s, "//") || s == "" {
 			continue
@@ -153,39 +154,39 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 	mylog.Success("all work finished")
 }
 
-func updateDependencies() { //模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
-	mylog.Check(os.Setenv("GOPROXY", "direct"))
-	for s := range strings.Lines(`
-     go get -x gioui.org@main
-	 go get -x gioui.org/cmd@main
-	 go get -x gioui.org/example@main
-	 go get -x gioui.org/x@main
-	 go get -x github.com/oligo/gvcode@main
-	 go get -x github.com/ddkwork/golibrary@master
-	 go get -x github.com/ddkwork/ux@master
-	 go get -x github.com/google/go-cmp@master
-	 go get -x github.com/ddkwork/app@master
-	 go get -x github.com/ddkwork/toolbox@master
-	 go get -x github.com/ddkwork/unison@master
-	 go get -x github.com/ebitengine/purego@main
-	 go get -x github.com/saferwall/pe@main
-	 ::go get -u -x all
-	 go mod tidy
-
-	go install mvdan.cc/gofumpt@latest
-	gofumpt -l -w .
-	//go install honnef.co/go/tools/cmd/staticcheck@latest
-	//staticcheck ./...
-	//go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
-
-`) {
-		s = strings.TrimSpace(s)
-		if strings.HasPrefix(s, "::") || strings.HasPrefix(s, "//") || s == "" {
-			continue
-		}
-		RunCommand(s)
-	}
-}
+//func updateDependencies() { // 模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
+//	mylog.Check(os.Setenv("GOPROXY", "direct"))
+//	for s := range strings.Lines(`
+//     go get -x gioui.org@main
+//	 go get -x gioui.org/cmd@main
+//	 go get -x gioui.org/example@main
+//	 go get -x gioui.org/x@main
+//	 go get -x github.com/oligo/gvcode@main
+//	 go get -x github.com/ddkwork/golibrary@master
+//	 go get -x github.com/ddkwork/ux@master
+//	 go get -x github.com/google/go-cmp@master
+//	 go get -x github.com/ddkwork/app@master
+//	 go get -x github.com/ddkwork/toolbox@master
+//	 go get -x github.com/ddkwork/unison@master
+//	 go get -x github.com/ebitengine/purego@main
+//	 go get -x github.com/saferwall/pe@main
+//	 ::go get -u -x all
+//	 go mod tidy
+//
+//	go install mvdan.cc/gofumpt@latest
+//	gofumpt -l -w .
+//	//go install honnef.co/go/tools/cmd/staticcheck@latest
+//	//staticcheck ./...
+//	//go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+//
+//`) {
+//		s = strings.TrimSpace(s)
+//		if strings.HasPrefix(s, "::") || strings.HasPrefix(s, "//") || s == "" {
+//			continue
+//		}
+//		RunCommand(s)
+//	}
+//}
 
 //type Cache struct {
 //	store map[string]string

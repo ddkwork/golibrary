@@ -62,7 +62,7 @@ func (g *GeneratedFile) PC(is64Bit bool, v string) {
 	g.P(g.callBack(is64Bit, v))
 }
 
-func (g *GeneratedFile) PKeepSpace(v ...any) { //for gen github action yml file
+func (g *GeneratedFile) PKeepSpace(v ...any) { // for gen github action yml file
 	g.p(true, v...)
 }
 
