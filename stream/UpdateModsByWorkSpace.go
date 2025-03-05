@@ -58,7 +58,7 @@ var skips = []string{
 //	*/
 //}
 
-func GetLastCommitHashLocal(repositoryName, repositoryDir string) string {
+func GetLastCommitHashLocal(repositoryDir string) string {
 	originPath := mylog.Check2(os.Getwd())
 	mylog.Check(os.Chdir(repositoryDir))
 	hash := RunCommand("git rev-parse HEAD").Output.String()
