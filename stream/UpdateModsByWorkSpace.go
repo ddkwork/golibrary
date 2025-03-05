@@ -8,10 +8,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/safemap"
 	"golang.org/x/mod/modfile"
-
-	"github.com/ddkwork/golibrary/mylog"
 	"golang.org/x/sync/errgroup"
 )
 
