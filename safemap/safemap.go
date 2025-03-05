@@ -8,9 +8,8 @@ import (
 	"maps"
 	"sync"
 
-	"github.com/ddkwork/golibrary/mylog/pretty"
-
 	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/mylog/pretty"
 )
 
 const Ordered = true

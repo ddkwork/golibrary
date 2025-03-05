@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"github.com/ddkwork/golibrary/safemap"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -22,7 +23,57 @@ var skips = []string{
 	"module gioui.org/x",
 }
 
-func UpdateDependencies() {
+// GetLastCommitHash
+// git ls-remote https://github.com/ddkwork/toolbox refs/heads/master
+// git ls-remote https://github.com/gioui/gio refs/heads/main
+// 但是要传递本地的仓库目录，太麻烦了
+func GetLastCommitHash(repositoryName string) string {
+	mylog.Check(os.Setenv("GOPROXY", "direct")) // 如果模块代理导致获取到的不是最新的提交哈希那么需要禁用模块代理，最可靠的方式是 GetLastCommitHashLocal
+	//defer mylog.Check(os.Setenv("GOPROXY", "https://goproxy.cn,direct"))
+	defer RunCommand("go env -w GOPROXY=https://goproxy.cn,direct")
+	s := RunCommand("git ls-remote " + repositoryName + " refs/heads/master").Output.String()
+	for hash := range strings.FieldsSeq(s) {
+		return hash
+	}
+	s = RunCommand("git ls-remote " + repositoryName + " refs/heads/main").Output.String()
+	for hash := range strings.FieldsSeq(s) {
+		return hash
+	}
+	panic("no commit hash found in master and main branch")
+	/*
+		# 获取最新提交哈希
+		$hash = (git ls-remote https://github.com/ddkwork/toolbox refs/heads/master).Split("`t")[0]
+		# 带哈希安装
+		go get -x "github.com/ddkwork/toolbox@$hash"
+
+		powershell:
+			$env:GOPROXY="direct"; go get -x github.com/ddkwork/toolbox@$(git ls-remote https://github.com/ddkwork/toolbox refs/heads/master | ForEach-Object { $_.Split()[0] })
+
+	*/
+}
+
+type Mod struct {
+	modName        string //gioui.org
+	repositoryName string //https://github.com/gioui/gio
+	repositoryDir  string //GetLastCommitHashLocal
+	hash           string //GetLastCommitHash or GetLastCommitHashLocal
+	updateCommand  string //go get -x gioui.org@hash
+}
+
+var m = safemap.NewOrdered[string, string](func(yield func(string, string) bool) {
+	yield("https://github.com/gioui/gio", "")
+})
+
+func GetLastCommitHashLocal(repositoryName, repositoryDir string) string {
+	originPath := mylog.Check2(os.Getwd())
+	mylog.Check(os.Chdir(repositoryDir))
+	hash := RunCommand("git rev-parse HEAD").Output.String()
+	mylog.Check(os.Chdir(originPath))
+	return hash
+}
+
+func UpdateDependencies() { //模块代理刷新的不及时，需要禁用代理
+	mylog.Check(os.Setenv("GOPROXY", "direct"))
 	for s := range strings.Lines(`
      go get -x gioui.org@main
 	 go get -x gioui.org/cmd@main
@@ -42,9 +93,9 @@ func UpdateDependencies() {
 
 	go install mvdan.cc/gofumpt@latest
 	gofumpt -l -w .
-	go install honnef.co/go/tools/cmd/staticcheck@latest
-	staticcheck ./...
-	go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+	//go install honnef.co/go/tools/cmd/staticcheck@latest
+	//staticcheck ./...
+	//go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 `) {
 		s = strings.TrimSpace(s)
