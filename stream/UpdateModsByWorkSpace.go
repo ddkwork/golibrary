@@ -98,12 +98,15 @@ func GetDesktopDir() string {
 }
 
 func UpdateDependencies() { // 模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
+	var mutex sync.Mutex
 	for s := range ReadFileToLines(filepath.Join(GetDesktopDir(), "dep.txt")) { // 因为要经常更新，我们不embed
 		s = strings.TrimSpace(s)
 		if strings.HasPrefix(s, "::") || strings.HasPrefix(s, "//") || s == "" {
 			continue
 		}
+		mutex.Lock()
 		RunCommand(s)
+		mutex.Unlock()
 	}
 }
 
@@ -129,15 +132,15 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 
 	modChan := make(chan string, len(mods))
 
-	var mutex sync.Mutex
+	//var mutex sync.Mutex
 	g := new(errgroup.Group)
 	for _, mod := range mods {
 		g.Go(func() error {
-			mutex.Lock()
-			defer mutex.Unlock()
 			mylog.Check(os.Chdir(mod))
 			UpdateDependencies()
 			if isUpdateAll {
+				//mutex.Lock()
+				//defer mutex.Unlock()
 				RunCommand("go get -u -x all")
 			}
 			modChan <- mod
