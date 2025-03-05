@@ -62,12 +62,22 @@ func (g *GeneratedFile) PC(is64Bit bool, v string) {
 	g.P(g.callBack(is64Bit, v))
 }
 
+func (g *GeneratedFile) PKeepSpace(v ...any) { //for gen github action yml file
+	g.p(true, v...)
+}
+
 func (g *GeneratedFile) P(v ...any) {
+	g.p(false, v...)
+}
+
+func (g *GeneratedFile) p(keepSpace bool, v ...any) {
 	for _, x := range v {
 		s, ok := x.(string)
 		if ok {
 			if strings.Contains(s, "\n") {
-				s = strings.TrimSpace(s)
+				if !keepSpace {
+					s = strings.TrimSpace(s)
+				}
 				s = strings.TrimPrefix(s, "\n")
 				x = s
 			}

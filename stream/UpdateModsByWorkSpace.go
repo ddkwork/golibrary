@@ -28,9 +28,13 @@ var skips = []string{
 // git ls-remote https://github.com/gioui/gio refs/heads/main
 // 但是要传递本地的仓库目录，太麻烦了
 func GetLastCommitHash(repositoryName string) string {
+	//理论上获取到hash再使用模块代理，这样才刷新的快？
+	//或者使用action得到hash先？
+
 	mylog.Check(os.Setenv("GOPROXY", "direct")) // 如果模块代理导致获取到的不是最新的提交哈希那么需要禁用模块代理，最可靠的方式是 GetLastCommitHashLocal
-	//defer mylog.Check(os.Setenv("GOPROXY", "https://goproxy.cn,direct"))
-	defer RunCommand("go env -w GOPROXY=https://goproxy.cn,direct")
+	defer mylog.Check(os.Setenv("GOPROXY", "https://goproxy.cn,direct"))
+
+	//defer RunCommand("go env -w GOPROXY=https://goproxy.cn,direct")
 	s := RunCommand("git ls-remote " + repositoryName + " refs/heads/master").Output.String()
 	for hash := range strings.FieldsSeq(s) {
 		return hash
@@ -52,16 +56,107 @@ func GetLastCommitHash(repositoryName string) string {
 	*/
 }
 
-type Mod struct {
-	modName        string //gioui.org
-	repositoryName string //https://github.com/gioui/gio
-	repositoryDir  string //GetLastCommitHashLocal
-	hash           string //GetLastCommitHash or GetLastCommitHashLocal
-	updateCommand  string //go get -x gioui.org@hash
+type ModInfo struct {
+	ModName       string //gioui.org
+	RepositoryUrl string //https://github.com/gioui/gio
+	repositoryDir string //GetLastCommitHashLocal
+	Hash          string //GetLastCommitHash or GetLastCommitHashLocal
+	UpdateCommand string //go get -x gioui.org@hash
 }
 
-var m = safemap.NewOrdered[string, string](func(yield func(string, string) bool) {
-	yield("https://github.com/gioui/gio", "")
+var m = safemap.NewOrdered[string, ModInfo](func(yield func(string, ModInfo) bool) {
+	yield("https://github.com/gioui/gio", ModInfo{
+		ModName:       "gioui.org",
+		RepositoryUrl: "https://github.com/gioui/gio",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/gioui/gio/cmd", ModInfo{
+		ModName:       "gioui.org/cmd",
+		RepositoryUrl: "https://github.com/gioui/gio/cmd",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/gioui/gio/example", ModInfo{
+		ModName:       "gioui.org/example",
+		RepositoryUrl: "https://github.com/gioui/gio/example",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/gioui/gio/x", ModInfo{
+		ModName:       "gioui.org/x",
+		RepositoryUrl: "https://github.com/gioui/gio/x",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/oligo/gvcode", ModInfo{
+		ModName:       "github.com/oligo/gvcode",
+		RepositoryUrl: "https://github.com/oligo/gvcode",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/ddkwork/golibrary", ModInfo{
+		ModName:       "github.com/ddkwork/golibrary",
+		RepositoryUrl: "https://github.com/ddkwork/golibrary",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/ddkwork/ux", ModInfo{
+		ModName:       "github.com/ddkwork/ux",
+		RepositoryUrl: "https://github.com/ddkwork/ux",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/google/go-cmp", ModInfo{
+		ModName:       "github.com/google/go-cmp",
+		RepositoryUrl: "https://github.com/google/go-cmp",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/ddkwork/app", ModInfo{
+		ModName:       "github.com/ddkwork/app",
+		RepositoryUrl: "https://github.com/ddkwork/app",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/ddkwork/toolbox", ModInfo{
+		ModName:       "github.com/ddkwork/toolbox",
+		RepositoryUrl: "https://github.com/ddkwork/toolbox",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/ddkwork/unison", ModInfo{
+		ModName:       "github.com/ddkwork/unison",
+		RepositoryUrl: "https://github.com/ddkwork/unison",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/ebitengine/purego", ModInfo{
+		ModName:       "github.com/ebitengine/purego",
+		RepositoryUrl: "https://github.com/ebitengine/purego",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+	yield("https://github.com/saferwall/pe", ModInfo{
+		ModName:       "github.com/saferwall/pe",
+		RepositoryUrl: "https://github.com/saferwall/pe",
+		repositoryDir: "",
+		Hash:          "",
+		UpdateCommand: "",
+	})
+
 })
 
 func GetLastCommitHashLocal(repositoryName, repositoryDir string) string {
@@ -137,7 +232,7 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 			mylog.Check(os.Chdir(mod))
 			UpdateDependencies()
 			if isUpdateAll {
-				RunCommand("go get -v -u all")
+				RunCommand("go get -u -x all")
 			}
 			modChan <- mod
 			return nil
