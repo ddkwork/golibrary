@@ -11,8 +11,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func UpdateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) {
-	mylog.Call(func() { updateModsByWorkSpace(isTidy, isUpdateAll, modWithCommitID...) })
+func UpdateModsByWorkSpace(isUpdateAll bool) {
+	mylog.Call(func() { updateModsByWorkSpace(isUpdateAll) })
 }
 
 var skips = []string{
@@ -22,7 +22,34 @@ var skips = []string{
 	"module gioui.org/x",
 }
 
-func updateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) {
+func UpdateDependencies() {
+	for s := range strings.Lines(`
+     go get -x gioui.org@main
+	 go get -x gioui.org/cmd@main
+	 go get -x gioui.org/example@main
+	 go get -x gioui.org/x@main
+	 go get -x github.com/oligo/gvcode@main
+	 go get -x github.com/ddkwork/golibrary@master
+	 go get -x github.com/ddkwork/ux@master
+	 go get -x github.com/google/go-cmp@master
+	 go get -x github.com/ddkwork/app@master
+	 go get -x github.com/ddkwork/toolbox@master
+	 go get -x github.com/ddkwork/unison@master
+	 go get -x github.com/ebitengine/purego@main
+	 go get -x github.com/saferwall/pe@main
+	 ::go get -u -x all
+	 go mod tidy`) {
+		if s == "" {
+			continue
+		}
+		if strings.HasPrefix(s, "::") {
+			continue
+		}
+		RunCommand(s)
+	}
+}
+
+func updateModsByWorkSpace(isUpdateAll bool) {
 	if !IsFilePathEx("go.work") {
 		return
 	}
@@ -51,12 +78,7 @@ func updateModsByWorkSpace(isTidy, isUpdateAll bool, modWithCommitID ...string) 
 			mutex.Lock()
 			defer mutex.Unlock()
 			mylog.Check(os.Chdir(mod))
-			for _, s := range modWithCommitID {
-				RunCommand("go get -v  " + s)
-			}
-			if isTidy {
-				RunCommand("go mod tidy -v")
-			}
+			UpdateDependencies()
 			if isUpdateAll {
 				RunCommand("go get -v -u all")
 			}
