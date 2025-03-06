@@ -103,8 +103,9 @@ func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络
 	newMod := filepath.Join(GetDesktopDir(), "go.mod")
 	f := mylog.Check2(modfile.Parse(originMod, mylog.Check2(os.ReadFile(originMod)), nil))
 	for oldName, oldVersion := range ParseGoMod(originMod).Range() {
-		for newName, newVersion := range ParseGoMod(newMod).Range() {
-			if oldName == newName && oldVersion != newVersion {
+		newVersion, exist := ParseGoMod(newMod).Get(oldName)
+		if exist {
+			if oldVersion != newVersion {
 				for i, require := range f.Require {
 					if require.Mod.Path == oldName {
 						require.Mod.Version = newVersion
