@@ -147,7 +147,7 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 		g.Go(func() error { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
 			UpdateDependencies(path) // 锁应该在这里面
 			if isUpdateAll {
-				RunCommand("go get -u -x all")
+				RunCommand("go get -u -x all") //need lock,但是不使用这个，太慢了
 			}
 			modChan <- path
 			return nil
