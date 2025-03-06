@@ -51,23 +51,23 @@ func (l *log) printColorBody() {
 	ColorBody := ""
 	switch l.kind {
 	case hexKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiBlue, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiBlue, l.row)
 	case hexDumpKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiBlue, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiBlue, l.row)
 	case jsonKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiBlue, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiBlue, l.row)
 	case structKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiBlue, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiBlue, l.row)
 	case infoKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiCyan, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiCyan, l.row)
 	case traceKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiMagenta, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiMagenta, l.row)
 	case errorKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiRed, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiRed, l.row)
 	case warningKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiYellow, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiYellow, l.row)
 	case successKind:
-		ColorBody = fmt.Sprintf(colorFormat, FgHiGreen, l.body)
+		ColorBody = fmt.Sprintf(colorFormat, FgHiGreen, l.row)
 	}
 	if l.debug {
 		fmt.Println(ColorBody)
@@ -75,15 +75,15 @@ func (l *log) printColorBody() {
 }
 
 // "github.com/fatih/color"
-// Attribute defines a single SGR Code
+// attribute defines a single SGR Code
 
-type Attribute int
+type attribute int
 
 // const escape = "\x1b"
 
 // Base attributes
 //const (
-//	Reset Attribute = iota
+//	Reset attribute = iota
 //	Bold
 //	Faint
 //	Italic
@@ -96,7 +96,7 @@ type Attribute int
 //)
 
 //const (
-//	ResetBold Attribute = iota + 22
+//	ResetBold attribute = iota + 22
 //	ResetItalic
 //	ResetUnderline
 //	ResetBlinking
@@ -106,7 +106,7 @@ type Attribute int
 //	ResetCrossedOut
 //)
 
-//var mapResetAttributes map[Attribute]Attribute = map[Attribute]Attribute{
+//var mapResetAttributes map[attribute]attribute = map[attribute]attribute{
 //	Bold:         ResetBold,
 //	Faint:        ResetBold,
 //	Italic:       ResetItalic,
@@ -120,7 +120,7 @@ type Attribute int
 
 // Foreground text colors
 //const (
-//	FgBlack Attribute = iota + 30
+//	FgBlack attribute = iota + 30
 //	FgRed
 //	FgGreen
 //	FgYellow
@@ -135,7 +135,7 @@ type Attribute int
 
 // Foreground Hi-Intensity text colors
 const (
-	FgHiBlack Attribute = iota + 90
+	FgHiBlack attribute = iota + 90
 	FgHiRed
 	FgHiGreen
 	FgHiYellow
@@ -148,7 +148,7 @@ const (
 //
 //// Background text colors
 //const (
-//	BgBlack Attribute = iota + 40
+//	BgBlack attribute = iota + 40
 //	BgRed
 //	BgGreen
 //	BgYellow
@@ -163,7 +163,7 @@ const (
 //
 //// Background Hi-Intensity text colors
 //const (
-//	BgHiBlack Attribute = iota + 100
+//	BgHiBlack attribute = iota + 100
 //	BgHiRed
 //	BgHiGreen
 //	BgHiYellow

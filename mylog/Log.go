@@ -1,11 +1,9 @@
 package mylog
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httputil"
-	"regexp"
 	"strings"
 
 	"github.com/ddkwork/golibrary/mylog/pretty"
@@ -16,7 +14,7 @@ func (l *log) hexDump(title string, dump string) {
 		kind:     hexDumpKind,
 		title:    title,
 		message:  dump,
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 		callBack: l.callBack,
@@ -30,7 +28,7 @@ func (l *log) hex(title, msg string) string {
 		kind:     hexKind,
 		title:    title,
 		message:  msg,
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 	}
@@ -44,7 +42,7 @@ func (l *log) Info(title string, msg ...any) {
 		kind:     infoKind,
 		title:    title,
 		message:  sprint(msg...),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 	}
@@ -57,7 +55,7 @@ func (l *log) Trace(title string, msg ...any) {
 		kind:     traceKind,
 		title:    title,
 		message:  sprint(msg...),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 	}
@@ -70,7 +68,7 @@ func (l *log) Warning(title string, msg ...any) {
 		kind:     warningKind,
 		title:    title,
 		message:  sprint(msg...),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 	}
@@ -83,7 +81,7 @@ func (l *log) Json(title string, msg ...any) {
 		kind:     jsonKind,
 		title:    title,
 		message:  sprint(msg...),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 	}
@@ -96,7 +94,7 @@ func (l *log) Success(title string, msg ...any) {
 		kind:     successKind,
 		title:    title,
 		message:  sprint(msg...),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 	}
@@ -115,7 +113,7 @@ func (l *log) Request(Request *http.Request, body bool) {
 		kind:     jsonKind,
 		title:    "",
 		message:  l.DumpRequest(Request, body),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   true,
 	}
@@ -142,7 +140,7 @@ func (l *log) Response(Response *http.Response, body bool) {
 		kind:     jsonKind,
 		title:    "",
 		message:  l.DumpResponse(Response, body),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   true,
 	}
@@ -171,7 +169,7 @@ func (l *log) Struct(title string, msg any) {
 		kind:     structKind,
 		title:    title,
 		message:  pretty.Format(msg),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 	}
@@ -181,27 +179,6 @@ func (l *log) Struct(title string, msg any) {
 func (l *log) MarshalJson(title string, msg any) {
 	indent := Check2(json.MarshalIndent(msg, "", " "))
 	l.Json(title, string(indent))
-}
-
-func (l *log) Reason() (reason string) {
-	english2Chinese := map[string]string{
-		"A certificate was explicitly revoked by its issuer.": "证书的颁发者明确吊销了证书。",
-	}
-	re := regexp.MustCompile(`(\.|\?|!)`)
-	splitStr := re.ReplaceAllString(l.message, "$1\n")
-	r := bytes.NewBuffer(nil)
-	for s := range strings.Lines(splitStr) {
-		trimSpace := strings.TrimSpace(s)
-		r.WriteString(trimSpace)
-		r.WriteString("\n")
-		for english, chinese := range english2Chinese {
-			if english == trimSpace {
-				r.WriteString(chinese)
-				r.WriteString("\n")
-			}
-		}
-	}
-	return trimTrailingEmptyLines(r.String())
 }
 
 type keyValue struct {
@@ -235,14 +212,18 @@ func (l *log) printAndWrite() {
 			return v
 		},
 	}
-	l.body = fn.key() + " " + fn.value()
+	l.row = fn.key() + " " + fn.value()
 	if l.isHttp {
-		l.body = l.message
+		l.row = l.message
 	}
 	l.printColorBody()
-	l.body += "\n"
+	l.row += "\n"
 	if l.callBack != nil {
 		l.callBack()
 	}
-	WriteAppend(LogPath(), l.body)
+	if IsAndroid() {
+		println("android log is not support yet")
+		return
+	}
+	WriteAppend(logPath(), l.row)
 }

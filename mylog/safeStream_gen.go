@@ -464,6 +464,26 @@ func (b *Buffer) ToLines() (lines iter.Seq[string]) {
 	return strings.Lines(b.String())
 }
 
+func FileLineCountIsMoreThan(path string, n int) bool {
+	if !FileExists(path) {
+		return false
+	}
+	f := Check2(os.Open(path))
+	defer func() { Check(f.Close()) }()
+	scanner := bufio.NewScanner(f)
+	// scanner.Split(bufio.ScanLines)
+	// scanner.Buffer(nil, 1024*1024)
+	lineNumber := 1
+	for scanner.Scan() {
+		lineNumber++
+		if lineNumber > n {
+			return true
+		}
+	}
+	Check(scanner.Err())
+	return false
+}
+
 func ReadFileToLines(path string) iter.Seq[string] {
 	return func(yield func(string) bool) {
 		f := Check2(os.Open(path))
@@ -501,44 +521,12 @@ func ReadFileToChunks(path string, n int) iter.Seq[[]byte] {
 	}
 }
 
-func ReadLines[T ~string | ~[]byte | ~*bytes.Buffer | *Buffer](data T) iter.Seq[string] {
-	return func(yield func(string) bool) {
-		var r io.Reader
-		switch v := any(data).(type) {
-		case string:
-			r = strings.NewReader(v)
-			if IsFilePath(v) {
-				f := Check2(os.Open(v))
-				defer func() { Check(f.Close()) }()
-				r = f
-			}
-		case []byte:
-			r = bytes.NewReader(v)
-		case *bytes.Buffer:
-			r = v
-		case *Buffer:
-			r = v
-		default:
-			Check(fmt.Errorf("unknown type %T", data))
-		}
-		scanner := bufio.NewScanner(r)
-		// scanner.Split(bufio.ScanLines)
-		// scanner.Buffer(nil, 1024*1024)
-		lineNumber := 1
-		for scanner.Scan() {
-			yield(scanner.Text())
-			lineNumber++
-		}
-		Check(scanner.Err())
-	}
-}
-
 // Lines returns an iterator over the newline-terminated lines in the string s.
 // The lines yielded by the iterator include their terminating newlines.
 // If s is empty, the iterator yields no lines at all.
 // If s does not end in a newline, the final yielded line will not end in a newline.
 // It returns a single-use iterator with both line number and line content.
-func Lines(s string) iter.Seq2[int, string] {
+func Lines(s string) iter.Seq2[int, string] { // 小文件，buffer，可以，大文件使用ReadFileToLines来提高性能
 	return func(yield func(int, string) bool) {
 		lineNumber := 1
 		for len(s) > 0 {
@@ -805,12 +793,6 @@ var (
 )
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-func trimTrailingEmptyLines(s string) string {
-	// 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符
-	re := regexp.MustCompile(`\s*\n*$`)
-	return re.ReplaceAllString(s, "")
-}
 
 func CurrentDirName(path string) (currentDirName string) {
 	if path == "" {

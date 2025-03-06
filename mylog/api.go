@@ -9,19 +9,17 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
-
-	"gioui.org/app"
 )
 
 type (
 	log struct {
-		kind     kind
-		title    string
-		message  string
-		body     string
-		debug    bool
-		isHttp   bool
-		callBack func()
+		kind     kind   // type of log
+		title    string // key
+		message  string // value
+		row      string // merge title and message,means key-value
+		debug    bool   // display print and write log
+		isHttp   bool   // todo
+		callBack func() // for ux logView
 	}
 )
 
@@ -33,14 +31,14 @@ func SetCallBack(callBack func()) {
 	l.SetCallBack(callBack)
 }
 
-func LogPath() (path string) {
-	return filepath.Join(DataDir(), "log.log")
+func logPath() (path string) {
+	return filepath.Join(dataDir(), "log.log")
 }
 
-func DataDir() string {
+func dataDir() string {
 	switch {
-	case IsAndroid():
-		return Check2(app.DataDir())
+	// case IsAndroid():
+	// return Check2(app.dataDir())
 	case IsTermux():
 		return "/data/data/com.termux/files/usr" // todo choose another dir
 	default: // windows,linux
@@ -48,16 +46,12 @@ func DataDir() string {
 	}
 }
 
-func LogFileBody() string {
-	return string(Check2(os.ReadFile(LogPath())))
-}
-
 func New() *log {
 	return &log{
 		kind:     0,
 		title:    "",
 		message:  "",
-		body:     "",
+		row:      "",
 		debug:    true,
 		isHttp:   false,
 		callBack: nil,
@@ -70,7 +64,9 @@ func init() {
 	if IsAndroid() || IsTermux() {
 		return
 	}
-	CheckIgnore(os.Truncate(LogPath(), io.SeekStart))
+	if FileLineCountIsMoreThan(logPath(), 2) {
+		CheckIgnore(os.Truncate(logPath(), io.SeekStart))
+	}
 	Trace("--------- title ---------", "------------------ info ------------------") // android not work,why?
 	if IsWindows() {
 		/*
@@ -102,7 +98,6 @@ func ChdirToGithubWorkspace() {
 	Info("GITHUB_WORKSPACE", Check2(os.Getwd()))
 }
 
-func Reason() (reason string) { return l.Reason() }
 func HexDump[K keyType, V []byte | *bytes.Buffer](title K, buf V) {
 	l.hexDump(formatKey(title), DumpHex(buf))
 }
@@ -153,5 +148,4 @@ func DumpResponse(resp *http.Response, body bool) string {
 	return l.DumpResponse(resp, body)
 }
 
-func Body() string    { return l.body }
-func Message() string { return l.message }
+func Row() string { return l.row }

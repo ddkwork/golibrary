@@ -37,7 +37,7 @@ func (l *log) errorCall(err any) bool {
 		kind:     errorKind,
 		title:    "",
 		message:  reason(err),
-		body:     "",
+		row:      "",
 		debug:    l.debug,
 		isHttp:   false,
 	}
@@ -91,13 +91,13 @@ func (l *log) printAndWrite2() {
 		builder.WriteString(s)
 	}
 	l.message = builder.String()
-	l.body = l.message
+	l.row = l.message
 	l.printColorBody()
-	l.body += "\n"
+	l.row += "\n"
 	if l.callBack != nil {
 		l.callBack()
 	}
-	WriteAppend(LogPath(), l.body)
+	WriteAppend(logPath(), l.row)
 }
 
 var RuntimePrefixesToFilter = []string{

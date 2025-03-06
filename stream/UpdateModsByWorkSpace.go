@@ -142,9 +142,9 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 
 	g := new(errgroup.Group)
 	for _, path := range mods {
-		g.Go(func() error { //每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
-			mylog.Check(os.Chdir(path)) //这里的必报参数不用管？
-			UpdateDependencies()        //锁应该在这里面
+		g.Go(func() error { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
+			mylog.Check(os.Chdir(path)) // 这里的必报参数不用管？
+			UpdateDependencies()        // 锁应该在这里面
 			if isUpdateAll {
 				RunCommand("go get -u -x all")
 			}
