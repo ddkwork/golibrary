@@ -29,7 +29,7 @@ func (tp *TabPrinter) TabWidth(n int) {
 
 // print a 'word'
 // when the maximum number of words per lines is reached, this will print the formatted line
-func (tp *TabPrinter) Print(arg interface{}) {
+func (tp *TabPrinter) Print(arg any) {
 	if tp.current > 0 {
 		if (tp.current % tp.max) == 0 {
 			fmt.Fprintln(tp.w, "")

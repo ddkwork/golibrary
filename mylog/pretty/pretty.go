@@ -28,17 +28,17 @@ type Pretty struct {
 	MaxLevel int
 }
 
-func Print(i interface{}) {
+func Print(i any) {
 	PrintTo(os.Stdout, i, true)
 }
 
-func Format(i interface{}) string {
+func Format(i any) string {
 	var out bytes.Buffer
 	PrintTo(&out, i, false)
 	return out.String()
 }
 
-func PrintTo(out io.Writer, i interface{}, nl bool) {
+func PrintTo(out io.Writer, i any, nl bool) {
 	p := &Pretty{Indent: DEFAULT_INDENT, Out: out, NilString: DEFAULT_NIL}
 	if nl {
 		p.Println(i)
@@ -47,11 +47,11 @@ func PrintTo(out io.Writer, i interface{}, nl bool) {
 	}
 }
 
-func (p *Pretty) Print(i interface{}) {
+func (p *Pretty) Print(i any) {
 	p.PrintValue(r.ValueOf(i), 0)
 }
 
-func (p *Pretty) Println(i interface{}) {
+func (p *Pretty) Println(i any) {
 	p.PrintValue(r.ValueOf(i), 0)
 	io.WriteString(p.Out, "\n")
 }

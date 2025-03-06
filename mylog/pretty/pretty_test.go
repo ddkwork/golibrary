@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-type Bag map[string]interface{}
+type Bag map[string]any
 
 type Struct struct {
 	N int

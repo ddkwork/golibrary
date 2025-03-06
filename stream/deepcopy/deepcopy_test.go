@@ -34,7 +34,7 @@ func TestSimple(t *testing.T) {
 	cpyF := Copy(Float32s)
 	assert.Equal(t, cpyF, Float32s)
 
-	Interfaces := []interface{}{"a", 42, true, 4.32}
+	Interfaces := []any{"a", 42, true, 4.32}
 	cpyIf := Copy(Interfaces)
 	assert.Equal(t, cpyIf, Interfaces)
 }
@@ -75,8 +75,8 @@ type Basics struct {
 	Complex64s  []complex64
 	Complex128  complex128
 	Complex128s []complex128
-	Interface   interface{}
-	Interfaces  []interface{}
+	Interface   any
+	Interfaces  []any
 }
 
 func TestMostTypes(t *testing.T) {
@@ -116,7 +116,7 @@ func TestMostTypes(t *testing.T) {
 		Complex64s:  []complex64{complex64(-65 + 11i), complex64(66 + 10i)},
 		Complex128:  -128 + 12i,
 		Complex128s: []complex128{-128 + 11i, 129 + 10i},
-		Interfaces:  []interface{}{42, true, "pan-galactic"},
+		Interfaces:  []any{42, true, "pan-galactic"},
 	}
 
 	cpy := Copy(test)
@@ -307,7 +307,7 @@ type I struct {
 	A string
 }
 
-func (i *I) DeepCopy() interface{} {
+func (i *I) DeepCopy() any {
 	return &I{A: "custom copy"}
 }
 
