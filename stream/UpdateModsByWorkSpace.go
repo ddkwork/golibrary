@@ -121,7 +121,8 @@ func UpdateDependencies(path string) { // 模块代理刷新的不及时，需�
 }
 
 func updateModsByWorkSpace(isUpdateAll bool) {
-	if !IsFilePathEx("go.work") {
+	if !FileExists("go.work") {
+		UpdateDependencies(mylog.Check2(os.Getwd()))
 		return
 	}
 	RunCommandArgs("go work use -r .")
