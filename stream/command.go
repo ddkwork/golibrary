@@ -29,12 +29,24 @@ func RunCommand(command string) (session *CommandSession) {
 			Error:            NewBuffer(""),
 			CurrentDirectory: mylog.Check2(os.Getwd()),
 		}
-		session.run(command)
+		session.run(command, session.CurrentDirectory)
 	})
 	return
 }
 
-func (s *CommandSession) run(command string) {
+func RunCommandWithDir(command, dir string) (session *CommandSession) {
+	mylog.Call(func() {
+		session = &CommandSession{
+			Output:           NewBuffer(""),
+			Error:            NewBuffer(""),
+			CurrentDirectory: dir,
+		}
+		session.run(command, session.CurrentDirectory)
+	})
+	return
+}
+
+func (s *CommandSession) run(command, dir string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	skipLog := false
@@ -50,6 +62,7 @@ func (s *CommandSession) run(command string) {
 		return exec.Command("bash", "-c", command)
 	}
 	cmd := fnInitCmd()
+	cmd.Dir = dir
 
 	log.Println(command)
 
