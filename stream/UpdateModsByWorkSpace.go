@@ -66,8 +66,7 @@ func GetLastCommitHashLocal(repositoryDir string) string {
 	return hash
 }
 
-func ParseGoMod() *safemap.M[string, string] {
-	path := "go.mod"
+func ParseGoMod(path string) *safemap.M[string, string] {
 	f := mylog.Check2(modfile.Parse(path, mylog.Check2(os.ReadFile(path)), nil))
 	return safemap.NewOrdered[string, string](func(yield func(string, string) bool) {
 		for _, req := range f.Require {
@@ -93,6 +92,64 @@ func GetDesktopDir() string {
 		return filepath.Join(homeDir, "Desktop")
 	default:
 		panic("unsupported platform")
+	}
+}
+
+func UpdateDependenciesFromModFile(path string) { //实现替换，不要网络访问了，太慢了
+	if filepath.Base(path) == "golibrary" {
+		return
+	}
+	originMod := filepath.Join(path, "go.mod")
+	newMod := filepath.Join(GetDesktopDir(), "go.mod")
+	f := mylog.Check2(modfile.Parse(originMod, mylog.Check2(os.ReadFile(originMod)), nil))
+	for oldName, oldVersion := range ParseGoMod(originMod).Range() {
+		for newName, newVersion := range ParseGoMod(newMod).Range() {
+			if oldName == newName && oldVersion != newVersion {
+				for i, require := range f.Require {
+					if require.Mod.Path == oldName {
+						require.Mod.Version = newVersion
+						//f.Require[i] = require
+						setVersion(f.Require[i], newVersion)
+					}
+				}
+			}
+		}
+	}
+	f.Cleanup()
+	f.SortBlocks()
+	updateModFile := mylog.Check2(f.Format())
+	println(string(updateModFile))
+
+	WriteTruncate(originMod, updateModFile)
+	var mutex sync.Mutex
+	g := new(errgroup.Group)
+	g.Go(func() error {
+		mutex.Lock()
+		RunCommandWithDir("go mod tidy", path)
+		mutex.Unlock()
+		return nil
+	})
+	mylog.Check(g.Wait())
+}
+
+func setVersion(r *modfile.Require, v string) {
+	r.Mod.Version = v
+
+	if line := r.Syntax; len(line.Token) > 0 {
+		if line.InBlock {
+			// If the line is preceded by an empty line, remove it; see
+			// https://golang.org/issue/33779.
+			if len(line.Comments.Before) == 1 && len(line.Comments.Before[0].Token) == 0 {
+				line.Comments.Before = line.Comments.Before[:0]
+			}
+			if len(line.Token) >= 2 { // example.com v1.2.3
+				line.Token[1] = v
+			}
+		} else {
+			if len(line.Token) >= 3 { // require example.com v1.2.3
+				line.Token[2] = v
+			}
+		}
 	}
 }
 
@@ -122,7 +179,7 @@ func UpdateDependencies(path string) { // 模块代理刷新的不及时，需�
 
 func updateModsByWorkSpace(isUpdateAll bool) {
 	if !FileExists("go.work") {
-		UpdateDependencies(mylog.Check2(os.Getwd()))
+		UpdateDependenciesFromModFile(mylog.Check2(os.Getwd()))
 		return
 	}
 	RunCommandArgs("go work use -r .")
@@ -137,6 +194,9 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, ".") {
 			abs := mylog.Check2(filepath.Abs(line))
+			if filepath.Base(abs) == "golibrary" {
+				continue
+			}
 			mods = append(mods, abs)
 		}
 	}
@@ -146,7 +206,7 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 	g := new(errgroup.Group)
 	for _, path := range mods {
 		g.Go(func() error { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
-			UpdateDependencies(path) // 锁应该在这里面
+			UpdateDependenciesFromModFile(path) // 锁应该在这里面
 			if isUpdateAll {
 				RunCommand("go get -u -x all") //need lock,但是不使用这个，太慢了
 			}
