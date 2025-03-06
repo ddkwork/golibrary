@@ -1,7 +1,9 @@
 package golibrary
 
 import (
+	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream"
+	"os"
 )
 
 func StaticCheck() {
@@ -11,6 +13,7 @@ func StaticCheck() {
 }
 
 func UpdateSelf() {
+	mylog.Check(os.Setenv("GOPROXY", "direct"))
 	hash := stream.GetLastCommitHashLocal("D:\\workspace\\workspace\\golibrary")
 	stream.RunCommand("go get -v -x github.com/ddkwork/golibrary@" + hash)
 	stream.RunCommand("go mod tidy")
