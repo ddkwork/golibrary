@@ -130,6 +130,8 @@ func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络
 		mutex.Unlock()
 		return nil
 	})
+	value := ParseGoMod(newMod).GetMust("github.com/ddkwork/golibrary")
+	println("require github.com/ddkwork/golibrary "+value)
 	mylog.Check(g.Wait())
 }
 

@@ -107,8 +107,8 @@ func formatBytesAsGoCode(data []byte) string {
 }
 
 func FormatInteger[T Integer](data T) string {
-	return FormatIntegerHex0x(data) + ", //" + fmt.Sprintf("%d", reflect.ValueOf(data).Interface())
-	// return FormatIntegerHex0x(data) + " # " + fmt.Sprintf("%d", reflect.ValueOf(data).Interface())
+	//return fmt.Sprintf("%d", reflect.ValueOf(data).Interface()) + "[" + FormatIntegerHex0x(data) + "]"
+	return FormatIntegerHex0x(data) + " # " + fmt.Sprintf("%d", reflect.ValueOf(data).Interface())
 }
 
 func FormatIntegerHex0x[T Integer](data T) string {
