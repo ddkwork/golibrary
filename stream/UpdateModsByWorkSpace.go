@@ -102,8 +102,9 @@ func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络
 	originMod := filepath.Join(path, "go.mod")
 	newMod := filepath.Join(GetDesktopDir(), "go.mod")
 	f := mylog.Check2(modfile.Parse(originMod, mylog.Check2(os.ReadFile(originMod)), nil))
+	newModMap := ParseGoMod(newMod)
 	for oldName, oldVersion := range ParseGoMod(originMod).Range() {
-		newVersion, exist := ParseGoMod(newMod).Get(oldName)
+		newVersion, exist := newModMap.Get(oldName)
 		if exist {
 			if oldVersion != newVersion {
 				for i, require := range f.Require {
@@ -120,18 +121,22 @@ func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络
 	f.SortBlocks()
 	updateModFile := mylog.Check2(f.Format())
 	// println(string(updateModFile))
-
 	WriteTruncate(originMod, updateModFile)
 	var mutex sync.Mutex
 	g := new(errgroup.Group)
 	g.Go(func() error {
 		mutex.Lock()
 		RunCommandWithDir("go mod tidy", path)
+		v := newModMap.GetMust("github.com/ddkwork/golibrary")
+		b := NewBuffer(originMod)
+		if !b.Contains("golibrary") {
+			line := "require github.com/ddkwork/golibrary  " + v
+			mylog.Info("add golibrary", line)
+			b.WriteStringLn(line).ReWriteSelf()
+		}
 		mutex.Unlock()
 		return nil
 	})
-	value := ParseGoMod(newMod).GetMust("github.com/ddkwork/golibrary")
-	println("require github.com/ddkwork/golibrary "+value)
 	mylog.Check(g.Wait())
 }
 
