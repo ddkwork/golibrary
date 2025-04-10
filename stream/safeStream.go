@@ -293,8 +293,8 @@ func GetPackageName() (pkgName string) {
 }
 
 // CutPath ("C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/km/ntddk.h", "Include", "km")
-func (b *Buffer) CutPath(left, right string) (cut string, found bool) {
-	_, after, found := strings.Cut(b.path, left)
+func CutPath(path, left, right string) (cut string, found bool) {
+	_, after, found := strings.Cut(path, left)
 	mylog.Check(found)
 	before, _, f := strings.Cut(after, right)
 	mylog.Check(f)
@@ -302,6 +302,7 @@ func (b *Buffer) CutPath(left, right string) (cut string, found bool) {
 	before = strings.ReplaceAll(before, "/", "")
 	return before, true
 }
+
 func (b *Buffer) CutWithIndex(x, y int) []byte { return b.Bytes()[x:y] }
 func (b *Buffer) NewLine() *Buffer             { b.WriteString("\n"); return b }
 func (b *Buffer) QuoteWith(s string) *Buffer   { b.WriteString(s); return b }
