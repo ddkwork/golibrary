@@ -27,8 +27,7 @@ func FileServerWindowsDisk() {
 			return
 		}
 		mylog.Check2(io.WriteString(w, "<p>共享硬盘：</p>"))
-		for _, s := range GetWindowsLogicalDrives() {
-
+		for s := range GetWindowsLogicalDrives() {
 			s = s[0:1]
 			mylog.Check2(io.WriteString(w, "<a href='"+s+"/'>"+s+"</a>\n"))
 		}
