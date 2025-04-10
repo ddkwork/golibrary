@@ -91,7 +91,7 @@ func NewBuffer[T Type](data T) *Buffer {
 		return &Buffer{Buffer: b}
 	case string:
 		if IsFilePath(b) {
-			return &Buffer{path: b, Buffer: bytes.NewBuffer(Check2(os.ReadFile(b)))}
+			return &Buffer{path: b, Buffer: bytes.NewBuffer(Check2(os.ReadFile(b)))} //todo ntddk.h d大文件不应该读取会影响性能
 		}
 		return &Buffer{Buffer: bytes.NewBufferString(b)}
 	case HexString:
@@ -292,8 +292,9 @@ func GetPackageName() (pkgName string) {
 	return filepath.Base(Check2(filepath.Abs(".")))
 }
 
-func (b *Buffer) CutString(left, right string) (cut string, found bool) {
-	_, after, found := strings.Cut(b.String(), left)
+// CutPath ("C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/km/ntddk.h", "Include", "km")
+func (b *Buffer) CutPath(left, right string) (cut string, found bool) {
+	_, after, found := strings.Cut(b.path, left)
 	Check(found)
 	before, _, f := strings.Cut(after, right)
 	Check(f)
@@ -657,28 +658,32 @@ func RandomAny[T any](slice []T) T {
 	return slice[random.Intn(len(slice))]
 }
 
-func GenA2Z() (letters []string) {
+func GenA2Z() iter.Seq[string] {
 	return generateLatinAlphabets()
 }
 
-func generateLatinAlphabets() []string {
-	var alphabets []string
-	for i := 'A'; i <= 'Z'; i++ {
-		alphabets = append(alphabets, string(i))
-	}
-	return alphabets
-}
-
-func GetWindowsLogicalDrives() []string {
-	var driveLetters []string
-	for _, s := range GenA2Z() {
-		s += ":\\"
-		_, e := os.Stat(s)
-		if e == nil {
-			driveLetters = append(driveLetters, s)
+func generateLatinAlphabets() iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for i := 'A'; i <= 'Z'; i++ {
+			if !yield(string(i)) {
+				return
+			}
 		}
 	}
-	return driveLetters
+}
+
+func GetWindowsLogicalDrives() iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for s := range GenA2Z() {
+			s += ":\\"
+			_, e := os.Stat(s)
+			if e == nil {
+				if !yield(s) {
+					break
+				}
+			}
+		}
+	}
 }
 
 func IsTermux() bool {
