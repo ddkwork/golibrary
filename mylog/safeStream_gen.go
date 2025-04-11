@@ -248,7 +248,7 @@ func write[T Type](name string, isAppend bool, data T) {
 }
 
 func CreatDirectory(dir string) bool {
-	dir = FixFilePath(dir)
+	dir = filepath.ToSlash(dir)
 	info, e := os.Stat(dir)
 	// CheckIgnore(e)
 	if e == nil {
@@ -961,10 +961,6 @@ func isDir(path string, debug bool) bool {
 		return false
 	}
 	return fi != nil && fi.IsDir()
-}
-
-func FixFilePath(path string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(path, "\\", "/"), "//", "/")
 }
 
 func BaseName(path string) string {

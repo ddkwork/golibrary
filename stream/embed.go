@@ -18,7 +18,7 @@ func ReadEmbedFileMap(embedFiles embed.FS, dir string) *safemap.M[string, []byte
 	fileContents := new(safemap.M[string, []byte])
 	fileList := mylog.Check2(embedFiles.ReadDir(dir))
 	for _, file := range fileList {
-		uncPath := FixFilePath(filepath.Join(dir, file.Name()))
+		uncPath := filepath.ToSlash(filepath.Join(dir, file.Name()))
 		fileData := mylog.Check2(embedFiles.ReadFile(uncPath))
 		fileContents.Set(file.Name(), fileData)
 	}
