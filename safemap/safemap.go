@@ -145,8 +145,8 @@ func (s *M[K, V]) Set(key K, value V) (actual V, exist bool) {
 	defer s.Unlock()
 	actual, exist = s.m[key]
 	if exist {
-		println(key, " exist")
-		return actual, true // todo add log ?
+		mylog.CheckIgnore("map set exist key : " + fmt.Sprint(key))
+		return actual, true
 	}
 	s.m[key] = value
 	if s.ordered {
