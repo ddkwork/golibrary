@@ -138,8 +138,8 @@ func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络
 		//
 		//go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...
 		//go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...
-		RunCommand("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...")
-		RunCommand("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...")
+		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...", path)
+		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...", path)
 		mutex.Unlock()
 		return nil
 	})
