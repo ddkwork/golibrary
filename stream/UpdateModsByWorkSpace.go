@@ -134,6 +134,12 @@ func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络
 			mylog.Info("add golibrary", line)
 			b.WriteStringLn(line).ReWriteSelf()
 		}
+		//https://github.com/ddkwork/tools/blob/master/gopls/doc/analyzers.md
+		//
+		//go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...
+		//go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...
+		RunCommand("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...")
+		RunCommand("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...")
 		mutex.Unlock()
 		return nil
 	})
