@@ -95,11 +95,11 @@ func GetDesktopDir() string {
 	}
 }
 
-func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络访问了，太慢了
-	if filepath.Base(path) == "golibrary" {
+func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络访问了，太慢了
+	if filepath.Base(dir) == "golibrary" {
 		return
 	}
-	originMod := filepath.Join(path, "go.mod")
+	originMod := filepath.Join(dir, "go.mod")
 	newMod := filepath.Join(GetDesktopDir(), "go.mod")
 	f := mylog.Check2(modfile.Parse(originMod, mylog.Check2(os.ReadFile(originMod)), nil))
 	newModMap := ParseGoMod(newMod)
@@ -126,7 +126,7 @@ func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络
 	g := new(errgroup.Group)
 	g.Go(func() error {
 		mutex.Lock()
-		RunCommandWithDir("go mod tidy", path)
+		RunCommandWithDir("go mod tidy", dir)
 		v := newModMap.GetMust("github.com/ddkwork/golibrary")
 		b := NewBuffer(originMod)
 		if !b.Contains("golibrary") {
@@ -135,11 +135,8 @@ func UpdateDependenciesFromModFile(path string) { // 实现替换，不要网络
 			b.WriteStringLn(line).ReWriteSelf()
 		}
 		//https://github.com/ddkwork/tools/blob/master/gopls/doc/analyzers.md
-		//
-		//go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...
-		//go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...
-		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...", path)
-		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...", path)
+		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...", dir)
+		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...", dir)
 		mutex.Unlock()
 		return nil
 	})
@@ -218,13 +215,13 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 	modChan := make(chan string, len(mods))
 
 	g := new(errgroup.Group)
-	for _, path := range mods {
+	for _, modPath := range mods {
 		g.Go(func() error { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
-			UpdateDependenciesFromModFile(path) // 锁应该在这里面
+			UpdateDependenciesFromModFile(modPath) // 锁应该在这里面
 			if isUpdateAll {
 				RunCommand("go get -u -x all") // need lock,但是不使用这个，太慢了
 			}
-			modChan <- path
+			modChan <- modPath
 			return nil
 		})
 	}
