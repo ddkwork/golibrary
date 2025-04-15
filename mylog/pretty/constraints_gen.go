@@ -182,7 +182,7 @@ func isASCIIDigit(c byte) bool { return '0' <= c && c <= '9' }
 //}
 
 func IsASCIIDigit(s string) bool {
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		if !isASCIIDigit(s[i]) {
 			return false
 		}

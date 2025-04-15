@@ -204,11 +204,7 @@ func (h *handle) rewriteAst() {
 		if cursor.Node() == nil {
 			return true
 		}
-		h.line = h.fileSet.Position(cursor.Node().Pos()).Line
-		if h.line > len(h.lines)-1 {
-			h.line = len(h.lines) - 1 // todo bug
-			// Warning("line > len(lines) " + h.lineInfo)
-		}
+		h.line = min(h.fileSet.Position(cursor.Node().Pos()).Line, len(h.lines)-1)
 		h.lineInfo = fmt.Sprintf(h.path+":%d ", h.line) + h.lines[h.line]
 
 		if h.line == 49 {

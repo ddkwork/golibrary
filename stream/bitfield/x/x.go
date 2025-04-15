@@ -15,7 +15,7 @@ func (b *BitField) SetBytesFromUint(offset int, byteCount int, value uint64) {
 	}
 
 	// 逐字节设置
-	for i := 0; i < byteCount; i++ {
+	for i := range byteCount {
 		b.data[offset+i] = uint8(value >> (8 * (byteCount - 1 - i))) // 从高字节到低字节
 	}
 }
@@ -28,7 +28,7 @@ func (b *BitField) GetUintFromBytes(offset int, byteCount int) uint64 {
 	var result uint64 = 0
 
 	// 逐字节获取
-	for i := 0; i < byteCount; i++ {
+	for i := range byteCount {
 		result |= uint64(b.data[offset+i]) << (8 * (byteCount - 1 - i)) // 从高字节到低字节
 	}
 	return result

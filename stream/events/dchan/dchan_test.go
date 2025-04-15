@@ -12,10 +12,10 @@ func TestChanModeSendReceive(t *testing.T) {
 	ch := dchan.New[int](100)
 
 	// Test sending and receiving in single-threaded mode
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		val, ok := ch.Receive()
 		if !ok || val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -26,13 +26,13 @@ func TestChanModeSendReceive(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			ch.Send(i)
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			val, ok := ch.Receive()
 			if !ok || val != i {
 				t.Errorf("Expected %d, got %d", i, val)
@@ -46,11 +46,11 @@ func TestChanModeClose(t *testing.T) {
 	ch := dchan.New[int](100)
 
 	// Test Close without parameter
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	ch.Close()
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		val, ok := ch.Receive()
 		if !ok || val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -59,7 +59,7 @@ func TestChanModeClose(t *testing.T) {
 
 	// Test Close with function parameter
 	ch = dchan.New[int](100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	var received []int
@@ -69,7 +69,7 @@ func TestChanModeClose(t *testing.T) {
 	if len(received) != 100 {
 		t.Errorf("Expected received length to be 100, got %d", len(received))
 	}
-	for i := 0; i < len(received); i++ {
+	for i := range received {
 		if received[i] != i {
 			t.Errorf("Expected %d, got %d", i, received[i])
 		}
@@ -77,12 +77,12 @@ func TestChanModeClose(t *testing.T) {
 
 	// Test Close with nil parameter
 	ch = dchan.New[int](100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	// time.Sleep(2 * time.Second) // wait unitl all values are utilized
 	ch.Close(nil)
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		_, ok := ch.Receive()
 		if ok {
 			t.Errorf("Expected channel to be closed")
@@ -98,13 +98,13 @@ func TestChanModeHugeData(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			ch.Send(i)
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			val, ok := ch.Receive()
 			if !ok || val != i {
 				t.Errorf("Expected %d, got %d", i, val)
@@ -119,10 +119,10 @@ func TestChanModeRelaxed(t *testing.T) {
 	ch := dchan.New[int](100, dchan.Relaxed)
 
 	// Test sending and receiving in single-threaded mode
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		val, ok := ch.Receive()
 		if !ok || val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -133,13 +133,13 @@ func TestChanModeRelaxed(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			ch.Send(i)
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			val, ok := ch.Receive()
 			if !ok || val != i {
 				t.Errorf("Expected %d, got %d", i, val)
@@ -152,15 +152,15 @@ func TestChanModeRelaxed(t *testing.T) {
 func TestChanModeRelaxedClose(t *testing.T) {
 	ch := dchan.New[int](100, dchan.Relaxed)
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	ch.Close()
 	// sending to closed channel should not panic
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		val, ok := ch.Receive()
 		if !ok || val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -174,7 +174,7 @@ func TestChanModeLenIsClosed(t *testing.T) {
 	ch := dchan.New[int](100, dchan.Relaxed)
 
 	// Test Len and IsClosed without parameter
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	if ch.Len() != 100 {
@@ -193,7 +193,7 @@ func TestChanModeLenIsClosed(t *testing.T) {
 
 	// Test Len and IsClosed with Close parameter
 	ch = dchan.New[int](100, dchan.Relaxed)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	if ch.Len() != 100 {
@@ -211,7 +211,7 @@ func TestChanModeLenIsClosed(t *testing.T) {
 func TestChanModeRange(t *testing.T) {
 	ch := dchan.New[int](100, dchan.Relaxed)
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	i := 0
@@ -232,10 +232,10 @@ func TestSliceModeSendReceive(t *testing.T) {
 	ch := dchan.New[int](100, dchan.SliceMode)
 
 	// Test sending and receiving in single-threaded mode
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		val, ok := ch.Receive()
 		if !ok || val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -246,13 +246,13 @@ func TestSliceModeSendReceive(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			ch.Send(i)
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			val, ok := ch.Receive()
 			if !ok || val != i {
 				t.Errorf("Expected %d, got %d", i, val)
@@ -266,11 +266,11 @@ func TestSliceModeClose(t *testing.T) {
 	ch := dchan.New[int](100, dchan.SliceMode)
 
 	// Test Close without parameter
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	ch.Close()
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		val, ok := ch.Receive()
 		if !ok || val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -279,7 +279,7 @@ func TestSliceModeClose(t *testing.T) {
 
 	// Test Close with function parameter
 	ch = dchan.New[int](100, dchan.SliceMode)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	var received []int
@@ -289,7 +289,7 @@ func TestSliceModeClose(t *testing.T) {
 	if len(received) != 100 {
 		t.Errorf("Expected received length to be 100, got %d", len(received))
 	}
-	for i := 0; i < len(received); i++ {
+	for i := range received {
 		if received[i] != i {
 			t.Errorf("Expected %d, got %d", i, received[i])
 		}
@@ -297,12 +297,12 @@ func TestSliceModeClose(t *testing.T) {
 
 	// Test Close with nil parameter
 	ch = dchan.New[int](100, dchan.SliceMode)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	// time.Sleep(2 * time.Second) // wait unitl all values are utilized
 	ch.Close(nil)
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		_, ok := ch.Receive()
 		if ok {
 			t.Errorf("Expected channel to be closed")
@@ -318,13 +318,13 @@ func TestSliceModeHugeData(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			ch.Send(i)
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			val, ok := ch.Receive()
 			if !ok || val != i {
 				t.Errorf("Expected %d, got %d", i, val)
@@ -339,10 +339,10 @@ func TestSliceModeRelaxed(t *testing.T) {
 	ch := dchan.New[int](100, dchan.SliceMode|dchan.Relaxed)
 
 	// Test sending and receiving in single-threaded mode
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		val, ok := ch.Receive()
 		if !ok || val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -353,13 +353,13 @@ func TestSliceModeRelaxed(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			ch.Send(i)
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			val, ok := ch.Receive()
 			if !ok || val != i {
 				t.Errorf("Expected %d, got %d", i, val)
@@ -372,15 +372,15 @@ func TestSliceModeRelaxed(t *testing.T) {
 func TestSliceModeRelaxedClose(t *testing.T) {
 	ch := dchan.New[int](100, dchan.SliceMode|dchan.Relaxed)
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	ch.Close()
 	// sending to closed channel should not panic
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		val, ok := ch.Receive()
 		if !ok || val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -398,10 +398,10 @@ func TestSliceModeReady(t *testing.T) {
 	ch := dchan.New[int](100, dchan.SliceMode)
 
 	// Test Ready without parameter
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		if i == 10 && !ch.Ready(readyFunc) {
 			t.Errorf("Expected channel to be ready")
 		}
@@ -419,7 +419,7 @@ func TestSliceModeLenIsClosed(t *testing.T) {
 	ch := dchan.New[int](100, dchan.SliceMode|dchan.Relaxed)
 
 	// Test Len and IsClosed without parameter
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	if ch.Len() != 100 {
@@ -438,7 +438,7 @@ func TestSliceModeLenIsClosed(t *testing.T) {
 
 	// Test Len and IsClosed with Close parameter
 	ch = dchan.New[int](100, dchan.SliceMode|dchan.Relaxed)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	if ch.Len() != 100 {
@@ -456,7 +456,7 @@ func TestSliceModeLenIsClosed(t *testing.T) {
 func TestSliceModeRange(t *testing.T) {
 	ch := dchan.New[int](100, dchan.SliceMode|dchan.Relaxed)
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch.Send(i)
 	}
 	i := 0
@@ -479,19 +479,19 @@ func BenchmarkDchanSend(b *testing.B) {
 	dc := dchan.New[int]()
 	b.ResetTimer()
 
-	for i := 0; i < 1024000; i++ {
+	for i := range 1024000 {
 		dc.Send(i)
 	}
 }
 
 func BenchmarkDchanReceive(b *testing.B) {
 	dc := dchan.New[int]()
-	for i := 0; i < 1024000; i++ {
+	for i := range 1024000 {
 		dc.Send(i) // Pre-fill the channel
 	}
 	b.ResetTimer()
 
-	for i := 0; i < 1024000; i++ {
+	for range 1024000 {
 		dc.Receive()
 	}
 }
@@ -526,19 +526,19 @@ func BenchmarkDchanSliceModeSend(b *testing.B) {
 	dc := dchan.New[int](dchan.SliceMode)
 	b.ResetTimer()
 
-	for i := 0; i < 1024000; i++ {
+	for i := range 1024000 {
 		dc.Send(i)
 	}
 }
 
 func BenchmarkDchanSliceModeReceive(b *testing.B) {
 	dc := dchan.New[int](dchan.SliceMode)
-	for i := 0; i < 1024000; i++ {
+	for i := range 1024000 {
 		dc.Send(i)
 	}
 	b.ResetTimer()
 
-	for i := 0; i < 1024000; i++ {
+	for range 1024000 {
 		dc.Receive()
 	}
 }
@@ -573,7 +573,7 @@ func BenchmarkChannelSend(b *testing.B) {
 	ch := make(chan int, 1024000)
 	b.ResetTimer()
 
-	for i := 0; i < 1024000; i++ {
+	for i := range 1024000 {
 		ch <- i
 	}
 	close(ch)
@@ -581,13 +581,13 @@ func BenchmarkChannelSend(b *testing.B) {
 
 func BenchmarkChannelReceive(b *testing.B) {
 	ch := make(chan int, 1024000)
-	for i := 0; i < 1024000; i++ {
+	for i := range 1024000 {
 		ch <- i // Pre-fill the channel
 	}
 	close(ch)
 	b.ResetTimer()
 
-	for i := 0; i < 1024000; i++ {
+	for range 1024000 {
 		<-ch
 	}
 }

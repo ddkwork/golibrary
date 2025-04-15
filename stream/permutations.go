@@ -17,7 +17,7 @@ func Permute[T comparable](data []T) [][]T {
 			res = append(res, temp)
 			return
 		}
-		for i := 0; i < len(data); i++ {
+		for i := range data {
 			if used[i] {
 				continue // 当前元素已经使用，跳过
 			}

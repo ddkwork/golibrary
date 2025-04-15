@@ -88,7 +88,7 @@ func TestPrettyLevel(test *testing.T) {
 func Example_tabPrint() {
 	tp := NewTabPrinter(8)
 
-	for i := 0; i < 33; i++ {
+	for i := range 33 {
 		tp.Print(i)
 	}
 

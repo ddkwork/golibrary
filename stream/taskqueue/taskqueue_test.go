@@ -25,7 +25,7 @@ func TestSerialQueue(t *testing.T) {
 	q := taskqueue.New(taskqueue.Depth(100), taskqueue.Workers(1))
 	prev = -1
 	counter = 0
-	for i := 0; i < 200; i++ {
+	for i := range 200 {
 		submitSerial(q, i)
 	}
 	q.Shutdown()
@@ -46,7 +46,7 @@ func TestParallelQueue(t *testing.T) {
 	q := taskqueue.New(taskqueue.Workers(5))
 	total = 0
 	count = 0
-	for i := 0; i < parallelWorkSubmissions; i++ {
+	for i := range parallelWorkSubmissions {
 		submitParallel(q, i)
 	}
 	q.Shutdown()

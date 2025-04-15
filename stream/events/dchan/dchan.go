@@ -1,6 +1,7 @@
 package dchan
 
 import (
+	"slices"
 	"sync"
 )
 
@@ -119,7 +120,7 @@ func (c *C[T]) Receive() (T, bool) {
 		c.roff++
 		if c.roff == c.size {
 			if c.index > 0 {
-				c.buffer = append(c.buffer[:0], c.buffer[1:]...)
+				c.buffer = slices.Delete(c.buffer, 0, 1)
 			}
 			c.index--
 			c.roff = 0
@@ -129,7 +130,7 @@ func (c *C[T]) Receive() (T, bool) {
 		case val = <-c.channels[0]:
 		default:
 			close(c.channels[0])
-			c.channels = append(c.channels[:0], c.channels[1:]...)
+			c.channels = slices.Delete(c.channels, 0, 1)
 			c.index--
 			val = <-c.channels[0]
 		}

@@ -63,8 +63,7 @@ func copyRecursive(original, cpy reflect.Value) {
 			return
 		}
 
-		for i := 0; i < original.NumField(); i++ {
-
+		for i := range original.NumField() {
 			if original.Type().Field(i).PkgPath != "" {
 				continue
 			}
@@ -77,7 +76,7 @@ func copyRecursive(original, cpy reflect.Value) {
 		}
 
 		cpy.Set(reflect.MakeSlice(original.Type(), original.Len(), original.Cap()))
-		for i := 0; i < original.Len(); i++ {
+		for i := range original.Len() {
 			copyRecursive(original.Index(i), cpy.Index(i))
 		}
 

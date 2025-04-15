@@ -201,21 +201,21 @@ func TestStream_SliceEnd(t *testing.T) {
 
 func BenchmarkByBufioReaderReadLine(b *testing.B) {
 	path := "D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js"
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		stream.ReadFileToLines(path)
 	}
 }
 
 func BenchmarkByStringsSplitAfter(b *testing.B) {
 	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		strings.Lines(s.String())
 	}
 }
 
 func BenchmarkByBytessSplitAfter(b *testing.B) {
 	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		bytes.SplitAfter(s.Bytes(), []byte("\n"))
 	}
 }
@@ -223,7 +223,7 @@ func BenchmarkByBytessSplitAfter(b *testing.B) {
 func BenchmarkByRegexp(b *testing.B) {
 	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
 	re := regexp.MustCompile(`\n`)
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		re.Split(s.String(), -1)
 	}
 }

@@ -220,7 +220,7 @@ func TestSafeMap_Keys_Ordered(t *testing.T) {
 
 func BenchmarkSafeMap_Store(b *testing.B) {
 	sm := New[int, string]()
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		sm.Update(i, "value")
 	}
 }
@@ -228,15 +228,15 @@ func BenchmarkSafeMap_Store(b *testing.B) {
 func BenchmarkSafeMap_Load(b *testing.B) {
 	sm := New[int, string]()
 	sm.Update(1, "value")
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		sm.Get(1)
 	}
 }
 
 func BenchmarkSafeMap_Delete(b *testing.B) {
 	sm := New[int, string]()
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		sm.Update(i, "value")
 		sm.Delete(i)
 	}
@@ -244,7 +244,7 @@ func BenchmarkSafeMap_Delete(b *testing.B) {
 
 func BenchmarkSafeMap_Ordered_Store(b *testing.B) {
 	sm := New[int, string](Ordered)
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		sm.Update(i, "value")
 	}
 }
@@ -252,15 +252,15 @@ func BenchmarkSafeMap_Ordered_Store(b *testing.B) {
 func BenchmarkSafeMap_Ordered_Load(b *testing.B) {
 	sm := New[int, string](Ordered)
 	sm.Update(1, "value")
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		sm.Get(1)
 	}
 }
 
 func BenchmarkSafeMap_Ordered_Delete(b *testing.B) {
 	sm := New[int, string](Ordered)
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		sm.Update(i, "value")
 		sm.Delete(i)
 	}
@@ -268,7 +268,7 @@ func BenchmarkSafeMap_Ordered_Delete(b *testing.B) {
 
 func BenchmarkSyncMap_Store(b *testing.B) {
 	var sm sync.Map
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		sm.Store(i, "value")
 	}
 }
@@ -276,15 +276,15 @@ func BenchmarkSyncMap_Store(b *testing.B) {
 func BenchmarkSyncMap_Load(b *testing.B) {
 	var sm sync.Map
 	sm.Store(1, "value")
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		sm.Load(1)
 	}
 }
 
 func BenchmarkSyncMap_Delete(b *testing.B) {
 	var sm sync.Map
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		sm.Store(i, "value")
 		sm.Delete(i)
 	}

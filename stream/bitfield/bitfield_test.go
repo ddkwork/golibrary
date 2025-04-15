@@ -251,7 +251,7 @@ func TestToUint64Safe(t *testing.T) {
 func BenchmarkSet(b *testing.B) {
 	l := uint32(1000)
 	s := New(int(l))
-	for range b.N {
+	for b.Loop() {
 		for i := range l {
 			s.Set(i)
 		}
@@ -261,7 +261,7 @@ func BenchmarkSet(b *testing.B) {
 func BenchmarkSetMathBig(b *testing.B) {
 	l := 1000
 	s := big.NewInt(0)
-	for range b.N {
+	for b.Loop() {
 		for i := range l {
 			s.SetBit(s, i, 1)
 		}

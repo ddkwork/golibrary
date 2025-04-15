@@ -154,7 +154,7 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 			io.WriteString(p.Out, "[]")
 		} else {
 			io.WriteString(p.Out, "["+newLine)
-			for i := 0; i < l; i++ {
+			for i := range l {
 
 				io.WriteString(p.Out, next)
 
@@ -193,13 +193,13 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 					io.WriteString(p.Out, sOpen+newLine)
 					// 计算最大字段名长度，以便对齐
 					maxKeyLen := 0
-					for i := 0; i < l; i++ {
+					for i := range l {
 						keyLen := len(val.Type().Field(i).Name)
 						if keyLen > maxKeyLen {
 							maxKeyLen = keyLen
 						}
 					}
-					for i := 0; i < l; i++ {
+					for i := range l {
 						io.WriteString(p.Out, next)
 						fieldName := val.Type().Field(i).Name
 
