@@ -132,7 +132,7 @@ func HexDump[K keyType, V []byte | *bytes.Buffer](title K, buf V) {
 	l.hexDump(fmt.Sprint(title), DumpHex(buf))
 }
 
-func Todo(body string) {
+func Todo(body any) {
 	Warning("TODO", body)
 }
 
