@@ -133,7 +133,7 @@ func (c *Client) SetHead(header map[string]string) *Client {
 	for k, v := range header {
 		c.head.Set(k, v)
 	}
-	c.head.Set("user-agent", stream.RandomAny(UserAgents))
+	c.head.Set("user-agent", stream.RandomAnySlice(UserAgents))
 	return c
 }
 
@@ -258,7 +258,7 @@ func MockProtoBufPacket(proxyPort string) {
 }
 
 var (
-	UserAgentRandom = stream.RandomAny(UserAgents)
+	UserAgentRandom = stream.RandomAnySlice(UserAgents)
 	UserAgents      = []string{
 		"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.86 Safari/537.36",
 		"Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.86 Safari/537.36",

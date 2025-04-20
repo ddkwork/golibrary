@@ -653,7 +653,7 @@ func JsonIndent(b []byte) string {
 	return buffer.String()
 }
 
-func RandomAny[T any](slice []T) T {
+func RandomAnySlice[T any](slice []T) T {
 	seed := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(seed)
 	return slice[random.Intn(len(slice))]
