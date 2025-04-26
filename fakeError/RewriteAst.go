@@ -1,8 +1,9 @@
-package mylog
+package fakeError
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/ddkwork/golibrary/mylog"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -28,12 +29,12 @@ type handle struct {
 
 func newHandle(path string, noComments bool) *handle {
 	if !strings.HasSuffix(path, ".go") {
-		Check(fmt.Errorf("not a go file: %s", path))
+		mylog.Check(fmt.Errorf("not a go file: %s", path))
 	}
 	fileSet := token.NewFileSet()
 	h := &handle{
 		fileSet:  fileSet,
-		root:     Check2(parser.ParseFile(fileSet, path, nil, parser.ParseComments)),
+		root:     mylog.Check2(parser.ParseFile(fileSet, path, nil, parser.ParseComments)),
 		path:     path,
 		lines:    nil,
 		lineInfo: "",
@@ -44,7 +45,7 @@ func newHandle(path string, noComments bool) *handle {
 	if noComments {
 		h.removeComments()
 	}
-	for s := range ReadFileToLines(path) {
+	for s := range mylog.ReadFileToLines(path) {
 		h.lines = append(h.lines, s)
 	}
 	return h
@@ -77,7 +78,7 @@ func newHandle(path string, noComments bool) *handle {
 //}
 
 func (h *handle) removeComments() {
-	Todo("https://github.com/Greyh4t/nocomment")
+	mylog.Todo("https://github.com/Greyh4t/nocomment")
 	newComments := make([]*ast.CommentGroup, 0) // can not be nil,why
 	for _, group := range h.root.Comments {
 		var newGroup ast.CommentGroup
@@ -93,24 +94,13 @@ func (h *handle) removeComments() {
 	h.root.Comments = newComments
 }
 
-var Skips = []string{
-	`vendor`,
-	`\gioview\`,
-	`\gio\`,
-	`\gio-cmd\`,
-	`\gio-example\`,
-	`\gio-x\`,
-	`\toolbox\`,
-	`\unison\`,
-	`\ux\patch\`,
-}
-
 func FormatAllFiles(noComments bool, path string) {
 	if path == "" {
 		path = "."
 	}
-	Check(filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
-		abs := Check2(filepath.Abs(path))
+	mylog.Check(filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+		abs := mylog.Check2(filepath.Abs(path))
+		abs = filepath.ToSlash(abs)
 		if filepath.Ext(abs) == ".go" {
 			if filepath.Base(abs) == "SkipCheckBase.go" {
 				return nil
@@ -143,7 +133,7 @@ func (h *handle) findEof(stmtType string) (hasEof bool) {
 		"io.EOF.Error()",
 	}
 	if h.line == 0 {
-		Warning("for unit test", "because no ast parser")
+		mylog.Warning("for unit test", "because no ast parser")
 		for i, s := range h.lines {
 			if strings.Contains(s, "err ") {
 				h.line = i
@@ -191,7 +181,7 @@ func (h *handle) findEof(stmtType string) (hasEof bool) {
 		}
 	}
 	if hasEof && !checked {
-		Success("find eof in "+stmtType, "you should call Check().if and break in loop  ", todoLineInfo)
+		mylog.Success("find eof in "+stmtType, "you should call Check().if and break in loop  ", todoLineInfo)
 		return true
 	}
 	return hasEof || checked
@@ -218,7 +208,7 @@ func (h *handle) rewriteAst() {
 				if ok {
 					if isIfError(elseIf) {
 						x.Else = nil
-						Trace("else if err != nil", h.lineInfo)
+						mylog.Trace("else if err != nil", h.lineInfo)
 						return true
 					}
 				}
@@ -229,7 +219,7 @@ func (h *handle) rewriteAst() {
 			}
 
 			if x.Init == nil {
-				Trace("if err != nil", h.lineInfo)
+				mylog.Trace("if err != nil", h.lineInfo)
 				cursor.Delete()
 				return true
 			}
@@ -345,10 +335,6 @@ func (h *handle) rewriteAst() {
 					}
 				}
 			}
-		case *ast.RangeStmt:
-			// Todo("check loopVar and integer range " + lineInfo)
-		case *ast.ForStmt:
-			// Todo("check loopVar and integer range " + lineInfo)
 		case *ast.DeferStmt:
 			// Todo("check closer in defer " + lineInfo)
 
@@ -459,15 +445,15 @@ func (h *handle) rewriteAst() {
 
 	if needImport {
 		astutil.AddImport(h.fileSet, h.root, h.mod)
-		Success("add import", h.path)
+		mylog.Success("add import", h.path)
 	}
 
-	Call(func() {
+	mylog.Call(func() {
 		var buf bytes.Buffer
-		Check(format.Node(&buf, h.fileSet, h.root))
-		pattern := "var " + "err " + "error"
+		mylog.Check(format.Node(&buf, h.fileSet, h.root))
+		pattern := "var err error"
 		s := strings.ReplaceAll(buf.String(), pattern, "")
-		WriteGoFileWithDiff(h.path, []byte(s))
+		mylog.WriteGoFileWithDiff(h.path, []byte(s))
 	})
 }
 
@@ -512,26 +498,4 @@ func (h *handle) Line(p token.Pos) int {
 
 func (h *handle) Offset(p token.Pos) int {
 	return h.file.Offset(p)
-}
-
-func GetLastReturnType(assignStmt *ast.AssignStmt) (lastReturnType string, b bool) {
-	if expr, ok := assignStmt.Rhs[0].(*ast.CallExpr); ok {
-		switch e := expr.Fun.(type) {
-		case *ast.Ident:
-			if e.Obj == nil {
-				return
-			}
-			funDecl, ok := e.Obj.Decl.(*ast.FuncDecl)
-			if !ok {
-				return
-			}
-			if results := funDecl.Type.Results; results != nil && len(results.List) > 0 {
-				lastResult := results.List[len(results.List)-1]
-				if ident, ok := lastResult.Type.(*ast.Ident); ok {
-					return ident.Name, true
-				}
-			}
-		}
-	}
-	return
 }
