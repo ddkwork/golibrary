@@ -6,6 +6,6 @@ import (
 )
 
 func TestName(t *testing.T) {
-	fakeError.FakeError("")
+	fakeError.Walk("")
 	StaticCheck()
 }

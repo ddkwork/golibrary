@@ -24,7 +24,7 @@ type M[K comparable, V any] struct {
 
 // thx github.com/hitsumitomo/safemap
 //type api[K comparable, V any] interface {
-//	New(ordered ...bool) (m *M[K, V])                                      // 实例化
+//	NewContent(ordered ...bool) (m *M[K, V])                                      // 实例化
 //	NewOrdered(yield iter.Seq2[K, V]) (m *M[K, V])                         // 实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
 //	NewStringer(ordered ...bool) (m *M[string, string])                    // 从字符串实例化
 //	NewStringerKeys(keys []string, ordered ...bool) (m *M[string, string]) // 从字符串切片实例化

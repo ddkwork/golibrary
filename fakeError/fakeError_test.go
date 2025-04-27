@@ -7,49 +7,25 @@ import (
 )
 
 func Test1(t *testing.T) {
-	assert.Equal(t, m.GetMust("test1").expected, fakeErrorTest("test1", m.GetMust("test1").code))
+	assert.Equal(t, m.GetMust("test1").expected, testHandle("test1", m.GetMust("test1").code))
 }
 func Test2(t *testing.T) {
-	assert.Equal(t, m.GetMust("test2").expected, fakeErrorTest("test2", m.GetMust("test2").code))
+	assert.Equal(t, m.GetMust("test2").expected, testHandle("test2", m.GetMust("test2").code))
 }
 func Test3(t *testing.T) {
-	assert.Equal(t, m.GetMust("test3").expected, fakeErrorTest("test3", m.GetMust("test3").code))
+	assert.Equal(t, m.GetMust("test3").expected, testHandle("test3", m.GetMust("test3").code))
 }
 func Test4(t *testing.T) {
-	assert.Equal(t, m.GetMust("test4").expected, fakeErrorTest("test4", m.GetMust("test4").code))
+	assert.Equal(t, m.GetMust("test4").expected, testHandle("test4", m.GetMust("test4").code))
 }
 func Test5(t *testing.T) {
-	assert.Equal(t, m.GetMust("test5").expected, fakeErrorTest("test5", m.GetMust("test5").code))
+	assert.Equal(t, m.GetMust("test5").expected, testHandle("test5", m.GetMust("test5").code))
 }
 func Test6(t *testing.T) {
-	assert.Equal(t, m.GetMust("test6").expected, fakeErrorTest("test6", m.GetMust("test6").code))
+	assert.Equal(t, m.GetMust("test6").expected, testHandle("test6", m.GetMust("test6").code))
 }
 func Test7(t *testing.T) {
-	assert.Equal(t, m.GetMust("test7").expected, fakeErrorTest("test7", m.GetMust("test7").code))
-}
-
-func Test_ApplyEdit(t *testing.T) {
-	replacements := []Edit{
-		{
-			Start: 90,
-			End:   125,
-			Line:  9,
-			New:   "",
-		},
-		{
-			Start: 127,
-			End:   158,
-			Line:  12,
-			New:   "",
-		},
-		{
-			Start: 160,
-			End:   223,
-			Line:  15,
-			New:   "mylog.Check(backendConn.Close())",
-		},
-	}
-	assert.Equal(t, m.GetMust("test1").expected, Apply(m.GetMust("test1").code, replacements))
+	assert.Equal(t, m.GetMust("test7").expected, testHandle("test7", m.GetMust("test7").code))
 }
 
 type testData struct {

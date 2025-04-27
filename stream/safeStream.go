@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	cmp2 "github.com/google/go-cmp/cmp"
 	"go/format"
 	"io"
 	"io/fs"
@@ -215,7 +216,10 @@ func WriteGoFile[T Type](name string, data T) {
 	source, e := format.Source(s.Bytes())
 	mylog.CheckIgnore(e)
 	if e != nil {
-		write(name, false, s.Bytes())
+		join := filepath.Join(os.TempDir(), name)
+		mylog.Info("bad file", " "+join+" ")
+		write(join, false, s.Bytes())
+		println(cmp2.Diff(s.Bytes(), source))
 		return
 	}
 	write(name, false, source)

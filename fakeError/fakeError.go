@@ -36,7 +36,7 @@ func RemoveComments(file *ast.File) {
 	file.Comments = newComments
 }
 
-func FakeError(path string, removeComments ...bool) {
+func Walk(path string, removeComments ...bool) {
 	if path == "" {
 		path = "."
 	}
@@ -55,26 +55,28 @@ func FakeError(path string, removeComments ...bool) {
 			if len(removeComments) > 0 {
 				RemoveComments(file)
 			}
-			s := fakeError(fileSet, file, string(mylog.Check2(os.ReadFile(path))))
-			mylog.WriteGoFileWithDiff(path, []byte(s))
+			s := handle(fileSet, file, mylog.Check2(os.ReadFile(path)))
+			mylog.WriteGoFile(path, s)
 		}
 		return err
 	}))
 }
 
-func fakeErrorTest(path, text string) string {
+func testHandle(path, text string) string {
 	join := filepath.Join(os.TempDir(), path+".go")
 	stream.WriteGoFile(join, text)
 	ret := ""
 	mylog.Call(func() {
 		fileSet := token.NewFileSet()
 		file := mylog.Check2(parser.ParseFile(fileSet, join, text, parser.ParseComments))
-		ret = fakeError(fileSet, file, text)
+		ret = handle(fileSet, file, text)
+		mylog.WriteGoFile(join, ret)
 	})
-	return ret
+	return string(mylog.Check2(format.Source([]byte(ret))))
 }
 
-func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
+func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) string {
+	text := string(b)
 	Replaces := make([]Edit, 0)
 
 	fnCall := func(n int) string {
@@ -99,7 +101,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 			return
 		}
 		if lastIdent.Name == "_" {
-			lastReturnType, ok := GetLastReturnType(x)
+			lastReturnType, ok := getLastReturnType(x)
 			if !ok {
 				return
 			}
@@ -133,21 +135,21 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 		}
 
 		ee := Edit{
-			Start:      x.Pos(),
-			End:        x.End(),
-			Line:       fileSet.Position(x.Pos()).Line,
+			StartPos:   x.Pos(),
+			EndPos:     x.End(),
+			LineNumber: fileSet.Position(x.Pos()).Line,
 			filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
-			New:        left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
+			NewContent: left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
 			edge:       edge(x),
 			isContinue: false,
 		}
 		if e != nil { //AssignStmt in IfStmt
 			ee = Edit{
-				Start:      e.Start,
-				End:        e.End,
-				Line:       e.Line,
+				StartPos:   e.StartPos,
+				EndPos:     e.EndPos,
+				LineNumber: e.LineNumber,
 				filePath:   e.filePath,
-				New:        left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
+				NewContent: left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
 				edge:       e.edge,
 				isContinue: false,
 			}
@@ -192,16 +194,16 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 					continue
 				}`
 					e := Edit{
-						Start:      ifStmt.Pos(),
-						End:        ifStmt.End(),
-						Line:       fileSet.Position(ifStmt.Pos()).Line,
+						StartPos:   ifStmt.Pos(),
+						EndPos:     ifStmt.End(),
+						LineNumber: fileSet.Position(ifStmt.Pos()).Line,
 						filePath:   fileSet.Position(ifStmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(ifStmt.Pos()).Line),
-						New:        "",
+						NewContent: "",
 						edge:       edge(ifStmt),
 						isContinue: false,
 					}
 					if isContinue {
-						e.New = b
+						e.NewContent = b
 						isContinue = false
 					}
 					Replaces = append(Replaces, e)
@@ -214,11 +216,11 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 				if stmt, ok := ifStmt.Init.(*ast.AssignStmt); ok {
 					if isOneWorkCode {
 						fnHandleAssign(stmt, &Edit{
-							Start:      ifStmt.Pos(),
-							End:        ifStmt.End(),
-							Line:       fileSet.Position(ifStmt.Pos()).Line,
+							StartPos:   ifStmt.Pos(),
+							EndPos:     ifStmt.End(),
+							LineNumber: fileSet.Position(ifStmt.Pos()).Line,
 							filePath:   fileSet.Position(ifStmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(ifStmt.Pos()).Line),
-							New:        "",
+							NewContent: "",
 							edge:       edge(ifStmt) + " # " + edge(stmt),
 							isContinue: false,
 						})
@@ -263,7 +265,7 @@ func findIfErrNotNil(n ast.Node) iter.Seq[*ast.IfStmt] {
 	}
 }
 
-func GetLastReturnType(assignStmt *ast.AssignStmt) (lastReturnType string, b bool) {
+func getLastReturnType(assignStmt *ast.AssignStmt) (lastReturnType string, b bool) {
 	if expr, ok := assignStmt.Rhs[0].(*ast.CallExpr); ok {
 		switch e := expr.Fun.(type) {
 		case *ast.Ident:
@@ -286,18 +288,18 @@ func GetLastReturnType(assignStmt *ast.AssignStmt) (lastReturnType string, b boo
 }
 
 type Edit struct {
-	Start, End token.Pos
-	Line       int
-	filePath   string
-	New        string
-	edge       string
-	isContinue bool
+	StartPos, EndPos token.Pos
+	LineNumber       int
+	filePath         string
+	NewContent       string
+	edge             string
+	isContinue       bool
 }
 
 // Apply 按起始位置从大到小排序,即从后往前替换，避免处理过程中坐标变化
 // 单行:左+新内容+右
 // 多行:前+新内容+后
-// Start:要删除的第一个字符的偏移,这个通过单元测试了，不要改
+// StartPos:要删除的第一个字符的偏移,这个通过单元测试了，不要改
 // end:不这样连续替换后没有换行，两个mycheck在一行导致语法错误
 func Apply(text string, replaces []Edit) string {
 	if len(replaces) == 0 {
@@ -305,22 +307,22 @@ func Apply(text string, replaces []Edit) string {
 	}
 	for i, r := range replaces {
 		replaces[i].filePath = " " + replaces[i].filePath + " " //为了使行号可点击定位到文件
-		if strings.Contains(r.New, "continue") && replaces[i-1].New != "" {
+		if strings.Contains(r.NewContent, "continue") && replaces[i-1].NewContent != "" {
 			replaces[i-1].isContinue = true
 		}
 	}
 	mylog.Struct(replaces)
 	sort.Slice(replaces, func(i, j int) bool {
-		return replaces[i].Start > replaces[j].Start
+		return replaces[i].StartPos > replaces[j].StartPos
 	})
 	for _, r := range replaces {
 		if r.isContinue {
 			continue
 		}
-		if r.Start > r.End {
+		if r.StartPos > r.EndPos {
 			panic("起始位置大于终止位置")
 		}
-		text = text[:r.Start-1] + r.New + text[r.End-1:]
+		text = text[:r.StartPos-1] + r.NewContent + text[r.EndPos-1:]
 	}
 	text = strings.ReplaceAll(text, `var err error`, "")
 	lib := "github.com/ddkwork/golibrary/mylog"
@@ -328,10 +330,10 @@ func Apply(text string, replaces []Edit) string {
 		text = strings.Replace(text, `import (`, `import (
 			"github.com/ddkwork/golibrary/mylog"`, 1)
 	}
-	return string(mylog.Check2(format.Source([]byte(text))))
+	return text
 }
 
-type Type interface {
+type edgeType interface {
 	*ast.ArrayType |
 		*ast.AssignStmt |
 		*ast.BadDecl |
@@ -397,7 +399,7 @@ type Type interface {
 // 	byteType   = reflect.TypeFor[byte]()
 // )
 
-func edge[T Type](n T) string {
+func edge[T edgeType](n T) string {
 	switch any(n).(type) {
 	case *ast.ArrayType:
 		return "ArrayType"
