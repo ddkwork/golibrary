@@ -21,6 +21,9 @@ func Test4(t *testing.T) {
 func Test5(t *testing.T) {
 	assert.Equal(t, m.GetMust("test5").expected, fakeErrorTest(m.GetMust("test5").code))
 }
+func Test6(t *testing.T) {
+	assert.Equal(t, m.GetMust("test6").expected, fakeErrorTest(m.GetMust("test6").code))
+}
 
 func TestFakeAll(t *testing.T) {
 	//t.Skip()
@@ -504,6 +507,46 @@ func main() {
 		}()
 	}
 	select {}
+}
+`,
+	})
+	yield("test6", testData{
+		code: `package main
+
+import (
+	"regexp"
+	"strings"
+)
+
+func main() {
+	for {
+		keyServerName = ".*(" + strings.ReplaceAll(keyServerName[1:], ".", "\\.") + ")$"
+		matched, err := regexp.Match(keyServerName, []byte(serverName))
+		if err != nil {
+			log.Warn("Error when matching sni with allowed sni")
+			continue
+		}
+	}
+}
+`,
+		expected: `package main
+
+import (
+	"github.com/ddkwork/golibrary/mylog"
+	log "github.com/sirupsen/logrus"
+	"regexp"
+	"strings"
+)
+
+func main() {
+	for {
+		keyServerName = ".*(" + strings.ReplaceAll(keyServerName[1:], ".", "\\.") + ")$"
+		matched, err := regexp.Match(keyServerName, []byte(serverName))
+		if err != nil {
+			mylog.CheckIgnore(err)
+			continue
+		}
+	}
 }
 `,
 	})
