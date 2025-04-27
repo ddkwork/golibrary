@@ -11,7 +11,6 @@ import (
 	"iter"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -351,7 +350,7 @@ type Type interface {
 		*ast.KeyValueExpr |
 		*ast.LabeledStmt |
 		*ast.MapType |
-		*ast.Package |
+		// *ast.Package |
 		*ast.ParenExpr |
 		*ast.RangeStmt |
 		*ast.ReturnStmt |
@@ -369,12 +368,12 @@ type Type interface {
 		*ast.ValueSpec
 }
 
-var (
-	anyType    = reflect.TypeFor[any]()
-	stringType = reflect.TypeFor[string]()
-	bytesType  = reflect.TypeFor[[]byte]()
-	byteType   = reflect.TypeFor[byte]()
-)
+// var (
+// 	anyType    = reflect.TypeFor[any]()
+// 	stringType = reflect.TypeFor[string]()
+// 	bytesType  = reflect.TypeFor[[]byte]()
+// 	byteType   = reflect.TypeFor[byte]()
+// )
 
 func edge[T Type](n T) string {
 	switch any(n).(type) {
@@ -458,8 +457,8 @@ func edge[T Type](n T) string {
 		return "LabeledStmt"
 	case *ast.MapType:
 		return "MapType"
-	case *ast.Package:
-		return "Package"
+	// case *ast.Package:
+	// 	return "Package"
 	case *ast.ParenExpr:
 		return "ParenExpr"
 	case *ast.RangeStmt:
