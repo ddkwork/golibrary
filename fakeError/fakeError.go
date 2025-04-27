@@ -134,7 +134,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 				left += c + ","
 			}
 		}
-		//只有一个变量需要删除 ,
+		//只有一个返回值需要删除 ,
 		left = strings.TrimRight(left, ",")
 
 		right := ""
