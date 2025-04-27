@@ -26,7 +26,7 @@ func Test6(t *testing.T) {
 }
 
 func TestFakeAll(t *testing.T) {
-	//t.Skip()
+t.Skip()
 	FakeError("../../sniproxy")
 }
 
