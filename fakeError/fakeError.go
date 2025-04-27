@@ -163,7 +163,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 				edge:  e.edge,
 			}
 		}
-		if isContinue { //todo bug,断言在前，if在后，所以语法扫描需要改进
+		if isContinue { //todo bug,断言在前，if在后，所以语法扫描需要改进，以及测试跳过eof和eof单元测试
 			return
 		}
 		Replaces = append(Replaces, ee)
