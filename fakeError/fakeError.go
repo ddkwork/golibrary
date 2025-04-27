@@ -321,8 +321,8 @@ func Apply(text string, replaces []Edit) string {
 	text = strings.ReplaceAll(text, `var err error`, "")
 	lib := "github.com/ddkwork/golibrary/mylog"
 	if !strings.Contains(text, lib) {
-		text = strings.ReplaceAll(text, `import (`, `import (
-			"github.com/ddkwork/golibrary/mylog"`)
+		text = strings.Replace(text, `import (`, `import (
+			"github.com/ddkwork/golibrary/mylog"`, 1)
 	}
 	return string(mylog.Check2(format.Source([]byte(text))))
 }
