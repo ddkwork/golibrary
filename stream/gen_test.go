@@ -17,14 +17,14 @@ func TestName(t *testing.T) {
 	g.ReplaceAll("package stream", "package pretty")
 	g.ReplaceAll(strconv.Quote("github.com/ddkwork/golibrary/mylog"), "")
 	g.ReplaceAll("mylog.", "")
-	stream.WriteTruncate("../mylog/pretty/"+stream.BaseName(path)+"_gen.go", g.Buffer)
+	stream.WriteGoFile("../mylog/pretty/"+stream.BaseName(path)+"_gen.go", g.Buffer)
 
 	g = stream.NewGeneratedFile()
 	g.Write(stream.NewBuffer(path).Bytes())
 	g.ReplaceAll("package stream", "package assert")
-	g.ReplaceAll(strconv.Quote("github.com/ddkwork/golibrary/mylog"), "")
+	g.ReplaceAll(strconv.Quote(`github.com/ddkwork/golibrary/mylog`), "")
 	g.ReplaceAll("mylog.", "")
-	stream.WriteTruncate("../assert/"+stream.BaseName(path)+"_gen.go", g.Buffer)
+	stream.WriteGoFile("../assert/"+stream.BaseName(path)+"_gen.go", g.Buffer)
 }
 
 func cloneStreamForLogPkg(path string) {
@@ -33,5 +33,5 @@ func cloneStreamForLogPkg(path string) {
 	g.ReplaceAll("package stream", "package mylog")
 	g.ReplaceAll(strconv.Quote("github.com/ddkwork/golibrary/mylog"), "")
 	g.ReplaceAll("mylog.", "")
-	stream.WriteTruncate("../mylog/"+stream.BaseName(path)+"_gen.go", g.Buffer)
+	stream.WriteGoFile("../mylog/"+stream.BaseName(path)+"_gen.go", g.Buffer)
 }
