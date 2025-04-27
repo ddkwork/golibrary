@@ -101,7 +101,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 		}
 	}
 
-	fnHandleAssign := func(x *ast.AssignStmt, e *Edit) {
+	fnHandleAssign := func(x *ast.AssignStmt, e *Edit, isContinue bool) {
 		if len(x.Rhs) > 1 {
 			return
 		}
@@ -162,6 +162,9 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 				New:   left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
 				edge:  e.edge,
 			}
+		}
+		if isContinue { //todo bug,断言在前，if在后，所以语法扫描需要改进
+			return
 		}
 		Replaces = append(Replaces, ee)
 	}
@@ -226,7 +229,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 							Line:  fileSet.Position(ifStmt.Pos()).Line,
 							New:   "",
 							edge:  edge(ifStmt) + " # " + edge(stmt),
-						})
+						}, false)
 						skipAssign = true
 						break
 					}
@@ -237,11 +240,8 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 				skipAssign = false
 				continue
 			}
-			if isContinue {
-				isContinue = false
-				continue
-			}
-			fnHandleAssign(x, nil)
+			fnHandleAssign(x, nil, isContinue)
+			isContinue = false
 		}
 	}
 	mylog.Struct(Replaces)
