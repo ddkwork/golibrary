@@ -2,6 +2,7 @@ package fakeError
 
 import (
 	"fmt"
+	"github.com/ddkwork/golibrary/stream"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -61,11 +62,13 @@ func FakeError(path string, removeComments ...bool) {
 	}))
 }
 
-func fakeErrorTest(text string) string {
+func fakeErrorTest(path, text string) string {
+	join := filepath.Join(os.TempDir(), path+".go")
+	stream.WriteGoFile(join, text)
 	ret := ""
 	mylog.Call(func() {
 		fileSet := token.NewFileSet()
-		file := mylog.Check2(parser.ParseFile(fileSet, "", text, parser.ParseComments))
+		file := mylog.Check2(parser.ParseFile(fileSet, join, text, parser.ParseComments))
 		ret = fakeError(fileSet, file, text)
 	})
 	return ret
@@ -178,9 +181,10 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 							isOneWorkCode = true
 						case strings.HasPrefix(c, "log.") && strings.HasSuffix(c, "(err)"):
 							isOneWorkCode = true
+						case c == "return nil, nil, err":
+							isOneWorkCode = true
 						}
 					}
-
 				}
 				if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") && isOneWorkCode {
 					b := `if err != nil {

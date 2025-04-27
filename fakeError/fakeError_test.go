@@ -7,22 +7,25 @@ import (
 )
 
 func Test1(t *testing.T) {
-	assert.Equal(t, m.GetMust("test1").expected, fakeErrorTest(m.GetMust("test1").code))
+	assert.Equal(t, m.GetMust("test1").expected, fakeErrorTest("test1", m.GetMust("test1").code))
 }
 func Test2(t *testing.T) {
-	assert.Equal(t, m.GetMust("test2").expected, fakeErrorTest(m.GetMust("test2").code))
+	assert.Equal(t, m.GetMust("test2").expected, fakeErrorTest("test2", m.GetMust("test2").code))
 }
 func Test3(t *testing.T) {
-	assert.Equal(t, m.GetMust("test3").expected, fakeErrorTest(m.GetMust("test3").code))
+	assert.Equal(t, m.GetMust("test3").expected, fakeErrorTest("test3", m.GetMust("test3").code))
 }
 func Test4(t *testing.T) {
-	assert.Equal(t, m.GetMust("test4").expected, fakeErrorTest(m.GetMust("test4").code))
+	assert.Equal(t, m.GetMust("test4").expected, fakeErrorTest("test4", m.GetMust("test4").code))
 }
 func Test5(t *testing.T) {
-	assert.Equal(t, m.GetMust("test5").expected, fakeErrorTest(m.GetMust("test5").code))
+	assert.Equal(t, m.GetMust("test5").expected, fakeErrorTest("test5", m.GetMust("test5").code))
 }
 func Test6(t *testing.T) {
-	assert.Equal(t, m.GetMust("test6").expected, fakeErrorTest(m.GetMust("test6").code))
+	assert.Equal(t, m.GetMust("test6").expected, fakeErrorTest("test6", m.GetMust("test6").code))
+}
+func Test7(t *testing.T) {
+	assert.Equal(t, m.GetMust("test7").expected, fakeErrorTest("test7", m.GetMust("test7").code))
 }
 
 func Test_ApplyEdit(t *testing.T) {
@@ -541,6 +544,31 @@ func main() {
 			continue
 		}
 	}
+}
+`,
+	})
+	yield("test7", testData{
+		code: `package main
+
+import (
+	"github.com/coreos/go-oidc"
+)
+
+func mian() {
+	provider, err := oidc.NewProvider(c.Ctx, c.ProviderURL)
+	if err != nil {
+		return nil, nil, err
+	}
+}`,
+		expected: `package main
+
+import (
+	"github.com/ddkwork/golibrary/mylog"
+	"github.com/coreos/go-oidc"
+)
+
+func mian() {
+	provider, err := mylog.Check2(oidc.NewProvider(c.Ctx, c.ProviderURL))
 }
 `,
 	})
