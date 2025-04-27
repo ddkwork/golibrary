@@ -167,6 +167,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 	}
 
 	skipAssign := false
+	isContinue := false
 	for n := range ast.Preorder(file) {
 		switch x := n.(type) {
 		case *ast.IfStmt: //if err := backendConn.Close(); err != nil {
@@ -178,7 +179,15 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 					}
 					if exprStmt, ok := stmt.(*ast.ExprStmt); ok {
 						c := getNodeCode(exprStmt, fileSet, text)
-						if strings.TrimSpace(c) == "panic(err)" {
+							//todo use switch
+						
+						if strings.Contains(c, "continue") { //todo bug
+							isOneWorkCode = true
+							isContinue = true
+							break
+						}
+						
+						if c == "panic(err)" {
 							isOneWorkCode = true
 							break
 						}
@@ -186,20 +195,26 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 							isOneWorkCode = true
 							break
 						}
-						if strings.Contains(c, "continue") { //todo bug
-							isOneWorkCode = false
-							break
-						}
+					
 					}
 				}
 				if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") && isOneWorkCode {
-					Replaces = append(Replaces, Edit{
+					b:=`if err != nil {
+					mylog.CheckIgnore(err)
+					continue
+				}`
+					e:=Edit{
 						Start: ifStmt.Pos(),
 						End:   ifStmt.End(),
 						Line:  fileSet.Position(ifStmt.Pos()).Line,
 						New:   "",
 						edge:  edge(ifStmt),
-					})
+					}
+					if isContinue {
+						e.New = b//todo debug it
+						isContinue = false
+					} 					
+					Replaces = append(Replaces, e)
 					skipAssign = true
 					break
 				}
@@ -286,11 +301,15 @@ type Edit struct {
 	edge       string
 }
 
+	// 按起始位置从大到小排序,即从后往前替换，避免处理过程中坐标变化
+	//单行:左+新内容+右
+		//多行:前+新内容+后
+		//Start:要删除的第一个字符的偏移,这个通过单元测试了，不要改
+		//end:不这样连续替换后没有换行，两个mycheck在一行导致语法错误
 func Apply(text string, replaces []Edit) string {
 	if len(replaces) == 0 {
 		return text
 	}
-	// 按起始位置从大到小排序,即从后往前替换，避免处理过程中坐标变化
 	sort.Slice(replaces, func(i, j int) bool {
 		return replaces[i].Start > replaces[j].Start
 	})
@@ -298,10 +317,7 @@ func Apply(text string, replaces []Edit) string {
 		if r.Start > r.End {
 			panic("起始位置大于终止位置")
 		}
-		// 左+新内容+右
-		left := text[:r.Start-1] //Start的要删除的第一个字符发偏移，需要cut掉,这个通过单元测试了，不要改
-		right := text[r.End-1:]  //不这样连续替换后没有换行，两个mycheck在一行导致语法错误
-		text = left + r.New + right
+	text = text[:r.Start-1] + r.New + text[r.End-1:]
 	}
 	text = strings.ReplaceAll(text, `var err error`, "")
 	text = strings.ReplaceAll(text, `import (`, `import (
