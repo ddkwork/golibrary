@@ -41,8 +41,10 @@ func Walk(path string, removeComments ...bool) {
 		path = "."
 	}
 	mylog.Check(filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() && info.Name() == "vendor" {
-			return nil
+		if info != nil {
+			if info.IsDir() && info.Name() == "vendor" {
+				return nil
+			}
 		}
 		abs := mylog.Check2(filepath.Abs(path))
 		abs = filepath.ToSlash(abs)
