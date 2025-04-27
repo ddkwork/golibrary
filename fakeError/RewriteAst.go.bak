@@ -92,6 +92,7 @@ func (h *handle) removeComments() {
 }
 
 func FormatAllFiles(noComments bool, path string) {
+	panic("implemented by fake error")
 	if path == "" {
 		path = "."
 	}
