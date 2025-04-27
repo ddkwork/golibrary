@@ -88,7 +88,6 @@ import (
 )
 
 func main() {
-
 	mylog.Check(backendConn.Close())
 }
 `,
@@ -533,7 +532,6 @@ func main() {
 
 import (
 	"github.com/ddkwork/golibrary/mylog"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strings"
 )
