@@ -27,6 +27,13 @@ func Test6(t *testing.T) {
 func Test7(t *testing.T) {
 	assert.Equal(t, m.GetMust("test7").expected, testHandle("test7", m.GetMust("test7").code))
 }
+func Test8(t *testing.T) {
+	t.Skip()
+	assert.Equal(t, m.GetMust("test8").expected, testHandle("test8", m.GetMust("test8").code))
+}
+func Test9(t *testing.T) {
+	assert.Equal(t, m.GetMust("test9").expected, testHandle("test9", m.GetMust("test9").code))
+}
 
 type testData struct {
 	code     string
@@ -545,6 +552,65 @@ import (
 
 func mian() {
 	provider := mylog.Check2(oidc.NewProvider(c.Ctx, c.ProviderURL))
+
+}
+`,
+	})
+	yield("test8", testData{
+		code: `package tmp
+
+import (
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	err := jsonx.Open(&token, tf)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, nil, err
+	}
+}`,
+		expected: `package tmp
+
+import (
+	"github.com/ddkwork/golibrary/mylog"
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	mylog.Check(jsonx.Open(&token, tf))
+}
+`,
+	})
+	yield("test9", testData{
+		code: `package tmp
+
+import (
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	newToken, err := tokenSource.Token()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	userInfo, err := provider.UserInfo(c.Ctx, tokenSource)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get user info: %w", err)
+	}
+}
+`,
+		expected: `package tmp
+
+import (
+	"github.com/ddkwork/golibrary/mylog"
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	newToken := mylog.Check2(tokenSource.Token())
+
+	userInfo := mylog.Check2(provider.UserInfo(c.Ctx, tokenSource))
 
 }
 `,

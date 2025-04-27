@@ -184,12 +184,19 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 							isOneWorkCode = true
 						}
 					case *ast.ReturnStmt:
-						if getNodeCode(row, fileSet, text) == "return nil, nil, err" {
+						c := getNodeCode(row, fileSet, text)
+						mylog.Trace(c)
+						switch {
+						case c == "return nil, nil, err":
+							isOneWorkCode = true
+						case strings.Contains(c, ", err"):
+							isOneWorkCode = true
+						case strings.HasSuffix(c, ", err)"): //		return nil, nil, fmt.Errorf("failed to get user info: %w", err)
 							isOneWorkCode = true
 						}
 					}
 				}
-				if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") && isOneWorkCode {
+				if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") {
 					b := `if err != nil {
 					mylog.CheckIgnore(err)
 					continue
@@ -208,7 +215,6 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 						isContinue = false
 					}
 					Replaces = append(Replaces, e)
-					skipAssign = true
 					break
 				}
 				if ifStmt.Init == nil {
@@ -248,6 +254,7 @@ func getNodeCode(astNode ast.Node, f *token.FileSet, code string) string {
 	return c
 }
 
+// todo 这种是否应该删除 if err != nil && !errors.Is(err, fs.ErrNotExist) {
 func findIfErrNotNil(n ast.Node) iter.Seq[*ast.IfStmt] {
 	return func(yield func(*ast.IfStmt) bool) {
 		if stmt, ok := n.(*ast.IfStmt); ok {
