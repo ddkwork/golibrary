@@ -307,6 +307,7 @@ type Edit struct {
 	Line       int
 	New        string
 	edge       string
+	isContinue bool //todo
 }
 
 // Apply 按起始位置从大到小排序,即从后往前替换，避免处理过程中坐标变化
