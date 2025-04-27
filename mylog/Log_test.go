@@ -15,7 +15,6 @@ func BenchmarkName(b *testing.B) {
 }
 
 func TestLog(t *testing.T) {
-	// mylog.FormatAllFiles(false, "D:\\workspace\\ux\\golibrary\\stream\\fs")
 	mylog.Call(func() {
 		xx()
 		safeAppLife()
