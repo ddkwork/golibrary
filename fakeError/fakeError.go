@@ -35,35 +35,19 @@ func RemoveComments(file *ast.File) {
 	file.Comments = newComments
 }
 
-var Skips = []string{
-	`vendor`,
-	`/gioview/`,
-	`/gio/`,
-	`/gio-cmd/`,
-	`/gio-example/`,
-	`/gio-x/`,
-	`/toolbox/`,
-	`/unison/`,
-	`/ux/patch/`,
-}
+
 
 func FakeError(path string, removeComments ...bool) {
 	if path == "" {
 		path = "."
 	}
 	mylog.Check(filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() &&info.Name() == "vendor" {
+			return nil
+		}
 		abs := mylog.Check2(filepath.Abs(path))
 		abs = filepath.ToSlash(abs)
 		if filepath.Ext(abs) == ".go" {
-			if filepath.Base(abs) == "SkipCheckBase.go" {
-				return nil
-			}
-			for _, skip := range Skips {
-				if strings.Contains(abs, skip) {
-					// Warning("skip", abs)
-					return nil
-				}
-			}
 			if !strings.HasSuffix(path, ".go") {
 				mylog.Check(fmt.Errorf("not a go file: %s", path))
 			}
