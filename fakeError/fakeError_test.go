@@ -539,12 +539,13 @@ func mian() {
 		expected: `package main
 
 import (
-	"github.com/ddkwork/golibrary/mylog"
 	"github.com/coreos/go-oidc"
+	"github.com/ddkwork/golibrary/mylog"
 )
 
 func mian() {
-	provider, err := mylog.Check2(oidc.NewProvider(c.Ctx, c.ProviderURL))
+	provider := mylog.Check2(oidc.NewProvider(c.Ctx, c.ProviderURL))
+
 }
 `,
 	})

@@ -171,8 +171,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 					}
 					switch row := stmt.(type) {
 					case *ast.BranchStmt:
-						c := getNodeCode(row, fileSet, text)
-						if c == "continue" {
+						if getNodeCode(row, fileSet, text) == "continue" {
 							isOneWorkCode = true
 							isContinue = true
 						}
@@ -183,7 +182,9 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 							isOneWorkCode = true
 						case strings.HasPrefix(c, "log.") && strings.HasSuffix(c, "(err)"):
 							isOneWorkCode = true
-						case c == "return nil, nil, err":
+						}
+					case *ast.ReturnStmt:
+						if getNodeCode(row, fileSet, text) == "return nil, nil, err" {
 							isOneWorkCode = true
 						}
 					}
