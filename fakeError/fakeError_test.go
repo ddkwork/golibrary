@@ -26,7 +26,7 @@ func Test6(t *testing.T) {
 }
 
 func TestFakeAll(t *testing.T) {
-t.Skip()
+	t.Skip()
 	FakeError("../../sniproxy")
 }
 
@@ -88,6 +88,7 @@ import (
 )
 
 func main() {
+
 	mylog.Check(backendConn.Close())
 }
 `,
@@ -318,7 +319,7 @@ func getForwardTarget(serverName string, forwardTargets map[string]string) (targ
 	for keyServerName, valueForwardTarget := range forwardTargets {
 		if strings.HasPrefix(keyServerName, "*") {
 			keyServerName = ".*(" + strings.ReplaceAll(keyServerName[1:], ".", "\\.") + ")$"
-			matched := mylog.Check2(regexp.Match(keyServerName, []byte(serverName)))
+			matched, err := regexp.Match(keyServerName, []byte(serverName))
 			if err != nil {
 				mylog.CheckIgnore(err)
 				continue
@@ -338,7 +339,7 @@ func handleConnection(clientConn net.Conn, forwardTargets map[string]string) {
 
 	mylog.Check(clientConn.SetReadDeadline(time.Now().Add(5 * time.Second)))
 
-	clientHello, clientReader, err := PeekClientHello(clientConn)
+	clientHello, clientReader := mylog.Check3(PeekClientHello(clientConn))
 
 	// 设置为不会超时
 	mylog.Check(clientConn.SetReadDeadline(time.Time{}))

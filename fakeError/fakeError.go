@@ -35,14 +35,12 @@ func RemoveComments(file *ast.File) {
 	file.Comments = newComments
 }
 
-
-
 func FakeError(path string, removeComments ...bool) {
 	if path == "" {
 		path = "."
 	}
 	mylog.Check(filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() &&info.Name() == "vendor" {
+		if info.IsDir() && info.Name() == "vendor" {
 			return nil
 		}
 		abs := mylog.Check2(filepath.Abs(path))
@@ -87,7 +85,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 		}
 	}
 
-	fnHandleAssign := func(x *ast.AssignStmt, e *Edit ) {
+	fnHandleAssign := func(x *ast.AssignStmt, e *Edit) {
 		if len(x.Rhs) > 1 {
 			return
 		}
@@ -295,7 +293,7 @@ func Apply(text string, replaces []Edit) string {
 		return text
 	}
 	for i, r := range replaces {
-		if strings.Contains(r.New, "continue") &&replaces[i-1].New != "" {
+		if strings.Contains(r.New, "continue") && replaces[i-1].New != "" {
 			replaces[i-1].isContinue = true
 		}
 	}
@@ -313,7 +311,7 @@ func Apply(text string, replaces []Edit) string {
 		text = text[:r.Start-1] + r.New + text[r.End-1:]
 	}
 	text = strings.ReplaceAll(text, `var err error`, "")
-	lib:="github.com/ddkwork/golibrary/mylog"
+	lib := "github.com/ddkwork/golibrary/mylog"
 	if !strings.Contains(text, lib) {
 		text = strings.ReplaceAll(text, `import (`, `import (
 			"github.com/ddkwork/golibrary/mylog"`)

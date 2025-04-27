@@ -97,9 +97,9 @@ func FormatAllFiles(noComments bool, path string) {
 		path = "."
 	}
 	mylog.Check(filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() &&info.Name() == "vendor" {
+		if info.IsDir() && info.Name() == "vendor" {
 			return nil
-		}		
+		}
 		abs := mylog.Check2(filepath.Abs(path))
 		abs = filepath.ToSlash(abs)
 		if filepath.Ext(abs) == ".go" {
