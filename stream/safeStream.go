@@ -217,9 +217,10 @@ func WriteGoFile[T Type](name string, data T) {
 	mylog.CheckIgnore(e)
 	if e != nil {
 		join := filepath.Join(os.TempDir(), name)
-		mylog.Info("bad file", " "+filepath.ToSlash(join)+" ")
+		join = filepath.ToSlash(join)
+		mylog.Warning("bad file ", join+":1")
 		write(join, false, s.Bytes())
-		println(cmp2.Diff(s.Bytes(), source))
+		mylog.Json(cmp2.Diff(s.Bytes(), source))
 		return
 	}
 	write(name, false, source)

@@ -185,7 +185,6 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 						}
 					case *ast.ReturnStmt:
 						c := getNodeCode(row, fileSet, text)
-						mylog.Trace(c)
 						switch {
 						case c == "return nil, nil, err":
 							isOneWorkCode = true
