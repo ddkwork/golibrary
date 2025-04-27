@@ -28,7 +28,6 @@ import (
 	"time"
 	"unicode"
 
-	
 	"github.com/ddkwork/golibrary/stream/align"
 )
 
@@ -509,10 +508,7 @@ func ReadFileToChunks(path string, n int) iter.Seq[[]byte] {
 		r := bufio.NewReader(reader)
 		buffer := make([]byte, n)
 		for {
-			size, err := r.Read(buffer)
-			if Check(err) {
-				break
-			}
+			size := Check2(r.Read(buffer))
 			if size > 0 {
 				// Yield the slice of the buffer that contains the data read
 				if !yield(buffer[:size]) {
@@ -874,43 +870,6 @@ func FileExists(path string) bool {
 		return !mode.IsDir() && mode.IsRegular()
 	}
 	return false
-}
-
-// MoveFile moves a file in the file system or across volumes, using rename if possible, but falling back to copying the
-// file if not. This will error if either src or dst are not regular files.
-func MoveFile(src, dst string) {
-	var srcInfo, dstInfo os.FileInfo
-	srcInfo = Check2(os.Stat(src))
-	if !srcInfo.Mode().IsRegular() {
-		Check(fmt.Sprintf("%s is not a regular file", src))
-	}
-	dstInfo, err := os.Stat(dst)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			Check(err)
-		}
-	} else {
-		if !dstInfo.Mode().IsRegular() {
-			Check(fmt.Sprintf("%s is not a regular file", dst))
-		}
-		if os.SameFile(srcInfo, dstInfo) {
-			return
-		}
-	}
-	if os.Rename(src, dst) == nil {
-		return
-	}
-	var in, out *os.File
-	out = Check2(os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, srcInfo.Mode()))
-	defer func() {
-		if closeErr := out.Close(); closeErr != nil && err == nil {
-			err = closeErr
-		}
-	}()
-	in = Check2(os.Open(src))
-	Check2(io.Copy(out, in))
-	defer Check(in.Close())
-	Check(os.Remove(src))
 }
 
 func IsFilePathEx(path string) (ok bool) {
