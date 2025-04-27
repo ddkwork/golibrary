@@ -23,8 +23,8 @@ func Test5(t *testing.T) {
 }
 
 func TestFakeAll(t *testing.T) {
-	t.Skip()
-	FakeError("../sniproxy")
+	//t.Skip()
+	FakeError("../../sniproxy")
 }
 
 func Test_ApplyEdit(t *testing.T) {
@@ -130,13 +130,13 @@ func main() {
 }
 
 type config struct {
-	Rules []ruleConfig 
+	Rules []ruleConfig
 }
 
 type ruleConfig struct {
-	ListenAddr string 
+	ListenAddr string
 	// ServerName: ForwardAddress
-	ForwardTargets map[string]string 
+	ForwardTargets map[string]string
 }
 
 func initCliParas() (*config, error) {
@@ -268,8 +268,11 @@ func main() {
 			l := mylog.Check2(net.Listen("tcp", rule.ListenAddr))
 
 			for {
-				conn := mylog.Check2(l.Accept())
-
+				conn, err := l.Accept()
+				if err != nil {
+					mylog.CheckIgnore(err)
+					continue
+				}
 				go handleConnection(conn, rule.ForwardTargets)
 			}
 		}()
@@ -278,13 +281,13 @@ func main() {
 }
 
 type config struct {
-	Rules []ruleConfig 
+	Rules []ruleConfig
 }
 
 type ruleConfig struct {
-	ListenAddr string 
+	ListenAddr string
 	// ServerName: ForwardAddress
-	ForwardTargets map[string]string 
+	ForwardTargets map[string]string
 }
 
 func initCliParas() (*config, error) {
@@ -312,10 +315,10 @@ func getForwardTarget(serverName string, forwardTargets map[string]string) (targ
 	}
 	for keyServerName, valueForwardTarget := range forwardTargets {
 		if strings.HasPrefix(keyServerName, "*") {
-			keyServerName = ".*(" + strings.ReplaceAll(keyServerName[1:], ".", "\\.") + ")$" //continue
-			matched, err := regexp.Match(keyServerName, []byte(serverName))                  //pp
+			keyServerName = ".*(" + strings.ReplaceAll(keyServerName[1:], ".", "\\.") + ")$"
+			matched := mylog.Check2(regexp.Match(keyServerName, []byte(serverName)))
 			if err != nil {
-				log.Warn("Error when matching sni with allowed sni")
+				mylog.CheckIgnore(err)
 				continue
 			}
 			if matched {
@@ -333,7 +336,7 @@ func handleConnection(clientConn net.Conn, forwardTargets map[string]string) {
 
 	mylog.Check(clientConn.SetReadDeadline(time.Now().Add(5 * time.Second)))
 
-	clientHello, clientReader := mylog.Check3(PeekClientHello(clientConn))
+	clientHello, clientReader, err := PeekClientHello(clientConn)
 
 	// 设置为不会超时
 	mylog.Check(clientConn.SetReadDeadline(time.Time{}))
@@ -457,7 +460,8 @@ func main() {
 		rule := rule
 		go func() {
 			l, err := net.Listen("tcp", rule.ListenAddr)
-			if err != nil {
+
+if err != nil {
 				log.Fatal(err)
 			}
 			for {
@@ -488,6 +492,7 @@ func main() {
 		rule := rule
 		go func() {
 			l := mylog.Check2(net.Listen("tcp", rule.ListenAddr))
+
 			for {
 				conn, err := l.Accept()
 				if err != nil {

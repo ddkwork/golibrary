@@ -177,18 +177,23 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 					if i > 1 {
 						panic("if 块内部语句超过1句")
 					}
-					if exprStmt, ok := stmt.(*ast.ExprStmt); ok {
-						c := getNodeCode(exprStmt, fileSet, text)
-						switch {
-						case strings.Contains(c, "continue"):
+					switch row := stmt.(type) {
+					case *ast.BranchStmt:
+						c := getNodeCode(row, fileSet, text)
+						if c == "continue" {
 							isOneWorkCode = true
 							isContinue = true
+						}
+					case *ast.ExprStmt:
+						c := getNodeCode(row, fileSet, text)
+						switch {
 						case c == "panic(err)":
 							isOneWorkCode = true
 						case strings.HasPrefix(c, "log.") && strings.HasSuffix(c, "(err)"):
 							isOneWorkCode = true
 						}
 					}
+
 				}
 				if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") && isOneWorkCode {
 					b := `if err != nil {
@@ -204,7 +209,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 					}
 					if isContinue {
 						e.New = b
-						isContinue = false
+						//isContinue = false
 					}
 					Replaces = append(Replaces, e)
 					skipAssign = true
@@ -230,6 +235,10 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 		case *ast.AssignStmt: //backendConn, err := net.DialTimeout("tcp", forwardTarget, 5*time.Second)
 			if skipAssign {
 				skipAssign = false
+				continue
+			}
+			if isContinue {
+				isContinue = false
 				continue
 			}
 			fnHandleAssign(x, nil)
