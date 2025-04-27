@@ -25,11 +25,6 @@ func Test6(t *testing.T) {
 	assert.Equal(t, m.GetMust("test6").expected, fakeErrorTest(m.GetMust("test6").code))
 }
 
-func TestFakeAll(t *testing.T) {
-	t.Skip()
-	FakeError("../../sniproxy")
-}
-
 func Test_ApplyEdit(t *testing.T) {
 	replacements := []Edit{
 		{
