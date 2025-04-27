@@ -164,6 +164,13 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 			}
 		}
 		if isContinue { //todo bug,断言在前，if在后，所以语法扫描需要改进，以及测试跳过eof和eof单元测试
+			//正确逻辑得有个树形:if的父级是否是断言，if代码块有continue，则断言要取消替换，可以遍历收集到规则，就不用改遍历逻辑了
+			//		matched, err := regexp.Match(keyServerName, []byte(serverName))
+			//		if err != nil {
+			//			mylog.CheckIgnore(err)
+			//			continue
+			//		}
+
 			return
 		}
 		Replaces = append(Replaces, ee)
