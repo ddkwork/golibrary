@@ -142,7 +142,7 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 		}
 		for i, v := range x.Rhs {
 			right += getNodeCode(v, fileSet, text)
-			if i < len(x.Rhs)-1 { //todo bug
+			if i < len(x.Rhs)-1 {
 				right += ","
 			}
 		}
@@ -179,31 +179,23 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 					}
 					if exprStmt, ok := stmt.(*ast.ExprStmt); ok {
 						c := getNodeCode(exprStmt, fileSet, text)
-							//todo use switch
-						
-						if strings.Contains(c, "continue") { //todo bug
+						switch {
+						case strings.Contains(c, "continue"):
 							isOneWorkCode = true
 							isContinue = true
-							break
-						}
-						
-						if c == "panic(err)" {
+						case c == "panic(err)":
 							isOneWorkCode = true
-							break
-						}
-						if strings.HasPrefix(c, "log.") && strings.HasSuffix(c, "(err)") {
+						case strings.HasPrefix(c, "log.") && strings.HasSuffix(c, "(err)"):
 							isOneWorkCode = true
-							break
 						}
-					
 					}
 				}
 				if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") && isOneWorkCode {
-					b:=`if err != nil {
+					b := `if err != nil {
 					mylog.CheckIgnore(err)
 					continue
 				}`
-					e:=Edit{
+					e := Edit{
 						Start: ifStmt.Pos(),
 						End:   ifStmt.End(),
 						Line:  fileSet.Position(ifStmt.Pos()).Line,
@@ -211,9 +203,9 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 						edge:  edge(ifStmt),
 					}
 					if isContinue {
-						e.New = b//todo debug it
+						e.New = b
 						isContinue = false
-					} 					
+					}
 					Replaces = append(Replaces, e)
 					skipAssign = true
 					break
@@ -301,11 +293,11 @@ type Edit struct {
 	edge       string
 }
 
-	// 按起始位置从大到小排序,即从后往前替换，避免处理过程中坐标变化
-	//单行:左+新内容+右
-		//多行:前+新内容+后
-		//Start:要删除的第一个字符的偏移,这个通过单元测试了，不要改
-		//end:不这样连续替换后没有换行，两个mycheck在一行导致语法错误
+// Apply 按起始位置从大到小排序,即从后往前替换，避免处理过程中坐标变化
+// 单行:左+新内容+右
+// 多行:前+新内容+后
+// Start:要删除的第一个字符的偏移,这个通过单元测试了，不要改
+// end:不这样连续替换后没有换行，两个mycheck在一行导致语法错误
 func Apply(text string, replaces []Edit) string {
 	if len(replaces) == 0 {
 		return text
@@ -317,7 +309,7 @@ func Apply(text string, replaces []Edit) string {
 		if r.Start > r.End {
 			panic("起始位置大于终止位置")
 		}
-	text = text[:r.Start-1] + r.New + text[r.End-1:]
+		text = text[:r.Start-1] + r.New + text[r.End-1:]
 	}
 	text = strings.ReplaceAll(text, `var err error`, "")
 	text = strings.ReplaceAll(text, `import (`, `import (

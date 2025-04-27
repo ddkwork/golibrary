@@ -17,14 +17,12 @@ import (
 
 type handle struct {
 	fileSet  *token.FileSet
-	root     *ast.File
+	file     *ast.File
 	path     string
 	lines    []string
 	lineInfo string
 	line     int
 	mod      string
-
-	file *token.File
 }
 
 func newHandle(path string, noComments bool) *handle {
@@ -34,13 +32,12 @@ func newHandle(path string, noComments bool) *handle {
 	fileSet := token.NewFileSet()
 	h := &handle{
 		fileSet:  fileSet,
-		root:     mylog.Check2(parser.ParseFile(fileSet, path, nil, parser.ParseComments)),
+		file:     mylog.Check2(parser.ParseFile(fileSet, path, nil, parser.ParseComments)),
 		path:     path,
 		lines:    nil,
 		lineInfo: "",
 		line:     0,
 		mod:      "github.com/ddkwork/golibrary/mylog",
-		file:     nil,
 	}
 	if noComments {
 		h.removeComments()
@@ -56,7 +53,7 @@ func newHandle(path string, noComments bool) *handle {
 //	fileSet := token.NewFileSet()
 //	h := &handle{
 //		fileSet:  fileSet,
-//		root:     Check2(parser.ParseFile(fileSet, path, code, parser.ParseComments)),
+//		file:     Check2(parser.ParseFile(fileSet, path, code, parser.ParseComments)),
 //		path:     "testHandle.go",
 //		lines:    nil,
 //		lineInfo: "",
@@ -80,7 +77,7 @@ func newHandle(path string, noComments bool) *handle {
 func (h *handle) removeComments() {
 	mylog.Todo("https://github.com/Greyh4t/nocomment")
 	newComments := make([]*ast.CommentGroup, 0) // can not be nil,why
-	for _, group := range h.root.Comments {
+	for _, group := range h.file.Comments {
 		var newGroup ast.CommentGroup
 		for _, comment := range group.List {
 			if strings.HasPrefix(comment.Text, "//go:") {
@@ -91,7 +88,7 @@ func (h *handle) removeComments() {
 			newComments = append(newComments, &newGroup)
 		}
 	}
-	h.root.Comments = newComments
+	h.file.Comments = newComments
 }
 
 func FormatAllFiles(noComments bool, path string) {
@@ -189,7 +186,7 @@ func (h *handle) findEof(stmtType string) (hasEof bool) {
 
 func (h *handle) rewriteAst() {
 	needImport := false
-	astutil.Apply(h.root, func(cursor *astutil.Cursor) bool {
+	astutil.Apply(h.file, func(cursor *astutil.Cursor) bool {
 		n := cursor.Node()
 		if cursor.Node() == nil {
 			return true
@@ -204,17 +201,17 @@ func (h *handle) rewriteAst() {
 		switch x := n.(type) {
 		case *ast.IfStmt:
 			if x.Else != nil {
-				elseIf, ok := x.Else.(*ast.IfStmt)
-				if ok {
-					if isIfError(elseIf) {
-						x.Else = nil
-						mylog.Trace("else if err != nil", h.lineInfo)
-						return true
-					}
+				for range findIfErrNotNil(x) {
+					x.Else = nil
+					mylog.Trace("else if err != nil", h.lineInfo)
+					return true
 				}
 			}
-
-			if !isIfError(x) {
+			isIfError := false
+			for range findIfErrNotNil(x) {
+				isIfError = true
+			}
+			if !isIfError {
 				return true
 			}
 
@@ -444,58 +441,15 @@ func (h *handle) rewriteAst() {
 	}, nil)
 
 	if needImport {
-		astutil.AddImport(h.fileSet, h.root, h.mod)
+		astutil.AddImport(h.fileSet, h.file, h.mod)
 		mylog.Success("add import", h.path)
 	}
 
 	mylog.Call(func() {
 		var buf bytes.Buffer
-		mylog.Check(format.Node(&buf, h.fileSet, h.root))
+		mylog.Check(format.Node(&buf, h.fileSet, h.file))
 		pattern := "var err error"
 		s := strings.ReplaceAll(buf.String(), pattern, "")
 		mylog.WriteGoFileWithDiff(h.path, []byte(s))
 	})
-}
-
-func isIfError(stmt *ast.IfStmt) (isError bool) {
-	binaryExpr, isBinary := stmt.Cond.(*ast.BinaryExpr)
-	if !isBinary {
-		return
-	}
-	if binaryExpr.Op == token.NEQ {
-		if ident, isIdent := binaryExpr.X.(*ast.Ident); isIdent && ident.Name == "err" {
-			if basicLit, isBlank := binaryExpr.Y.(*ast.Ident); isBlank && basicLit.Name == "nil" {
-				return true
-			}
-		}
-	}
-	return
-}
-
-//func (h *handle) debug(key string, n ast.Node) {
-//	Trace(key+" start", h.fileSet.Position(n.Pos()).String())
-//	Warning(key+" end", h.fileSet.Position(n.End()).String())
-//}
-
-func (h *handle) Position(p token.Pos) token.Position {
-	return h.file.PositionFor(p, false)
-}
-
-//func (h *handle) removeLines(fromLine, toLine int) {
-//	for fromLine < toLine {
-//		h.file.MergeLine(fromLine)
-//		toLine--
-//	}
-//}
-//
-//func (h *handle) removeLinesBetween(from, to token.Pos) {
-//	h.removeLines(h.Line(from)+1, h.Line(to))
-//}
-
-func (h *handle) Line(p token.Pos) int {
-	return h.Position(p).Line
-}
-
-func (h *handle) Offset(p token.Pos) int {
-	return h.file.Offset(p)
 }
