@@ -54,10 +54,8 @@ func FakeError(path string, removeComments ...bool) {
 			if len(removeComments) > 0 {
 				RemoveComments(file)
 			}
-			mylog.Call(func() {
-				s := fakeError(fileSet, file, string(mylog.Check2(os.ReadFile(path))))
-				mylog.WriteGoFileWithDiff(path, []byte(s))
-			})
+			s := fakeError(fileSet, file, string(mylog.Check2(os.ReadFile(path))))
+			mylog.WriteGoFileWithDiff(path, []byte(s))
 		}
 		return err
 	}))
@@ -132,19 +130,23 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 		}
 
 		ee := Edit{
-			Start: x.Pos(),
-			End:   x.End(),
-			Line:  fileSet.Position(x.Pos()).Line,
-			New:   left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
-			edge:  edge(x),
+			Start:      x.Pos(),
+			End:        x.End(),
+			Line:       fileSet.Position(x.Pos()).Line,
+			filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
+			New:        left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
+			edge:       edge(x),
+			isContinue: false,
 		}
 		if e != nil { //AssignStmt in IfStmt
 			ee = Edit{
-				Start: e.Start,
-				End:   e.End,
-				Line:  e.Line,
-				New:   left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
-				edge:  e.edge,
+				Start:      e.Start,
+				End:        e.End,
+				Line:       e.Line,
+				filePath:   e.filePath,
+				New:        left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
+				edge:       e.edge,
+				isContinue: false,
 			}
 		}
 		Replaces = append(Replaces, ee)
@@ -159,7 +161,8 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 				isOneWorkCode := false //if 块内部语句只有1句，没有其他业务逻辑,则直接替换为mylog.Check(业务逻辑)
 				for i, stmt := range ifStmt.Body.List {
 					if i > 1 {
-						panic("if 块内部语句超过1句")
+						mylog.Warning("if 块内部语句超过1句:" + getNodeCode(stmt, fileSet, text) + " " + fileSet.Position(stmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(stmt.Pos()).Line))
+						break
 					}
 					switch row := stmt.(type) {
 					case *ast.BranchStmt:
@@ -185,11 +188,13 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 					continue
 				}`
 					e := Edit{
-						Start: ifStmt.Pos(),
-						End:   ifStmt.End(),
-						Line:  fileSet.Position(ifStmt.Pos()).Line,
-						New:   "",
-						edge:  edge(ifStmt),
+						Start:      ifStmt.Pos(),
+						End:        ifStmt.End(),
+						Line:       fileSet.Position(ifStmt.Pos()).Line,
+						filePath:   fileSet.Position(ifStmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(ifStmt.Pos()).Line),
+						New:        "",
+						edge:       edge(ifStmt),
+						isContinue: false,
 					}
 					if isContinue {
 						e.New = b
@@ -205,11 +210,13 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 				if stmt, ok := ifStmt.Init.(*ast.AssignStmt); ok {
 					if isOneWorkCode {
 						fnHandleAssign(stmt, &Edit{
-							Start: ifStmt.Pos(),
-							End:   ifStmt.End(),
-							Line:  fileSet.Position(ifStmt.Pos()).Line,
-							New:   "",
-							edge:  edge(ifStmt) + " # " + edge(stmt),
+							Start:      ifStmt.Pos(),
+							End:        ifStmt.End(),
+							Line:       fileSet.Position(ifStmt.Pos()).Line,
+							filePath:   fileSet.Position(ifStmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(ifStmt.Pos()).Line),
+							New:        "",
+							edge:       edge(ifStmt) + " # " + edge(stmt),
+							isContinue: false,
 						})
 						skipAssign = true
 						break
@@ -222,7 +229,6 @@ func fakeError(fileSet *token.FileSet, file *ast.File, text string) string {
 				continue
 			}
 			fnHandleAssign(x, nil)
-			//isContinue = false
 		}
 	}
 	return Apply(text, Replaces)
@@ -278,6 +284,7 @@ func GetLastReturnType(assignStmt *ast.AssignStmt) (lastReturnType string, b boo
 type Edit struct {
 	Start, End token.Pos
 	Line       int
+	filePath   string
 	New        string
 	edge       string
 	isContinue bool
@@ -293,6 +300,7 @@ func Apply(text string, replaces []Edit) string {
 		return text
 	}
 	for i, r := range replaces {
+		replaces[i].filePath = " " + replaces[i].filePath + " " //为了使行号可点击定位到文件
 		if strings.Contains(r.New, "continue") && replaces[i-1].New != "" {
 			replaces[i-1].isContinue = true
 		}
