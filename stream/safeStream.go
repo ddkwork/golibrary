@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"cmp"
 	"compress/gzip"
-	"crypto/des"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
@@ -292,17 +291,6 @@ func GetPackageName() (pkgName string) {
 	return filepath.Base(mylog.Check2(filepath.Abs(".")))
 }
 
-// CutPath ("C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/km/ntddk.h", "Include", "km")
-func CutPath(path, left, right string) (cut string, found bool) {
-	_, after, found := strings.Cut(path, left)
-	mylog.Check(found)
-	before, _, f := strings.Cut(after, right)
-	mylog.Check(f)
-	before = strings.ReplaceAll(before, "\\", "")
-	before = strings.ReplaceAll(before, "/", "")
-	return before, true
-}
-
 func (b *Buffer) CutWithIndex(x, y int) []byte { return b.Bytes()[x:y] }
 func (b *Buffer) NewLine() *Buffer             { b.WriteString("\n"); return b }
 func (b *Buffer) QuoteWith(s string) *Buffer   { b.WriteString(s); return b }
@@ -368,13 +356,6 @@ func (b *Buffer) SliceBegin()     { b.WriteByte('[') }
 func (b *Buffer) SliceEnd()       { b.WriteByte(']') }
 func (b *Buffer) Indent(deep int) { b.WriteString(strings.Repeat(" ", deep)) }
 
-func (b *Buffer) CheckDesBlockSize() {
-	mylog.Check(b.Len())
-	mylog.Check(b.Len() >= des.BlockSize)
-	// mylog.Check(b.Len()%des.BlockSize == 0)
-}
-
-func Concat[S ~[]E, E any](slices_ ...S) S { return slices.Concat(slices_...) }
 func (b *Buffer) Peek(n int) []byte {
 	defer func() {
 		for range n {
@@ -406,14 +387,6 @@ func (b *Buffer) BigNumXorWithAlign(arg1, arg2 []byte, align int) []byte {
 		panic("not enough bytes for align")
 	}
 	return xor.Bytes()
-}
-
-// InsertHeader insert to start,packetHeader
-func (b *Buffer) InsertHeader(buf []byte) *Buffer {
-	concat := slices.Concat(buf, b.Bytes())
-	b.Reset()
-	b.Write(concat)
-	return b
 }
 
 func (b *Buffer) InsertString(index int, s string) *Buffer {
@@ -578,20 +551,22 @@ func IsZero(v reflect.Value) bool {
 	return v.IsZero()
 }
 
-func ReflectVisibleFields(object any) []reflect.StructField {
-	fields := reflect.VisibleFields(reflect.TypeOf(object))
-	var exportedFields []reflect.StructField
-	for _, field := range fields {
-		if field.Tag.Get("table") == "-" || field.Tag.Get("json") == "-" {
-			//	continue  //todo
+func ReflectVisibleFields(object any) iter.Seq2[int, reflect.StructField] { //todo reflect field value?
+	return func(yield func(int, reflect.StructField) bool) {
+		fields := reflect.VisibleFields(reflect.TypeOf(object))
+		for i, field := range fields {
+			if field.Tag.Get("table") == "-" || field.Tag.Get("json") == "-" {
+				continue //todo
+			}
+			if !field.IsExported() {
+				mylog.Trace("field name is not exported: ", field.Name) // 用于树形表格序列化json保存到文件，没有导出则json会失败
+				continue
+			}
+			if !yield(i, field) {
+				return
+			}
 		}
-		if !field.IsExported() {
-			mylog.Trace("field name is not exported: ", field.Name) // 用于树形表格序列化json保存到文件，没有导出则json会失败
-			continue
-		}
-		exportedFields = append(exportedFields, field)
 	}
-	return exportedFields
 }
 
 func SwapAdjacent[T Type](data T) *Buffer { // 硬盘序列号交换字节
@@ -652,8 +627,7 @@ func JsonIndent(b []byte) string {
 
 func RandomAnySlice[T any](slice []T) T {
 	seed := rand.NewSource(time.Now().UnixNano())
-	random := rand.New(seed)
-	return slice[random.Intn(len(slice))]
+	return slice[rand.New(seed).Intn(len(slice))]
 }
 
 func GenA2Z() iter.Seq[string] {
@@ -702,23 +676,14 @@ func IsWindows() bool { return runtime.GOOS == "windows" }
 const TimeLayout = "2006-01-02 15:04:05"
 
 func FormatTime(t time.Time) string { return t.Format(TimeLayout) }
-func UnFormatTime(s string) time.Time {
-	parse := mylog.Check2(time.Parse(TimeLayout, s))
-	return parse
-}
 
-func FormatDuration(d time.Duration) string { return d.String() }
-func UnFormatDuration(s string) time.Duration {
-	duration := mylog.Check2(time.ParseDuration(s))
-	return duration
-}
 func GetTimeNowString() string { return time.Now().Format("2006-01-02 15:04:05 ") }
 
 func GetTimeStamp13Bits() int64 { return time.Now().UnixNano() / 1000000 }
 
 func GetTimeStamp() string { return strconv.FormatInt(time.Now().UnixNano()/1000000, 10) }
 
-func GetDiffDays(dstTime string) string {
+func GetDaysDiff(dstTime string) string {
 	t := mylog.Check2(time.Parse("2006-01-02", dstTime))
 	now := time.Until(t)
 	// now := t.Sub(time.Now())

@@ -101,7 +101,7 @@ func TestIsDirDeep1(t *testing.T) {
 }
 
 func TestSubDays(t *testing.T) {
-	println(stream.GetDiffDays("2024-05-26"))
+	println(stream.GetDaysDiff("2024-05-26"))
 }
 
 func Test_getUserConfigDirs(t *testing.T) {
@@ -126,12 +126,6 @@ func TestStream_CutWithIndex(t *testing.T) {
 	mylog.HexDump("", stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).CutWithIndex(2, 4))
 }
 
-func TestStream_DesBlockSizeSizeCheck(t *testing.T) {
-	mylog.Call(func() {
-		stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).CheckDesBlockSize()
-	})
-}
-
 func TestStream_HexString(t *testing.T) {
 	println(stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).HexString())
 }
@@ -145,11 +139,6 @@ func TestStream_Indent(t *testing.T) {
 	s.Indent(3)
 	s.WriteString("3344")
 	println(s.String())
-}
-
-func TestStream_Merge(t *testing.T) {
-	concat := stream.Concat([]byte{0xaa, 0xbb, 0x33, 0x44, 0x55}, []byte{0xaa, 0xbb, 0x33, 0x44, 0x55})
-	mylog.HexDump("", concat)
 }
 
 func TestStream_NewLine(t *testing.T) {
