@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -35,12 +36,21 @@ func main() {
 
 	// 解码到结构体
 	newUser := &UserForm{}
+	newFieldFmtCallback := map[string]func(string) (any, error){
+		"Salary": func(s string) (any, error) {
+			f, err := strconv.ParseFloat(s, 64)
+			if err != nil {
+				return nil, err
+			}
+			return f, nil
+		},
+	}
 	DecodeFromForm(map[string]string{
 		"name":    "李四",
 		"age":     "25",
 		"salary":  "20000.5",
 		"created": "2023-04-22",
-	}, newUser, "form")
+	}, newUser, "form", newFieldFmtCallback)
 	fmt.Printf("解码结果: %+v", newUser)
 }
 
@@ -50,7 +60,8 @@ func TestEncodeDecode(t *testing.T) {
 		input            any
 		form             map[string]string
 		fieldFmtCallback map[string]FieldFmtCallback
-		expected         any
+		expected         map[string]string
+		decodeCallback   map[string]func(string) (any, error)
 	}{
 		{
 			name: "基本类型转换",
@@ -81,6 +92,40 @@ func TestEncodeDecode(t *testing.T) {
 			expected: map[string]string{
 				"date": "2023/04/22",
 			},
+			decodeCallback: map[string]func(string) (any, error){
+				"Date": func(s string) (any, error) {
+					t, err := time.Parse("2006/01/02", s)
+					if err != nil {
+						return nil, err
+					}
+					return t, nil
+				},
+			},
+		},
+		{
+			name: "自定义格式化和解码",
+			input: &struct {
+				Salary float64 `form:"salary"`
+			}{
+				Salary: 15000.50,
+			},
+			fieldFmtCallback: map[string]FieldFmtCallback{
+				"Salary": func(v any) string {
+					return fmt.Sprintf("%.2f", v.(float64))
+				},
+			},
+			expected: map[string]string{
+				"salary": "15000.50",
+			},
+			decodeCallback: map[string]func(string) (any, error){
+				"Salary": func(s string) (any, error) {
+					f, err := strconv.ParseFloat(s, 64)
+					if err != nil {
+						return nil, err
+					}
+					return f, nil
+				},
+			},
 		},
 	}
 
@@ -94,7 +139,7 @@ func TestEncodeDecode(t *testing.T) {
 
 			// 测试解码
 			decoded := reflect.New(reflect.TypeOf(tc.input).Elem()).Interface()
-			DecodeFromForm(encoded, decoded, "form")
+			DecodeFromForm(encoded, decoded, "form", tc.decodeCallback)
 			if !reflect.DeepEqual(decoded, tc.input) {
 				t.Errorf("解码失败: 输入 %v，输出 %v", tc.input, decoded)
 			}
