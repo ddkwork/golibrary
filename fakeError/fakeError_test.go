@@ -35,22 +35,32 @@ func Test7(t *testing.T) {
 	assert.Equal(t, m.GetMust("test7").want, get("test7", m.GetMust("test7").code))
 }
 func Test8(t *testing.T) {
-	t.Skip()
+	t.Skipf(`
+不确定是否应该删除
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, nil, err
+	}
+`)
 	assert.Equal(t, m.GetMust("test8").want, get("test8", m.GetMust("test8").code))
 }
 func Test9(t *testing.T) {
 	assert.Equal(t, m.GetMust("test9").want, get("test9", m.GetMust("test9").code))
 }
+func Test10(t *testing.T) {
+	assert.Equal(t, m.GetMust("test10").want, get("test10", m.GetMust("test10").code))
+}
 
 func get(path, text string) string {
 	join := filepath.Join(os.TempDir(), path+".go")
+	fix := filepath.Join(os.TempDir(), path+"_fixed.go")
+	mylog.Warning("original code file path", join+":1")
 	stream.WriteGoFile(join, text) //写入文件只是为了让goland检查原始代码的语法和直观的行号
 	ret := ""
 	mylog.Call(func() {
 		fileSet := token.NewFileSet()
-		file := mylog.Check2(parser.ParseFile(fileSet, join, text, parser.ParseComments))
+		file := mylog.Check2(parser.ParseFile(fileSet, fix, text, parser.ParseComments))
 		ret = handle(fileSet, file, text)
-		mylog.WriteGoFile(join, ret) //写入文件只是为了让goland检查返回代码的语法和直观的行号
+		mylog.WriteGoFile(fix, ret) //写入文件只是为了让goland检查返回代码的语法和直观的行号
 	})
 	return string(mylog.Check2(format.Source([]byte(ret)))) //handle中WriteGoFile已经执行格式化
 }
@@ -632,6 +642,61 @@ func main() {
 
 	userInfo := mylog.Check2(provider.UserInfo(c.Ctx, tokenSource))
 
+}
+`,
+	})
+	yield("test10", testData{
+		code: `package tmp
+
+import (
+	"github.com/ddkwork/golibrary/mylog"
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	panic(bug())
+}
+
+func bug() error {
+	if _, err := w.Write([]byte("Hello, 世界")); err != nil {
+		t.Errorf("could not write assets/hello_world.txt: %v", err)
+	}
+	var err error
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return fmt.Errorf("input must be struct pointer")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("input must be struct")
+	}
+	if err := apkw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	defer io.Close(nil)
+	defer func() { io.Close(nil) }()
+}
+`,
+		want: `package tmp
+
+import (
+	"github.com/ddkwork/golibrary/mylog"
+)
+
+func main() {
+	panic(bug())
+}
+
+func bug() error {
+	mylog.Check2(w.Write([]byte("Hello, 世界")))
+	mylog.Check(apkw.Close())
+	defer mylog.Check(io.Close(nil))
+	defer func() { mylog.Check(io.Close(nil)) }()
 }
 `,
 	})
