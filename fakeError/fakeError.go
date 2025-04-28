@@ -2,9 +2,7 @@ package fakeError
 
 import (
 	"fmt"
-	"github.com/ddkwork/golibrary/stream"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"io/fs"
@@ -19,23 +17,18 @@ import (
 	"github.com/ddkwork/golibrary/mylog"
 )
 
-func RemoveComments(file *ast.File) {
-	mylog.Todo("https://github.com/Greyh4t/nocomment")
-	newComments := make([]*ast.CommentGroup, 0) // can not be nil,why
-	for _, group := range file.Comments {
-		var newGroup ast.CommentGroup
-		for _, comment := range group.List {
-			if strings.HasPrefix(comment.Text, "//go:") {
-				newGroup.List = append(newGroup.List, comment)
-			}
-		}
-		if len(newGroup.List) > 0 {
-			newComments = append(newComments, &newGroup)
-		}
-	}
-	file.Comments = newComments
-}
+// todo defer 各种close，需要新的节点类型检查没有处理返回值的情况
+//      return err todo
+// return fmt.Errorf("input must be struct pointer")
+//return nil, fmt.Errorf("input must be struct")
 
+//	if _, err := w.Write([]byte("Hello, 世界")); err != nil {
+//		t.Errorf("could not write assets/hello_world.txt: %v", err)
+//	}
+//
+//	if err := apkw.Close(); err != nil {
+//		t.Fatal(err)
+//	}
 func Walk(path string, removeComments ...bool) {
 	if path == "" {
 		path = "."
@@ -64,17 +57,21 @@ func Walk(path string, removeComments ...bool) {
 	}))
 }
 
-func testHandle(path, text string) string {
-	join := filepath.Join(os.TempDir(), path+".go")
-	stream.WriteGoFile(join, text)
-	ret := ""
-	mylog.Call(func() {
-		fileSet := token.NewFileSet()
-		file := mylog.Check2(parser.ParseFile(fileSet, join, text, parser.ParseComments))
-		ret = handle(fileSet, file, text)
-		mylog.WriteGoFile(join, ret)
-	})
-	return string(mylog.Check2(format.Source([]byte(ret))))
+func RemoveComments(file *ast.File) {
+	mylog.Todo("https://github.com/Greyh4t/nocomment")
+	newComments := make([]*ast.CommentGroup, 0) // can not be nil,why
+	for _, group := range file.Comments {
+		var newGroup ast.CommentGroup
+		for _, comment := range group.List {
+			if strings.HasPrefix(comment.Text, "//go:") {
+				newGroup.List = append(newGroup.List, comment)
+			}
+		}
+		if len(newGroup.List) > 0 {
+			newComments = append(newComments, &newGroup)
+		}
+	}
+	file.Comments = newComments
 }
 
 func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) string {
@@ -344,61 +341,61 @@ func Apply(text string, replaces []Edit) string {
 
 type edgeType interface {
 	*ast.ArrayType |
-		*ast.AssignStmt |
-		*ast.BadDecl |
-		*ast.BadExpr |
-		*ast.BadStmt |
-		*ast.BasicLit |
-		*ast.BinaryExpr |
-		*ast.BlockStmt |
-		*ast.BranchStmt |
-		*ast.CallExpr |
-		*ast.CaseClause |
-		*ast.ChanType |
-		*ast.CommClause |
-		*ast.Comment |
-		*ast.CommentGroup |
-		*ast.CompositeLit |
-		*ast.DeclStmt |
-		*ast.DeferStmt |
-		*ast.Ellipsis |
-		*ast.EmptyStmt |
-		*ast.ExprStmt |
-		*ast.Field |
-		*ast.FieldList |
-		*ast.File |
-		*ast.ForStmt |
-		*ast.FuncDecl |
-		*ast.FuncLit |
-		*ast.FuncType |
-		*ast.GenDecl |
-		*ast.GoStmt |
-		*ast.Ident |
-		*ast.IfStmt |
-		*ast.ImportSpec |
-		*ast.IncDecStmt |
-		*ast.IndexExpr |
-		*ast.IndexListExpr |
-		*ast.InterfaceType |
-		*ast.KeyValueExpr |
-		*ast.LabeledStmt |
-		*ast.MapType |
-		// *ast.Package |
-		*ast.ParenExpr |
-		*ast.RangeStmt |
-		*ast.ReturnStmt |
-		*ast.SelectStmt |
-		*ast.SelectorExpr |
-		*ast.SendStmt |
-		*ast.SliceExpr |
-		*ast.StarExpr |
-		*ast.StructType |
-		*ast.SwitchStmt |
-		*ast.TypeAssertExpr |
-		*ast.TypeSpec |
-		*ast.TypeSwitchStmt |
-		*ast.UnaryExpr |
-		*ast.ValueSpec
+	*ast.AssignStmt |
+	*ast.BadDecl |
+	*ast.BadExpr |
+	*ast.BadStmt |
+	*ast.BasicLit |
+	*ast.BinaryExpr |
+	*ast.BlockStmt |
+	*ast.BranchStmt |
+	*ast.CallExpr |
+	*ast.CaseClause |
+	*ast.ChanType |
+	*ast.CommClause |
+	*ast.Comment |
+	*ast.CommentGroup |
+	*ast.CompositeLit |
+	*ast.DeclStmt |
+	*ast.DeferStmt |
+	*ast.Ellipsis |
+	*ast.EmptyStmt |
+	*ast.ExprStmt |
+	*ast.Field |
+	*ast.FieldList |
+	*ast.File |
+	*ast.ForStmt |
+	*ast.FuncDecl |
+	*ast.FuncLit |
+	*ast.FuncType |
+	*ast.GenDecl |
+	*ast.GoStmt |
+	*ast.Ident |
+	*ast.IfStmt |
+	*ast.ImportSpec |
+	*ast.IncDecStmt |
+	*ast.IndexExpr |
+	*ast.IndexListExpr |
+	*ast.InterfaceType |
+	*ast.KeyValueExpr |
+	*ast.LabeledStmt |
+	*ast.MapType |
+	// *ast.Package |
+	*ast.ParenExpr |
+	*ast.RangeStmt |
+	*ast.ReturnStmt |
+	*ast.SelectStmt |
+	*ast.SelectorExpr |
+	*ast.SendStmt |
+	*ast.SliceExpr |
+	*ast.StarExpr |
+	*ast.StructType |
+	*ast.SwitchStmt |
+	*ast.TypeAssertExpr |
+	*ast.TypeSpec |
+	*ast.TypeSwitchStmt |
+	*ast.UnaryExpr |
+	*ast.ValueSpec
 }
 
 // var (
