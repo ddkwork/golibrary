@@ -232,6 +232,36 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 				continue
 			}
 			fnHandleAssign(x, nil)
+		case *ast.DeferStmt: //todo 处理多个返回值，以及返回值检查,e.Obj.Decl.(*ast.FuncDecl)取不出来的返回类型的，nil
+			mylog.Todo("defer func() { mylog.Check(backendConn.Close()) }()")
+			break
+			c := getNodeCode(x.Call, fileSet, text)
+			switch x := x.Call.Fun.(type) {
+			case *ast.FuncLit: //todo 改成检测是否实现io.Closer接口,io.NopCloser
+				if strings.Contains(c, "Close") {
+					Replaces = append(Replaces, Edit{
+						StartPos:   x.Pos(),
+						EndPos:     x.End(),
+						LineNumber: fileSet.Position(x.Pos()).Line,
+						filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
+						NewContent: "mylog.Check(" + getNodeCode(x, fileSet, text) + ")",
+						edge:       edge(x),
+						isContinue: false,
+					})
+				}
+			case *ast.CallExpr:
+				if strings.Contains(c, "Close") {
+					Replaces = append(Replaces, Edit{
+						StartPos:   x.Pos(),
+						EndPos:     x.End(),
+						LineNumber: fileSet.Position(x.Pos()).Line,
+						filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
+						NewContent: "mylog.Check(" + getNodeCode(x, fileSet, text) + ")",
+						edge:       edge(x),
+						isContinue: false,
+					})
+				}
+			}
 		}
 	}
 	return Apply(text, Replaces)
@@ -333,61 +363,61 @@ func Apply(text string, replaces []Edit) string {
 
 type edgeType interface {
 	*ast.ArrayType |
-	*ast.AssignStmt |
-	*ast.BadDecl |
-	*ast.BadExpr |
-	*ast.BadStmt |
-	*ast.BasicLit |
-	*ast.BinaryExpr |
-	*ast.BlockStmt |
-	*ast.BranchStmt |
-	*ast.CallExpr |
-	*ast.CaseClause |
-	*ast.ChanType |
-	*ast.CommClause |
-	*ast.Comment |
-	*ast.CommentGroup |
-	*ast.CompositeLit |
-	*ast.DeclStmt |
-	*ast.DeferStmt |
-	*ast.Ellipsis |
-	*ast.EmptyStmt |
-	*ast.ExprStmt |
-	*ast.Field |
-	*ast.FieldList |
-	*ast.File |
-	*ast.ForStmt |
-	*ast.FuncDecl |
-	*ast.FuncLit |
-	*ast.FuncType |
-	*ast.GenDecl |
-	*ast.GoStmt |
-	*ast.Ident |
-	*ast.IfStmt |
-	*ast.ImportSpec |
-	*ast.IncDecStmt |
-	*ast.IndexExpr |
-	*ast.IndexListExpr |
-	*ast.InterfaceType |
-	*ast.KeyValueExpr |
-	*ast.LabeledStmt |
-	*ast.MapType |
-	// *ast.Package |
-	*ast.ParenExpr |
-	*ast.RangeStmt |
-	*ast.ReturnStmt |
-	*ast.SelectStmt |
-	*ast.SelectorExpr |
-	*ast.SendStmt |
-	*ast.SliceExpr |
-	*ast.StarExpr |
-	*ast.StructType |
-	*ast.SwitchStmt |
-	*ast.TypeAssertExpr |
-	*ast.TypeSpec |
-	*ast.TypeSwitchStmt |
-	*ast.UnaryExpr |
-	*ast.ValueSpec
+		*ast.AssignStmt |
+		*ast.BadDecl |
+		*ast.BadExpr |
+		*ast.BadStmt |
+		*ast.BasicLit |
+		*ast.BinaryExpr |
+		*ast.BlockStmt |
+		*ast.BranchStmt |
+		*ast.CallExpr |
+		*ast.CaseClause |
+		*ast.ChanType |
+		*ast.CommClause |
+		*ast.Comment |
+		*ast.CommentGroup |
+		*ast.CompositeLit |
+		*ast.DeclStmt |
+		*ast.DeferStmt |
+		*ast.Ellipsis |
+		*ast.EmptyStmt |
+		*ast.ExprStmt |
+		*ast.Field |
+		*ast.FieldList |
+		*ast.File |
+		*ast.ForStmt |
+		*ast.FuncDecl |
+		*ast.FuncLit |
+		*ast.FuncType |
+		*ast.GenDecl |
+		*ast.GoStmt |
+		*ast.Ident |
+		*ast.IfStmt |
+		*ast.ImportSpec |
+		*ast.IncDecStmt |
+		*ast.IndexExpr |
+		*ast.IndexListExpr |
+		*ast.InterfaceType |
+		*ast.KeyValueExpr |
+		*ast.LabeledStmt |
+		*ast.MapType |
+		// *ast.Package |
+		*ast.ParenExpr |
+		*ast.RangeStmt |
+		*ast.ReturnStmt |
+		*ast.SelectStmt |
+		*ast.SelectorExpr |
+		*ast.SendStmt |
+		*ast.SliceExpr |
+		*ast.StarExpr |
+		*ast.StructType |
+		*ast.SwitchStmt |
+		*ast.TypeAssertExpr |
+		*ast.TypeSpec |
+		*ast.TypeSwitchStmt |
+		*ast.UnaryExpr |
+		*ast.ValueSpec
 }
 
 // var (
