@@ -152,6 +152,10 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 			for ifStmt := range findIfErrNotNil(n) {
 				isOneWorkCode := false //if 块内部语句只有1句，没有其他业务逻辑,则直接替换为mylog.Check(业务逻辑)
 				for i, stmt := range ifStmt.Body.List {
+					if len(ifStmt.Body.List) == 1 {
+						isOneWorkCode = true
+						break
+					}
 					if i > 1 {
 						mylog.Warning("if 块内部语句超过1句:" + getNodeCode(stmt, fileSet, text) + " " + fileSet.Position(stmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(stmt.Pos()).Line))
 						break
@@ -329,61 +333,61 @@ func Apply(text string, replaces []Edit) string {
 
 type edgeType interface {
 	*ast.ArrayType |
-		*ast.AssignStmt |
-		*ast.BadDecl |
-		*ast.BadExpr |
-		*ast.BadStmt |
-		*ast.BasicLit |
-		*ast.BinaryExpr |
-		*ast.BlockStmt |
-		*ast.BranchStmt |
-		*ast.CallExpr |
-		*ast.CaseClause |
-		*ast.ChanType |
-		*ast.CommClause |
-		*ast.Comment |
-		*ast.CommentGroup |
-		*ast.CompositeLit |
-		*ast.DeclStmt |
-		*ast.DeferStmt |
-		*ast.Ellipsis |
-		*ast.EmptyStmt |
-		*ast.ExprStmt |
-		*ast.Field |
-		*ast.FieldList |
-		*ast.File |
-		*ast.ForStmt |
-		*ast.FuncDecl |
-		*ast.FuncLit |
-		*ast.FuncType |
-		*ast.GenDecl |
-		*ast.GoStmt |
-		*ast.Ident |
-		*ast.IfStmt |
-		*ast.ImportSpec |
-		*ast.IncDecStmt |
-		*ast.IndexExpr |
-		*ast.IndexListExpr |
-		*ast.InterfaceType |
-		*ast.KeyValueExpr |
-		*ast.LabeledStmt |
-		*ast.MapType |
-		// *ast.Package |
-		*ast.ParenExpr |
-		*ast.RangeStmt |
-		*ast.ReturnStmt |
-		*ast.SelectStmt |
-		*ast.SelectorExpr |
-		*ast.SendStmt |
-		*ast.SliceExpr |
-		*ast.StarExpr |
-		*ast.StructType |
-		*ast.SwitchStmt |
-		*ast.TypeAssertExpr |
-		*ast.TypeSpec |
-		*ast.TypeSwitchStmt |
-		*ast.UnaryExpr |
-		*ast.ValueSpec
+	*ast.AssignStmt |
+	*ast.BadDecl |
+	*ast.BadExpr |
+	*ast.BadStmt |
+	*ast.BasicLit |
+	*ast.BinaryExpr |
+	*ast.BlockStmt |
+	*ast.BranchStmt |
+	*ast.CallExpr |
+	*ast.CaseClause |
+	*ast.ChanType |
+	*ast.CommClause |
+	*ast.Comment |
+	*ast.CommentGroup |
+	*ast.CompositeLit |
+	*ast.DeclStmt |
+	*ast.DeferStmt |
+	*ast.Ellipsis |
+	*ast.EmptyStmt |
+	*ast.ExprStmt |
+	*ast.Field |
+	*ast.FieldList |
+	*ast.File |
+	*ast.ForStmt |
+	*ast.FuncDecl |
+	*ast.FuncLit |
+	*ast.FuncType |
+	*ast.GenDecl |
+	*ast.GoStmt |
+	*ast.Ident |
+	*ast.IfStmt |
+	*ast.ImportSpec |
+	*ast.IncDecStmt |
+	*ast.IndexExpr |
+	*ast.IndexListExpr |
+	*ast.InterfaceType |
+	*ast.KeyValueExpr |
+	*ast.LabeledStmt |
+	*ast.MapType |
+	// *ast.Package |
+	*ast.ParenExpr |
+	*ast.RangeStmt |
+	*ast.ReturnStmt |
+	*ast.SelectStmt |
+	*ast.SelectorExpr |
+	*ast.SendStmt |
+	*ast.SliceExpr |
+	*ast.StarExpr |
+	*ast.StructType |
+	*ast.SwitchStmt |
+	*ast.TypeAssertExpr |
+	*ast.TypeSpec |
+	*ast.TypeSwitchStmt |
+	*ast.UnaryExpr |
+	*ast.ValueSpec
 }
 
 // var (
