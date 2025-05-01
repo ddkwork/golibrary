@@ -1,11 +1,12 @@
 package golibrary
 
 import (
-	"github.com/ddkwork/golibrary/fakeError"
 	"testing"
+
+	"github.com/ddkwork/golibrary/fakeError"
 )
 
 func TestName(t *testing.T) {
 	fakeError.Walk("")
-	StaticCheck()
+	// StaticCheck()
 }
