@@ -1,6 +1,8 @@
 package stream
 
 import (
+	"archive/zip"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -29,7 +31,7 @@ var skips = []string{
 // git ls-remote https://github.com/ddkwork/toolbox refs/heads/master
 // git ls-remote https://github.com/gioui/gio refs/heads/main
 // 但是要传递本地的仓库目录，太麻烦了
-//func GetLastCommitHash(repositoryName string) string {
+// func GetLastCommitHash(repositoryName string) string {
 //	//理论上获取到hash再使用模块代理，这样才刷新的快？
 //	//或者使用action得到hash先？
 //
@@ -56,7 +58,7 @@ var skips = []string{
 //			$env:GOPROXY="direct"; go get -x github.com/ddkwork/toolbox@$(git ls-remote https://github.com/ddkwork/toolbox refs/heads/master | ForEach-Object { $_.Split()[0] })
 //
 //	*/
-//}
+// }
 
 func GetLastCommitHashLocal(repositoryDir string) string { // 如果失败了，发现禁用模块代理可以成功，那么需要再提交点别的，然后模块代理就会识别新的提交hash，很诡异
 	originPath := mylog.Check2(os.Getwd())
@@ -66,8 +68,8 @@ func GetLastCommitHashLocal(repositoryDir string) string { // 如果失败了，
 	return hash
 }
 
-func ParseGoMod(path string) *safemap.M[string, string] {
-	f := mylog.Check2(modfile.Parse(path, mylog.Check2(os.ReadFile(path)), nil))
+func ParseGoMod(file string, data []byte) *safemap.M[string, string] {
+	f := mylog.Check2(modfile.Parse(file, data, nil))
 	return safemap.NewOrdered[string, string](func(yield func(string, string) bool) {
 		for _, req := range f.Require {
 			yield(req.Mod.Path, req.Mod.Version)
@@ -99,11 +101,28 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 	if filepath.Base(dir) == "golibrary" {
 		return
 	}
+	paths := []string{
+		"../mod.zip",
+		"../../mod.zip",
+		"../../../mod.zip",
+	}
+	newModFilePath := ""
+	for _, path := range paths {
+		if IsFilePath(path) {
+			newModFilePath = filepath.Join(dir, path)
+			break
+		}
+	}
+	if newModFilePath == "" {
+		panic("mod.zip not found in workspace")
+	}
+	r := mylog.Check2(zip.OpenReader(newModFilePath))
+	newBody := mylog.Check2(io.ReadAll(mylog.Check2(r.Open("go.mod"))))
 	originMod := filepath.Join(dir, "go.mod")
-	newMod := filepath.Join(GetDesktopDir(), "go.mod")
-	f := mylog.Check2(modfile.Parse(originMod, mylog.Check2(os.ReadFile(originMod)), nil))
-	newModMap := ParseGoMod(newMod)
-	for oldName, oldVersion := range ParseGoMod(originMod).Range() {
+	body := mylog.Check2(os.ReadFile(originMod))
+	f := mylog.Check2(modfile.Parse(originMod, body, nil))
+	newModMap := ParseGoMod("new.mod", newBody)
+	for oldName, oldVersion := range ParseGoMod(originMod, body).Range() {
 		newVersion, exist := newModMap.Get(oldName)
 		if exist {
 			if oldVersion != newVersion {
@@ -134,7 +153,7 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 			mylog.Info("add golibrary", line)
 			b.WriteStringLn(line).ReWriteSelf()
 		}
-		//https://github.com/ddkwork/tools/blob/master/gopls/doc/analyzers.md
+		// https://github.com/ddkwork/tools/blob/master/gopls/doc/analyzers.md
 		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...", dir)
 		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...", dir)
 		mutex.Unlock()
@@ -235,7 +254,7 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 	mylog.Success("all work finished")
 }
 
-//func updateDependencies() { // 模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
+// func updateDependencies() { // 模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
 //	mylog.Check(os.Setenv("GOPROXY", "direct"))
 //	for s := range strings.Lines(`
 //     go get -x gioui.org@main
@@ -260,44 +279,44 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 //	//staticcheck ./...
 //	//go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 //
-//`) {
+// `) {
 //		s = strings.TrimSpace(s)
 //		if strings.HasPrefix(s, "::") || strings.HasPrefix(s, "//") || s == "" {
 //			continue
 //		}
 //		RunCommand(s)
 //	}
-//}
-
-//type Cache struct {
-//	store map[string]string
-//	mu    sync.RWMutex
-//}
+// }
 //
-//func TestCacheConsistency(t *testing.T) {
-//	cache := &Cache{store: make(map[string]string)}
+// type Cache struct {
+// 	store map[string]string
+// 	mu    sync.RWMutex
+// }
 //
-//	synctest.Run(t, func(sc *synctest.Scenario) {
-//		// 并发写入
-//		for i := 0; i < 10; i++ {
-//			sc.Go(func() {
-//				cache.mu.Lock()
-//				defer cache.mu.Unlock()
-//				cache.store["key"] = time.Now().String()
-//			})
-//		}
+// func TestCacheConsistency(t *testing.T) {
+// 	cache := &Cache{store: make(map[string]string)}
 //
-//		// 并发读取
-//		for i := 0; i < 100; i++ {
-//			sc.Go(func() {
-//				cache.mu.RLock()
-//				defer cache.mu.RUnlock()
-//				_ = cache.store["key"]
-//			})
-//		}
-//	}, synctest.WithOptions(
-//		synctest.EnableRaceDetection(),
-//		synctest.MaxGoroutines(200),
-//		synctest.Timeout(10*time.Second),
-//	))
-//}
+// 	synctest.Run(t, func(sc *synctest.Scenario) {
+// 		// 并发写入
+// 		for i := 0; i < 10; i++ {
+// 			sc.Go(func() {
+// 				cache.mu.Lock()
+// 				defer cache.mu.Unlock()
+// 				cache.store["key"] = time.Now().String()
+// 			})
+// 		}
+//
+// 		// 并发读取
+// 		for i := 0; i < 100; i++ {
+// 			sc.Go(func() {
+// 				cache.mu.RLock()
+// 				defer cache.mu.RUnlock()
+// 				_ = cache.store["key"]
+// 			})
+// 		}
+// 	}, synctest.WithOptions(
+// 		synctest.EnableRaceDetection(),
+// 		synctest.MaxGoroutines(200),
+// 		synctest.Timeout(10*time.Second),
+// 	))
+// }
