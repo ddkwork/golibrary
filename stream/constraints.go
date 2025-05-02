@@ -107,7 +107,7 @@ func formatBytesAsGoCode(data []byte) string {
 }
 
 func FormatInteger[T Integer](data T) string {
-	//return fmt.Sprintf("%d", reflect.ValueOf(data).Interface()) + "[" + FormatIntegerHex0x(data) + "]"
+	// return fmt.Sprintf("%d", reflect.ValueOf(data).Interface()) + "[" + FormatIntegerHex0x(data) + "]"
 	return FormatIntegerHex0x(data) + " # " + fmt.Sprintf("%d", reflect.ValueOf(data).Interface())
 }
 
@@ -127,7 +127,18 @@ func FormatIntegerHex[T Integer](data T) string {
 	case int32, uint32:
 		format = "%08X"
 	default:
-		panic("unsupported type ---> " + reflect.TypeOf(data).Name())
+		switch reflect.TypeOf(data).Kind() {
+		case reflect.Int, reflect.Uint, reflect.Uint64, reflect.Uintptr, reflect.Int64:
+			format = "%016X"
+		case reflect.Int8, reflect.Uint8:
+			format = "%02X"
+		case reflect.Int16, reflect.Uint16:
+			format = "%04X"
+		case reflect.Int32, reflect.Uint32:
+			format = "%08X"
+		default:
+			panic("unsupported type ---> " + reflect.TypeOf(data).Name())
+		}
 	}
 	return fmt.Sprintf(format, data)
 }
@@ -171,7 +182,7 @@ func ValueIsBytesType(v reflect.Value) bool {
 // func isASCIIUpper(c byte) bool { return 'A' <= c && c <= 'Z' }
 func isASCIIDigit(c byte) bool { return '0' <= c && c <= '9' }
 
-//func IsASCIIAlpha(s string) bool {
+// func IsASCIIAlpha(s string) bool {
 //	for i := 0; i < len(s); i++ {
 //		c := s[i] // 直接按字节获取
 //		if !isASCIILower(c) && !isASCIIUpper(c) {
@@ -179,7 +190,7 @@ func isASCIIDigit(c byte) bool { return '0' <= c && c <= '9' }
 //		}
 //	}
 //	return true
-//}
+// }
 
 func IsASCIIDigit(s string) bool {
 	for i := range len(s) {
@@ -190,7 +201,7 @@ func IsASCIIDigit(s string) bool {
 	return len(s) > 0 // 确保字符串非空
 }
 
-//func IsAlphanumeric(s string) bool {
+// func IsAlphanumeric(s string) bool {
 //	for i := 0; i < len(s); i++ {
 //		c := s[i]
 //		if !isASCIIDigit(c) && !isASCIILower(c) && !isASCIIUpper(c) {
@@ -198,9 +209,9 @@ func IsASCIIDigit(s string) bool {
 //		}
 //	}
 //	return len(s) > 0 // 确保字符串非空
-//}
+// }
 
-//func isOneByteInteger(n int) bool {
+// func isOneByteInteger(n int) bool {
 //	return n >= -128 && n <= 127 // 检查有符号整数
 //	// return n >= 0 && n <= 255 // 可以用于无符号整数
-//}
+// }
