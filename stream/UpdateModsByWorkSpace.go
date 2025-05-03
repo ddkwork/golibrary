@@ -102,6 +102,7 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 		return
 	}
 	paths := []string{
+		"mod.zip",
 		"../mod.zip",
 		"../../mod.zip",
 		"../../../mod.zip",
