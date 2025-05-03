@@ -101,23 +101,7 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 	if filepath.Base(dir) == "golibrary" {
 		return
 	}
-	paths := []string{
-		"mod.zip",
-		"../mod.zip",
-		"../../mod.zip",
-		"../../../mod.zip",
-	}
-	newModFilePath := ""
-	for _, path := range paths {
-		if IsFilePath(path) {
-			newModFilePath = filepath.Join(dir, path)
-			break
-		}
-	}
-	if newModFilePath == "" {
-		panic("mod.zip not found in workspace")
-	}
-	r := mylog.Check2(zip.OpenReader(newModFilePath))
+	r := mylog.Check2(zip.OpenReader("D:\\workspace\\workspace\\mod.zip"))
 	newBody := mylog.Check2(io.ReadAll(mylog.Check2(r.Open("go.mod"))))
 	originMod := filepath.Join(dir, "go.mod")
 	body := mylog.Check2(os.ReadFile(originMod))
