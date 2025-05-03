@@ -9,7 +9,6 @@ import (
 	"iter"
 	"os"
 	"path/filepath"
-
 	"sort"
 	"strconv"
 	"strings"
@@ -106,7 +105,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 				left += c + ","
 			}
 		}
-		//只有一个返回值需要删除 ,
+		// 只有一个返回值需要删除 ,
 		left = strings.TrimRight(left, ",")
 
 		right := ""
@@ -130,7 +129,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 			edge:       edge(x),
 			isContinue: false,
 		}
-		if e != nil { //AssignStmt in IfStmt
+		if e != nil { // AssignStmt in IfStmt
 			ee = Edit{
 				StartPos:   e.StartPos,
 				EndPos:     e.EndPos,
@@ -148,9 +147,9 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 	isContinue := false
 	for n := range ast.Preorder(file) {
 		switch x := n.(type) {
-		case *ast.IfStmt: //if err := backendConn.Close(); err != nil {
+		case *ast.IfStmt: // if err := backendConn.Close(); err != nil {
 			for ifStmt := range findIfErrNotNil(n) {
-				isOneWorkCode := false //if 块内部语句只有1句，没有其他业务逻辑,则直接替换为mylog.Check(业务逻辑)
+				isOneWorkCode := false // if 块内部语句只有1句，没有其他业务逻辑,则直接替换为mylog.Check(业务逻辑)
 				for i, stmt := range ifStmt.Body.List {
 					if len(ifStmt.Body.List) == 1 {
 						isOneWorkCode = true
@@ -171,7 +170,14 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 						switch {
 						case c == "panic(err)":
 							isOneWorkCode = true
-						case strings.HasPrefix(c, "log.") && strings.HasSuffix(c, "(err)"):
+
+							// drivercodegen-master.zip
+							//	if err := makeExeVcxprojFile(); err != nil {
+							//		log.Println("[-] Failed to makeExeVcxprojFile....")
+							//		return
+							//	}
+						// case strings.HasPrefix(c, "log.") && strings.HasSuffix(c, "(err)"):
+						case strings.HasPrefix(c, "log."):
 							isOneWorkCode = true
 						}
 					case *ast.ReturnStmt:
@@ -226,18 +232,18 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 					}
 				}
 			}
-		case *ast.AssignStmt: //backendConn, err := net.DialTimeout("tcp", forwardTarget, 5*time.Second)
+		case *ast.AssignStmt: // backendConn, err := net.DialTimeout("tcp", forwardTarget, 5*time.Second)
 			if skipAssign {
 				skipAssign = false
 				continue
 			}
 			fnHandleAssign(x, nil)
-		case *ast.DeferStmt: //todo 处理多个返回值，以及返回值检查,e.Obj.Decl.(*ast.FuncDecl)取不出来的返回类型的，nil
+		case *ast.DeferStmt: // todo 处理多个返回值，以及返回值检查,e.Obj.Decl.(*ast.FuncDecl)取不出来的返回类型的，nil
 			mylog.Todo("defer func() { mylog.Check(backendConn.Close()) }()")
 			break
 			c := getNodeCode(x.Call, fileSet, text)
 			switch x := x.Call.Fun.(type) {
-			case *ast.FuncLit: //todo 改成检测是否实现io.Closer接口,io.NopCloser
+			case *ast.FuncLit: // todo 改成检测是否实现io.Closer接口,io.NopCloser
 				if strings.Contains(c, "Close") {
 					Replaces = append(Replaces, Edit{
 						StartPos:   x.Pos(),
@@ -270,7 +276,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 func getNodeCode(astNode ast.Node, f *token.FileSet, code string) string {
 	c := code[f.Position(astNode.Pos()).Offset:f.Position(astNode.End()).Offset]
 	c = strings.TrimSpace(c)
-	//mylog.Json("code dump", c)
+	// mylog.Json("code dump", c)
 	return c
 }
 
@@ -334,7 +340,7 @@ func Apply(text string, replaces []Edit) string {
 		return text
 	}
 	for i, r := range replaces {
-		replaces[i].filePath = " " + filepath.ToSlash(replaces[i].filePath) + " " //为了使行号可点击定位到文件
+		replaces[i].filePath = " " + filepath.ToSlash(replaces[i].filePath) + " " // 为了使行号可点击定位到文件
 		if strings.Contains(r.NewContent, "continue") && replaces[i-1].NewContent != "" {
 			replaces[i-1].isContinue = true
 		}
