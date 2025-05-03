@@ -32,9 +32,9 @@ func TestName(t *testing.T) {
 		println(strconv.Quote(k), v)
 	}
 
-	//for k, v := range m.All() {
+	// for k, v := range m.All() {
 	//	println(strconv.Quote(k), v)
-	//}
+	// }
 }
 
 func TestSafeMap_StoreAndLoad(t *testing.T) {

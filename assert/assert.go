@@ -13,127 +13,127 @@ import (
 )
 
 //
-//func Int(t common.T, x, y int) {
+// func Int(t common.T, x, y int) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Int8(t common.T, x, y int8) {
+// func Int8(t common.T, x, y int8) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Int16(t common.T, x, y int16) {
+// func Int16(t common.T, x, y int16) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Int32(t common.T, x, y int32) {
+// func Int32(t common.T, x, y int32) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Int64(t common.T, x, y int64) {
+// func Int64(t common.T, x, y int64) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Uint(t common.T, x, y uint) {
+// func Uint(t common.T, x, y uint) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Uint8(t common.T, x, y uint8) {
+// func Uint8(t common.T, x, y uint8) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Uint16(t common.T, x, y uint16) {
+// func Uint16(t common.T, x, y uint16) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Uint32(t common.T, x, y uint32) {
+// func Uint32(t common.T, x, y uint32) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Uint64[T uint64](t common.T, x, y T) {
+// func Uint64[T uint64](t common.T, x, y T) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 
-//func Uintptr(t common.T, x, y uintptr) {
+// func Uintptr(t common.T, x, y uintptr) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %d, got %d", x, y))
-//}
+// }
 //
-//func Bool(t common.T, x, y bool) {
+// func Bool(t common.T, x, y bool) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %t, got %t", x, y))
-//}
+// }
 //
-//func Float32(t common.T, x, y float32) {
+// func Float32(t common.T, x, y float32) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %f, got %f", x, y))
-//}
+// }
 //
-//func Float64(t common.T, x, y float64) {
+// func Float64(t common.T, x, y float64) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %f, got %f", x, y))
-//}
+// }
 //
-//func String(t common.T, x, y string) {
+// func String(t common.T, x, y string) {
 //	t.Helper()
 //	if x == y {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %s, got %s", x, y))
-//}
+// }
 //
-//func Slice(t common.T, x, y []any) {
+// func Slice(t common.T, x, y []any) {
 //	t.Helper()
 //	if len(x) != len(y) {
 //		t.Error(fmt.Sprintf("expected slices of equal length, got %d and %d", len(x), len(y)))
@@ -145,9 +145,9 @@ import (
 //			return
 //		}
 //	}
-//}
+// }
 //
-//func Map(t common.T, x, y map[any]any) {
+// func Map(t common.T, x, y map[any]any) {
 //	t.Helper()
 //	if len(x) != len(y) {
 //		t.Error(fmt.Sprintf("expected maps of equal length, got %d and %d", len(x), len(y)))
@@ -159,15 +159,15 @@ import (
 //			return
 //		}
 //	}
-//}
+// }
 
-//func Signed[T Signed](t common.T, want, got T, opts ...cmp.Option) {
+// func Signed[T Signed](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
-//}
+// }
 
 func UnsignedInteger[T Unsigned](t common.T, want, got T, opts ...cmp.Option) {
 	t.Helper()
@@ -177,47 +177,47 @@ func UnsignedInteger[T Unsigned](t common.T, want, got T, opts ...cmp.Option) {
 	t.Error(fmt.Sprintf("expected %#X, got %#X", want, got))
 }
 
-//func Integer[T Integer](t common.T, want, got T, opts ...cmp.Option) {
+// func Integer[T Integer](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
-//}
+// }
 //
-//func Float[T Float](t common.T, want, got T, opts ...cmp.Option) {
+// func Float[T Float](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
-//}
+// }
 //
-//func Complex[T Complex](t common.T, want, got T, opts ...cmp.Option) {
+// func Complex[T Complex](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
-//}
+// }
 //
-//func Ordered[T Ordered](t common.T, want, got T, opts ...cmp.Option) {
+// func Ordered[T Ordered](t common.T, want, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if want == got {
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
-//}
+// }
 //
-//func Bytes[T []byte](t common.T, want T, got T, opts ...cmp.Option) {
+// func Bytes[T []byte](t common.T, want T, got T, opts ...cmp.Option) {
 //	t.Helper()
 //	if bytes.Equal(want, got) { // todo 对发包和注册算法进行大量单元测试，diff着色，以便于快速定位diff的位置
 //		return
 //	}
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
-//}
+// }
 
-//////////////////////////////////////
+// ////////////////////////////////////
 
 func True(t common.T, x bool) {
 	t.Helper()
@@ -301,10 +301,10 @@ func NoError(t common.T, e error) {
 	}
 	mylog.Check(e)
 
-	//if e == nil {
+	// if e == nil {
 	//	return
-	//}
-	//t.Error(fmt.Sprintf("expected no error, received %v", e))
+	// }
+	// t.Error(fmt.Sprintf("expected no error, received %v", e))
 }
 
 func Nil(t common.T, v any) {

@@ -1,39 +1,47 @@
 package fakeError
 
 import (
-	"github.com/ddkwork/golibrary/assert"
-	"github.com/ddkwork/golibrary/mylog"
-	"github.com/ddkwork/golibrary/safemap"
-	"github.com/ddkwork/golibrary/stream"
 	"go/format"
 	"go/parser"
 	"go/token"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/ddkwork/golibrary/assert"
+	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/safemap"
+	"github.com/ddkwork/golibrary/stream"
 )
 
 func Test1(t *testing.T) {
 	assert.Equal(t, m.GetMust("test1").want, get("test1", m.GetMust("test1").code))
 }
+
 func Test2(t *testing.T) {
 	assert.Equal(t, m.GetMust("test2").want, get("test2", m.GetMust("test2").code))
 }
+
 func Test3(t *testing.T) {
 	assert.Equal(t, m.GetMust("test3").want, get("test3", m.GetMust("test3").code))
 }
+
 func Test4(t *testing.T) {
 	assert.Equal(t, m.GetMust("test4").want, get("test4", m.GetMust("test4").code))
 }
+
 func Test5(t *testing.T) {
 	assert.Equal(t, m.GetMust("test5").want, get("test5", m.GetMust("test5").code))
 }
+
 func Test6(t *testing.T) {
 	assert.Equal(t, m.GetMust("test6").want, get("test6", m.GetMust("test6").code))
 }
+
 func Test7(t *testing.T) {
 	assert.Equal(t, m.GetMust("test7").want, get("test7", m.GetMust("test7").code))
 }
+
 func Test8(t *testing.T) {
 	t.Skipf(`
 不确定是否应该删除
@@ -43,9 +51,11 @@ func Test8(t *testing.T) {
 `)
 	assert.Equal(t, m.GetMust("test8").want, get("test8", m.GetMust("test8").code))
 }
+
 func Test9(t *testing.T) {
 	assert.Equal(t, m.GetMust("test9").want, get("test9", m.GetMust("test9").code))
 }
+
 func Test10(t *testing.T) {
 	t.Skip("todo bug")
 	assert.Equal(t, m.GetMust("test10").want, get("test10", m.GetMust("test10").code))
@@ -55,15 +65,15 @@ func get(path, text string) string {
 	join := filepath.Join(os.TempDir(), path+".go")
 	fix := filepath.Join(os.TempDir(), path+"_fixed.go")
 	mylog.Warning("original code file path", join+":1")
-	stream.WriteGoFile(join, text) //写入文件只是为了让goland检查原始代码的语法和直观的行号
+	stream.WriteGoFile(join, text) // 写入文件只是为了让goland检查原始代码的语法和直观的行号
 	ret := ""
 	mylog.Call(func() {
 		fileSet := token.NewFileSet()
 		file := mylog.Check2(parser.ParseFile(fileSet, fix, text, parser.ParseComments))
 		ret = handle(fileSet, file, text)
-		mylog.WriteGoFile(fix, ret) //写入文件只是为了让goland检查返回代码的语法和直观的行号
+		mylog.WriteGoFile(fix, ret) // 写入文件只是为了让goland检查返回代码的语法和直观的行号
 	})
-	return string(mylog.Check2(format.Source([]byte(ret)))) //handle中WriteGoFile已经执行格式化
+	return string(mylog.Check2(format.Source([]byte(ret)))) // handle中WriteGoFile已经执行格式化
 }
 
 type testData struct {

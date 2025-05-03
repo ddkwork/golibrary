@@ -159,7 +159,7 @@ func ConvertUtf82Gbk(src string) string {
 	return src
 }
 
-//func runCmd(command string) string { // std error not support
+// func runCmd(command string) string { // std error not support
 //	fnInitCmd := func() *exec.Cmd {
 //		if runtime.GOOS == "windows" {
 //			return exec.Command("cmd", "/C", command)
@@ -167,4 +167,4 @@ func ConvertUtf82Gbk(src string) string {
 //		return exec.Command("bash", "-c", command)
 //	}
 //	return ConvertUtf82Gbk(string(mylog.Check2(fnInitCmd().CombinedOutput())))
-//}
+// }

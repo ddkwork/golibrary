@@ -82,7 +82,7 @@ type attribute int
 // const escape = "\x1b"
 
 // Base attributes
-//const (
+// const (
 //	Reset attribute = iota
 //	Bold
 //	Faint
@@ -93,9 +93,9 @@ type attribute int
 //	ReverseVideo
 //	Concealed
 //	CrossedOut
-//)
+// )
 
-//const (
+// const (
 //	ResetBold attribute = iota + 22
 //	ResetItalic
 //	ResetUnderline
@@ -104,9 +104,9 @@ type attribute int
 //	ResetReversed
 //	ResetConcealed
 //	ResetCrossedOut
-//)
+// )
 
-//var mapResetAttributes map[attribute]attribute = map[attribute]attribute{
+// var mapResetAttributes map[attribute]attribute = map[attribute]attribute{
 //	Bold:         ResetBold,
 //	Faint:        ResetBold,
 //	Italic:       ResetItalic,
@@ -116,10 +116,10 @@ type attribute int
 //	ReverseVideo: ResetReversed,
 //	Concealed:    ResetConcealed,
 //	CrossedOut:   ResetCrossedOut,
-//}
+// }
 
 // Foreground text colors
-//const (
+// const (
 //	FgBlack attribute = iota + 30
 //	FgRed
 //	FgGreen
@@ -131,7 +131,7 @@ type attribute int
 //
 //	// used internally for 256 and 24-bit coloring
 //	foreground
-//)
+// )
 
 // Foreground Hi-Intensity text colors
 const (
@@ -146,8 +146,8 @@ const (
 )
 
 //
-//// Background text colors
-//const (
+// // Background text colors
+// const (
 //	BgBlack attribute = iota + 40
 //	BgRed
 //	BgGreen
@@ -159,10 +159,10 @@ const (
 //
 //	// used internally for 256 and 24-bit coloring
 //	background
-//)
+// )
 //
-//// Background Hi-Intensity text colors
-//const (
+// // Background Hi-Intensity text colors
+// const (
 //	BgHiBlack attribute = iota + 100
 //	BgHiRed
 //	BgHiGreen
@@ -171,4 +171,4 @@ const (
 //	BgHiMagenta
 //	BgHiCyan
 //	BgHiWhite
-//)
+// )

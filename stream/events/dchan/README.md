@@ -1,16 +1,20 @@
 # dchan
 
-`dchan` is a Go library that provides a dynamic channel with unlimited capacity and additional features for more efficient data operations.
+`dchan` is a Go library that provides a dynamic channel with unlimited capacity and additional features for more
+efficient data operations.
 
 ## Functions
 
 - `New[T any](params ...any) *C[T]`: Initializes a new channel.
 - `Send(data T)`: Sends a value to the channel.
 - `Receive() (T, bool)`: Retrieves a value from the channel.
-- `Close(f ...func(T)) `: Closes the channel; optionally accepts a function to handle any remaining values or nil to discard them.
-- `Ready(f func(T) bool) bool`: Checks if the first element in the channel is ready for retrieval based on a custom boolean function, without actually removing it from the channel (available only in SliceMode).
+- `Close(f ...func(T)) `: Closes the channel; optionally accepts a function to handle any remaining values or nil to
+  discard them.
+- `Ready(f func(T) bool) bool`: Checks if the first element in the channel is ready for retrieval based on a custom
+  boolean function, without actually removing it from the channel (available only in SliceMode).
 - `Len() int `: Returns the current length of the channel.
 - `IsClosed() bool`: Checks whether the channel is closed.
+
 ## Usage
 
 ### Creating a new channel ([T any])
@@ -19,6 +23,7 @@
 ch := dchan.New[int64]()
 // ch := dchan.New[*MyStruct]()
 ```
+
 By default, the initial capacity is set to 1024 values, with storage implemented as a slice of Go channels
 that automatically expands as it fills. The behavior closely mirrors that of standard Go channels.
 
@@ -29,10 +34,14 @@ ch := dchan.New[int](10240) // type *dchan.C
 // ch := dchan.New[int](dchan.Relaxed)
 // ch := dchan.New[int](10240, dchan.Relaxed)
 ```
+
 - `10240` - Initial capacity for storing up to 10,240 values (automatically expanding as it fills).
 - `flag dchan.SliceMode` - will use slices for storage.
-- `flag dchan.Relaxed` - Permits sending to a closed channel and closing the channel multiple times without causing a panic.
-Note that while correct uses of `dchan.Relaxed` do exist, they are rare, and use of `dchan.Relaxed` is often a sign of a deeper problem in the program's logic.
+- `flag dchan.Relaxed` - Permits sending to a closed channel and closing the channel multiple times without causing a
+  panic.
+  Note that while correct uses of `dchan.Relaxed` do exist, they are rare, and use of `dchan.Relaxed` is often a sign of
+  a deeper problem in the program's logic.
+
 ### Sending and receiving values
 
 ```go
@@ -40,6 +49,7 @@ ch.Send(1)
 val, ok := ch.Receive()
 
 ```
+
 ### Iterating over channel values
 
 ```go
@@ -48,6 +58,7 @@ for val,ok := ch.Receive(); ok; val,ok = ch.Receive() {
     // process val
 }
 ```
+
 ### Closing the channel
 
 ```go
@@ -55,6 +66,7 @@ ch.Close()
 // ch.Close(f)
 // ch.Close(nil)
 ```
+
 Extra parameters are: `func(T)` or `nil`.
 
 - `ch.Close(func(T))` - function to process (or utilize) elements remaining in the channel.
@@ -87,80 +99,83 @@ closed := ch.IsClosed()
 ```
 
 ### A basic example:
+
 ```go
 package main
 
 import (
-    "fmt"
-    "time"
-    "github.com/hitsumitomo/dchan"
+	"fmt"
+	"time"
+
+	"github.com/hitsumitomo/dchan"
 )
 
 func utilizeFunc(i int) {
-    fmt.Printf("Utilize: %v\n", i)
+	fmt.Printf("Utilize: %v\n", i)
 }
 
 func main() {
-    ch := dchan.New[int]()
+	ch := dchan.New[int]()
 
-    // Method1 (Equivalent to standard channel reading: for val := range ch { ... })
-    go func(){
-        i := 0
-        for val,ok := ch.Receive(); ok; val,ok = ch.Receive() {
-            fmt.Println("Method1:", val)
-            if i++; i == 4 {
-                break
-            }
-        }
-    }()
+	// Method1 (Equivalent to standard channel reading: for val := range ch { ... })
+	go func() {
+		i := 0
+		for val, ok := ch.Receive(); ok; val, ok = ch.Receive() {
+			fmt.Println("Method1:", val)
+			if i++; i == 4 {
+				break
+			}
+		}
+	}()
 
-    // Method2
-    go func(){
-        i := 0
-        for {
-            val,ok := ch.Receive()
-            if !ok {
-                break
-            }
-            fmt.Println("Method2:", val)
-            if i++; i == 4 {
-                break
-            }
-        }
-    }()
+	// Method2
+	go func() {
+		i := 0
+		for {
+			val, ok := ch.Receive()
+			if !ok {
+				break
+			}
+			fmt.Println("Method2:", val)
+			if i++; i == 4 {
+				break
+			}
+		}
+	}()
 
-    for i := 0; i < 10; i++ {
-        ch.Send(i)
-    }
+	for i := 0; i < 10; i++ {
+		ch.Send(i)
+	}
 
-    time.Sleep(time.Second)
-    ch.Close(utilizeFunc)
-    time.Sleep(time.Second)
+	time.Sleep(time.Second)
+	ch.Close(utilizeFunc)
+	time.Sleep(time.Second)
 
-    fmt.Println()
-    // ------------------------------
-    ch = dchan.New[int](dchan.SliceMode | dchan.Relaxed)
-    // also allowed:
-    // ch = dchan.New[int64](2048)
-    // ch = dchan.New[int64](2048, dchan.Relaxed)
+	fmt.Println()
+	// ------------------------------
+	ch = dchan.New[int](dchan.SliceMode | dchan.Relaxed)
+	// also allowed:
+	// ch = dchan.New[int64](2048)
+	// ch = dchan.New[int64](2048, dchan.Relaxed)
 
-    go func(){
-        for val,ok := ch.Receive(); ok; val,ok = ch.Receive() {
-            fmt.Println("Method3:", val)
-        }
-        fmt.Println("Channel is closed")
-    }()
+	go func() {
+		for val, ok := ch.Receive(); ok; val, ok = ch.Receive() {
+			fmt.Println("Method3:", val)
+		}
+		fmt.Println("Channel is closed")
+	}()
 
-    for i := 0; i < 5; i++ {
-        ch.Send(i)
-    }
+	for i := 0; i < 5; i++ {
+		ch.Send(i)
+	}
 
-    time.Sleep(time.Second)
-    ch.Close()
-    ch.Send(100)
-    ch.Close()
-    time.Sleep(time.Second)
+	time.Sleep(time.Second)
+	ch.Close()
+	ch.Send(100)
+	ch.Close()
+	time.Sleep(time.Second)
 }
+
 // Method1: 0
 // Method1: 2
 // Method1: 3
@@ -179,7 +194,9 @@ func main() {
 // Method3: 4
 // Channel is closed
 ```
+
 ### Benchmarks
+
 <pre>
 BenchmarkDchanSend-4                    1000000000        0.06726 ns/op    0 B/op     0 allocs/op
 BenchmarkDchanReceive-4                 1000000000        0.06754 ns/op    0 B/op     0 allocs/op

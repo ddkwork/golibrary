@@ -277,7 +277,7 @@ func TestIssue9(t *testing.T) {
 	copyB := Copy(testB)
 	assert.Equal(t, testB, copyB)
 
-	//testC := map[*Foo][]string{
+	// testC := map[*Foo][]string{
 	//	{Alpha: "Henry Dorsett Case"}: {
 	//		"Cutter",
 	//	},
@@ -286,21 +286,21 @@ func TestIssue9(t *testing.T) {
 	//		"Cat Mother",
 	//		"Steppin' Razor",
 	//	},
-	//}
+	// }
 	//
-	//copyC := Copy(testC)
-	//assert.Equal(t, testC, copyC) //差异在于 map 中的键的内存地址不同
+	// copyC := Copy(testC)
+	// assert.Equal(t, testC, copyC) //差异在于 map 中的键的内存地址不同
 	//
-	//type Bizz struct {
+	// type Bizz struct {
 	//	*Foo
-	//}
+	// }
 	//
-	//testD := map[Bizz]string{
+	// testD := map[Bizz]string{
 	//	{&Foo{"Neuromancer"}}: "Rio",
 	//	{&Foo{"Wintermute"}}:  "Berne",
-	//}
-	//copyD := Copy(testD)
-	//assert.Equal(t, testD, copyD) //差异在于 map 中的键的内存地址不同
+	// }
+	// copyD := Copy(testD)
+	// assert.Equal(t, testD, copyD) //差异在于 map 中的键的内存地址不同
 }
 
 type I struct {

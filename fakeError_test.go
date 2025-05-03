@@ -8,5 +8,4 @@ import (
 
 func TestName(t *testing.T) {
 	fakeError.Walk("")
-	// StaticCheck()
 }

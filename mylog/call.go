@@ -63,7 +63,7 @@ func layoutStack(k kind, value string, child bool) string {
 		leftIndent := align.StringWidth[int](GetTimeNowString()+k.String()) + hexDumpIndentLen
 		return strings.Repeat(" ", leftIndent) + " │ " + value + "\n"
 	}
-	leftIndent := hexDumpIndentLen //- align.StringWidth[int](key)
+	leftIndent := hexDumpIndentLen // - align.StringWidth[int](key)
 	return GetTimeNowString() + k.String() + strings.Repeat(" ", leftIndent) + " │ " + value + "\n"
 }
 

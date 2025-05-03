@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	cmp2 "github.com/google/go-cmp/cmp"
 	"go/format"
 	"io"
 	"io/fs"
@@ -27,6 +26,8 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	cmp2 "github.com/google/go-cmp/cmp"
 
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream/align"
@@ -91,7 +92,7 @@ func NewBuffer[T Type](data T) *Buffer {
 		return &Buffer{Buffer: b}
 	case string:
 		if IsFilePath(b) {
-			return &Buffer{path: b, Buffer: bytes.NewBuffer(mylog.Check2(os.ReadFile(b)))} //todo ntddk.h d大文件不应该读取会影响性能
+			return &Buffer{path: b, Buffer: bytes.NewBuffer(mylog.Check2(os.ReadFile(b)))} // todo ntddk.h d大文件不应该读取会影响性能
 		}
 		return &Buffer{Buffer: bytes.NewBufferString(b)}
 	case HexString:
@@ -556,12 +557,12 @@ func IsZero(v reflect.Value) bool {
 	return v.IsZero()
 }
 
-func ReflectVisibleFields(object any) iter.Seq2[int, reflect.StructField] { //todo reflect field value?
+func ReflectVisibleFields(object any) iter.Seq2[int, reflect.StructField] { // todo reflect field value?
 	return func(yield func(int, reflect.StructField) bool) {
 		fields := reflect.VisibleFields(reflect.TypeOf(object))
 		for i, field := range fields {
 			if field.Tag.Get("table") == "-" || field.Tag.Get("json") == "-" {
-				continue //todo
+				continue // todo
 			}
 			if !field.IsExported() {
 				mylog.Trace("field name is not exported: ", field.Name) // 用于树形表格序列化json保存到文件，没有导出则json会失败
@@ -765,7 +766,7 @@ var (
 	RegexpIpPort = regexp.MustCompile(`((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))):([0-9]+)`)
 )
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func CurrentDirName(path string) (currentDirName string) {
 	if path == "" {
@@ -936,7 +937,7 @@ func GitProxy(isSetProxy bool) {
 		s := NewBuffer("")
 		if isSetProxy {
 			// socks5
-			//.py --mode socks5 -p 7890
+			// .py --mode socks5 -p 7890
 			// git config --global http.sslVerify false
 			s.WriteStringLn(`
 [http]

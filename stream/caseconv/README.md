@@ -34,4 +34,5 @@ the-quick-brown-fox-jumps-over-the-lazy-dog
 the_quick_brown_fox_jumps_over_the_lazy_dog
 ```
 
-> Most of test cases are from [change-case](https://github.com/blakeembrey/change-case) node package - so far. But the goal was not to follow same conventions.
+> Most of test cases are from [change-case](https://github.com/blakeembrey/change-case) node package - so far. But the
+> goal was not to follow same conventions.

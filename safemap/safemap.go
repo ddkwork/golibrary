@@ -23,7 +23,7 @@ type M[K comparable, V any] struct {
 }
 
 // thx github.com/hitsumitomo/safemap
-//type api[K comparable, V any] interface {
+// type api[K comparable, V any] interface {
 //	NewContent(ordered ...bool) (m *M[K, V])                                      // 实例化
 //	NewOrdered(yield iter.Seq2[K, V]) (m *M[K, V])                         // 实例化有序，std map的代码有语法检查，这个是实例化的时候检查，实例化语法间接性差不多
 //	NewStringer(ordered ...bool) (m *M[string, string])                    // 从字符串实例化
@@ -46,7 +46,7 @@ type M[K comparable, V any] struct {
 //	MarshalJSON() (data []byte, err error)                                 //
 //	UnmarshalJSON(data []byte) (err error)                                 //
 //	String() string                                                        //
-//}
+// }
 
 func New[K comparable, V any](ordered ...bool) (m *M[K, V]) {
 	sm := &M[K, V]{

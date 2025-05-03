@@ -8,9 +8,11 @@ A Pretty-printer for Go data structures
     $ go get github.com/gobs/pretty
 
 ## Documentation
+
 http://godoc.org/github.com/gobs/pretty
 
 ## Example
+
     package main
 
     import "github.com/gobs/pretty"
