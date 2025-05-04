@@ -6,15 +6,15 @@ import (
 )
 
 type Interface interface {
-	DeepCopy() any
+	Clone() any
 }
 
 func Iface(iface any) any {
-	return Copy(iface)
+	return Clone(iface)
 }
 
-// tree node clone and tls ca clone
-func Copy[T any](src T) T {
+// Clone tree node clone and tls ca clone
+func Clone[T any](src T) T {
 	if any(src) == nil {
 		var zero T
 		return zero
@@ -28,7 +28,7 @@ func Copy[T any](src T) T {
 func copyRecursive(original, cpy reflect.Value) {
 	if original.CanInterface() {
 		if copier, ok := original.Interface().(Interface); ok {
-			cpy.Set(reflect.ValueOf(copier.DeepCopy()))
+			cpy.Set(reflect.ValueOf(copier.Clone()))
 			return
 		}
 	}
@@ -89,7 +89,7 @@ func copyRecursive(original, cpy reflect.Value) {
 			originalValue := original.MapIndex(key)
 			copyValue := reflect.New(originalValue.Type()).Elem()
 			copyRecursive(originalValue, copyValue)
-			copyKey := Copy(key.Interface())
+			copyKey := Clone(key.Interface())
 			cpy.SetMapIndex(reflect.ValueOf(copyKey), copyValue)
 		}
 

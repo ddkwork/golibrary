@@ -11,31 +11,31 @@ import (
 
 func TestSimple(t *testing.T) {
 	Strings := []string{"a", "b", "c"}
-	cpyS := Copy(Strings)
+	cpyS := Clone(Strings)
 	assert.Equal(t, cpyS, Strings)
 
 	Bools := []bool{true, true, false, false}
-	cpyB := Copy(Bools)
+	cpyB := Clone(Bools)
 	assert.Equal(t, cpyB, Bools)
 
 	Bytes := []byte("hello")
-	cpyBt := Copy(Bytes)
+	cpyBt := Clone(Bytes)
 	assert.Equal(t, cpyBt, Bytes)
 
 	Ints := []int{42}
-	cpyI := Copy(Ints)
+	cpyI := Clone(Ints)
 	assert.Equal(t, cpyI, Ints)
 
 	Uints := []uint{1, 2, 3, 4, 5}
-	cpyU := Copy(Uints)
+	cpyU := Clone(Uints)
 	assert.Equal(t, cpyU, Uints)
 
 	Float32s := []float32{3.14}
-	cpyF := Copy(Float32s)
+	cpyF := Clone(Float32s)
 	assert.Equal(t, cpyF, Float32s)
 
 	Interfaces := []any{"a", 42, true, 4.32}
-	cpyIf := Copy(Interfaces)
+	cpyIf := Clone(Interfaces)
 	assert.Equal(t, cpyIf, Interfaces)
 }
 
@@ -119,13 +119,13 @@ func TestMostTypes(t *testing.T) {
 		Interfaces:  []any{42, true, "pan-galactic"},
 	}
 
-	cpy := Copy(test)
+	cpy := Clone(test)
 	assert.Equal(t, cpy, test)
 }
 
 func TestComplexSlices(t *testing.T) {
 	orig3Int := [][][]int{{{1, 2, 3}, {11, 22, 33}}, {{7, 8, 9}, {66, 77, 88, 99}}}
-	cpyI := Copy(orig3Int)
+	cpyI := Clone(orig3Int)
 	assert.False(t, unsafe.SliceData(orig3Int) == unsafe.SliceData(cpyI))
 	assert.Equal(t, cpyI, orig3Int)
 }
@@ -164,7 +164,7 @@ var AStruct = A{
 }
 
 func TestStructA(t *testing.T) {
-	cpy := Copy(AStruct)
+	cpy := Clone(AStruct)
 	assert.Equal(t, cpy, AStruct)
 }
 
@@ -187,7 +187,7 @@ func TestUnexportedFields(t *testing.T) {
 		cc: []int{1, 2, 3},
 		dd: map[string]string{"hello": "bonjour"},
 	}
-	cpy := Copy(u)
+	cpy := Clone(u)
 	assert.Equal(t, cpy, u, cmp.AllowUnexported())
 }
 
@@ -219,7 +219,7 @@ func TestTimeCopy(t *testing.T) {
 		}
 		var x T
 		x.Time = time.Date(test.Y, test.M, test.D, test.h, test.m, test.s, test.nsec, l)
-		c := Copy(x)
+		c := Clone(x)
 		assert.Equal(t, c, x)
 	}
 }
@@ -229,7 +229,7 @@ func TestPointerToStruct(t *testing.T) {
 		Bar int
 	}
 	f := &Foo{Bar: 42}
-	cpy := Copy(f)
+	cpy := Clone(f)
 	assert.Equal(t, f, cpy)
 }
 
@@ -239,7 +239,7 @@ func TestIssue9(t *testing.T) {
 		"a": nil,
 		"b": &x,
 	}
-	copyA := Copy(testA)
+	copyA := Clone(testA)
 	assert.Equal(t, testA, copyA)
 
 	type Foo struct {
@@ -274,7 +274,7 @@ func TestIssue9(t *testing.T) {
 		},
 	}
 
-	copyB := Copy(testB)
+	copyB := Clone(testB)
 	assert.Equal(t, testB, copyB)
 
 	// testC := map[*Foo][]string{
@@ -288,7 +288,7 @@ func TestIssue9(t *testing.T) {
 	//	},
 	// }
 	//
-	// copyC := Copy(testC)
+	// copyC := Clone(testC)
 	// assert.Equal(t, testC, copyC) //差异在于 map 中的键的内存地址不同
 	//
 	// type Bizz struct {
@@ -299,7 +299,7 @@ func TestIssue9(t *testing.T) {
 	//	{&Foo{"Neuromancer"}}: "Rio",
 	//	{&Foo{"Wintermute"}}:  "Berne",
 	// }
-	// copyD := Copy(testD)
+	// copyD := Clone(testD)
 	// assert.Equal(t, testD, copyD) //差异在于 map 中的键的内存地址不同
 }
 
@@ -307,7 +307,7 @@ type I struct {
 	A string
 }
 
-func (i *I) DeepCopy() any {
+func (i *I) Clone() any {
 	return &I{A: "custom copy"}
 }
 
@@ -317,10 +317,10 @@ type NestI struct {
 
 func TestInterface(t *testing.T) {
 	i := &I{A: "A"}
-	copied := Copy(i)
+	copied := Clone(i)
 	assert.Equal(t, "custom copy", copied.A)
 
 	ni := &NestI{I: &I{A: "A"}}
-	copiedNest := Copy(ni)
+	copiedNest := Clone(ni)
 	assert.Equal(t, "custom copy", copiedNest.I.A)
 }
