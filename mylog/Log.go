@@ -207,7 +207,7 @@ func (l *log) printAndWrite() {
 	s += "\n"
 	l.printColorBody(s)
 	if l.callBack != nil {
-		l.callBack()
+		l.callBack(s)
 	}
 	if IsAndroid() {
 		println("android log is not support yet")

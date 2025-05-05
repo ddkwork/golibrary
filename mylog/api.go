@@ -16,10 +16,10 @@ import (
 
 type (
 	log struct {
-		kind     kind     // type of log
-		row      keyValue // 不要使用map，因为允许重复key
-		debug    bool     // display print and write log
-		callBack func()   // for ux logView
+		kind     kind             // type of log
+		row      keyValue         // 不要使用map，因为允许重复key
+		debug    bool             // display print and write log
+		callBack func(row string) // for ux logView
 	}
 )
 
@@ -56,11 +56,11 @@ func (k keyValue) String() string {
 	return k.key + k.Value() // 为了兼容这些布局，分隔符需要手动处理 layout struct { //buffer 结构体 堆栈信息，普通kv行
 }
 
-func (l *log) SetCallBack(callBack func()) {
+func (l *log) SetCallBack(callBack func(row string)) {
 	l.callBack = callBack
 }
 
-func SetCallBack(callBack func()) {
+func SetCallBack(callBack func(row string)) {
 	l.SetCallBack(callBack)
 }
 
@@ -154,5 +154,3 @@ func DumpRequest(req *http.Request, body bool) string { return l.DumpRequest(req
 func DumpResponse(resp *http.Response, body bool) string {
 	return l.DumpResponse(resp, body)
 }
-
-func Row() string { return l.row.String() }
