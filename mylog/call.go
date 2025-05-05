@@ -32,6 +32,7 @@ func recovery(handler recoveryHandler) {
 
 func (l *log) errorCall(err any) bool {
 	if err == nil {
+		Success("The operation completed successfully.") // for github rep mgr
 		return true
 	}
 	*l = log{
