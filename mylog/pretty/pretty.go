@@ -183,7 +183,7 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 				io.WriteString(p.Out, i.String())
 			} else {
 				l := val.NumField()
-				sOpen := val.Type().Name() + " {"
+				sOpen := val.Type().String() + " {"
 				if p.Compact {
 					sOpen = "{"
 				}

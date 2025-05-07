@@ -146,7 +146,7 @@ func Warning[K keyType](title K, msg ...any)          { l.Warning(fmt.Sprint(tit
 func MarshalJson[K keyType](title K, msg any)         { l.MarshalJson(fmt.Sprint(title), msg) }
 func Json[K keyType](title K, msg ...any)             { l.Json(fmt.Sprint(title), msg...) }
 func Success[K keyType](title K, msg ...any)          { l.Success(fmt.Sprint(title), msg...) }
-func Struct(object any)                               { l.Struct(reflect.TypeOf(object).Name(), object) } // log any type or struct
+func Struct(object any)                               { l.Struct(reflect.TypeOf(object).String(), object) } // log any type or struct
 func SetDebug(debug bool)                             { l.debug = debug }
 func Request(Request *http.Request, body bool)        { l.Request(Request, body) }
 func Response(Response *http.Response, body bool)     { l.Response(Response, body) }
