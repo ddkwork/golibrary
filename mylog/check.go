@@ -81,6 +81,10 @@ func Check2Ignore[T any](ret T, err error) T {
 	return ret
 }
 
+func Check2IgnoreBool[T any](ret T, err error) (T, bool) {
+	return ret, l.errorCall(err)
+}
+
 func CheckIgnore(err any) {
 	l.errorCall(err)
 }
