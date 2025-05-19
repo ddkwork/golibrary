@@ -139,7 +139,7 @@ func (s *CommandSession) run(command, dir string) {
 		mylog.Check(ConvertUtf82Gbk(e.Error()))
 	}
 	s.Output.NewLine()
-	s.Output.WriteStringLn(s.Error.String())
+	//s.Output.WriteStringLn(s.Error.String())
 	ss := trimTrailingEmptyLines(s.Output.String())
 	s.Output.Reset()
 	s.Output.WriteString(ss)
