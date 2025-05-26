@@ -2,6 +2,7 @@ package stream
 
 import (
 	"archive/zip"
+	"github.com/ddkwork/golibrary/waitgroup"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,7 +14,6 @@ import (
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/safemap"
 	"golang.org/x/mod/modfile"
-	"golang.org/x/sync/errgroup"
 )
 
 func UpdateModsByWorkSpace(isUpdateAll bool) {
@@ -126,10 +126,8 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 	updateModFile := mylog.Check2(f.Format())
 	// println(string(updateModFile))
 	WriteTruncate(originMod, updateModFile)
-	var mutex sync.Mutex
-	g := new(errgroup.Group)
-	g.Go(func() error {
-		mutex.Lock()
+	g := waitgroup.New()
+	g.Go(func() {
 		RunCommandWithDir("go mod tidy", dir)
 		v := newModMap.GetMust("github.com/ddkwork/golibrary")
 		b := NewBuffer(originMod)
@@ -141,10 +139,8 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 		// https://github.com/ddkwork/tools/blob/master/gopls/doc/analyzers.md
 		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...", dir)
 		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...", dir)
-		mutex.Unlock()
-		return nil
 	})
-	mylog.Check(g.Wait())
+	g.Wait()
 }
 
 func setVersion(r *modfile.Require, v string) {
@@ -170,7 +166,7 @@ func setVersion(r *modfile.Require, v string) {
 
 func UpdateDependencies(path string) { // 模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
 	var mutex sync.Mutex
-	g := new(errgroup.Group)
+	g := waitgroup.New()
 	for s := range ReadFileToLines(filepath.Join(GetDesktopDir(), "dep.txt")) { // 因为要经常更新，我们不embed
 		s = strings.TrimSpace(s)
 		if strings.HasPrefix(s, "::") || strings.HasPrefix(s, "//") || s == "" {
@@ -179,13 +175,10 @@ func UpdateDependencies(path string) { // 模块代理刷新的不及时，需�
 		if s == "go mod tidy" {
 			continue
 		}
-		g.Go(func() error { // 这样之后tidy就不在最后执行了，同时升级多个依赖+读写锁定
-			mutex.Lock()
+		g.Go(func() { // 这样之后tidy就不在最后执行了，同时升级多个依赖+读写锁定
 			RunCommandWithDir(s, path)
-			mutex.Unlock()
-			return nil
 		})
-		mylog.Check(g.Wait())
+		g.Wait()
 	}
 	mutex.Lock()
 	RunCommandWithDir("go mod tidy", path) // 所有yield都执行完了，再执行tidy
@@ -218,15 +211,14 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 
 	modChan := make(chan string, len(mods))
 
-	g := new(errgroup.Group)
+	g := waitgroup.New()
 	for _, modPath := range mods {
-		g.Go(func() error { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
+		g.Go(func() { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
 			UpdateDependenciesFromModFile(modPath) // 锁应该在这里面
 			if isUpdateAll {
 				RunCommand("go get -u -x all") // need lock,但是不使用这个，太慢了
 			}
 			modChan <- modPath
-			return nil
 		})
 	}
 	go func() {
@@ -235,7 +227,7 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 		}
 		close(modChan)
 	}()
-	mylog.Check(g.Wait())
+	g.Wait()
 	mylog.Success("all work finished")
 }
 

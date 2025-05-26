@@ -13,6 +13,10 @@ type Group struct {
 	mu  sync.Mutex
 }
 
+func New() *Group {
+	return &Group{}
+}
+
 func (g *Group) done() {
 	if g.sem != nil {
 		<-g.sem
