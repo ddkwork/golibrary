@@ -217,7 +217,7 @@ func WriteGoFile[T Type](name string, data T) {
 	source, e := format.Source(s.Bytes())
 	mylog.CheckIgnore(e)
 	if e != nil {
-		join := filepath.Join(os.TempDir(), name)
+		join := filepath.Join("tmp", name)
 		join = filepath.ToSlash(join)
 		mylog.Warning("bad file ", join+":1")
 		write(join, false, s.Bytes())

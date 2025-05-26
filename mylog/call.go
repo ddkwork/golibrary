@@ -68,6 +68,8 @@ func layoutStack(k kind, value string, child bool) string {
 }
 
 func (l *log) printAndWrite2() {
+	lock.Lock()
+	defer lock.Unlock()
 	if IsTermux() {
 		return
 	}

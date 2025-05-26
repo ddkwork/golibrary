@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strings"
+	"sync"
 
 	"github.com/ddkwork/golibrary/mylog/pretty"
 )
@@ -181,7 +182,12 @@ func (l *log) MarshalJson(title string, msg any) {
 	l.Json(title, string(indent))
 }
 
+var lock sync.Mutex
+
 func (l *log) printAndWrite() {
+	lock.Lock()
+	defer lock.Unlock()
+
 	v := l.row.Value()
 	end := " //" + caller()
 	switch l.kind {
