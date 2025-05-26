@@ -2,7 +2,7 @@ package waitgroup_test
 
 import (
 	"fmt"
-	"mcp/waitgroup"
+	"github.com/ddkwork/golibrary/waitgroup"
 	"sync/atomic"
 	"testing"
 	"time"
