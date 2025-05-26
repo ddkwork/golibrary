@@ -33,7 +33,9 @@ func (g *Group) add(f func()) {
 	g.wg.Add(1)
 	go func() {
 		defer g.done()
-		f() //todo lock
+		g.mu.Lock()
+		defer g.mu.Unlock()
+		f()
 	}()
 }
 
