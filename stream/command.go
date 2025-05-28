@@ -3,7 +3,6 @@ package stream
 import (
 	"bufio"
 	"context"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -52,7 +51,7 @@ func (s *CommandSession) run(command, dir string) {
 	skipLog := false
 	if strings.Contains(command, "clang") {
 		skipLog = true
-		mylog.Info("", "skip log in clang")
+		//mylog.Info("", "skip log in clang")
 	}
 
 	fnInitCmd := func() *exec.Cmd {
@@ -64,7 +63,7 @@ func (s *CommandSession) run(command, dir string) {
 	cmd := fnInitCmd()
 	cmd.Dir = dir
 
-	log.Println(command)
+	mylog.Info("command", command)
 
 	stdoutPipe := mylog.Check2(cmd.StdoutPipe())
 	stderrPipe := mylog.Check2(cmd.StderrPipe())
@@ -136,10 +135,9 @@ func (s *CommandSession) run(command, dir string) {
 
 	e := cmd.Wait()
 	if e != nil {
-		mylog.Check(ConvertUtf82Gbk(e.Error()))
+		mylog.Check(ConvertUtf82Gbk(e.Error() + "\n" + s.Error.String()))
 	}
-	s.Output.NewLine()
-	//s.Output.WriteStringLn(s.Error.String())
+	//s.Output.NewLine()
 	ss := trimTrailingEmptyLines(s.Output.String())
 	s.Output.Reset()
 	s.Output.WriteString(ss)
