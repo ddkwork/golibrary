@@ -70,7 +70,7 @@ func (s *CommandSession) run(command, dir string) {
 
 	mylog.Check(cmd.Start())
 
-	 wg :=waitgroup.New()
+	wg := waitgroup.New()
 	output := make(chan string)
 	errorOutput := make(chan string)
 
@@ -108,7 +108,7 @@ func (s *CommandSession) run(command, dir string) {
 	go func() {
 		for line := range output {
 			if !skipLog {
-				println(line)//对于json，不需要每一行都输出，而是一次性返回解码或者落地保存
+				println(line) //对于json，不需要每一行都输出，而是一次性返回解码或者落地保存
 			}
 			s.Output.WriteStringLn(line)
 		}
