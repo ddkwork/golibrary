@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"sync"
 
 	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/waitgroup"
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
@@ -70,35 +70,31 @@ func (s *CommandSession) run(command, dir string) {
 
 	mylog.Check(cmd.Start())
 
-	var wg sync.WaitGroup
+	 wg :=waitgroup.New()
 	output := make(chan string)
 	errorOutput := make(chan string)
 
 	// 启动 goroutine 读取 stdout
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		mylog.Call(func() {
-			defer wg.Done()
 			scanner := bufio.NewScanner(stdoutPipe)
 			for scanner.Scan() {
 				output <- ConvertUtf82Gbk(scanner.Text())
 			}
 			mylog.Check(stdoutPipe.Close())
 		})
-	}()
+	})
 
 	// 启动 goroutine 读取 stderr
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		mylog.Call(func() {
-			defer wg.Done()
 			scanner := bufio.NewScanner(stderrPipe)
 			for scanner.Scan() {
 				errorOutput <- ConvertUtf82Gbk(scanner.Text())
 			}
 			mylog.Check(stderrPipe.Close())
 		})
-	}()
+	})
 
 	// 启动 goroutine 统一处理输出
 	go func() {
@@ -112,7 +108,7 @@ func (s *CommandSession) run(command, dir string) {
 	go func() {
 		for line := range output {
 			if !skipLog {
-				println(line)
+				println(line)//对于json，不需要每一行都输出，而是一次性返回解码或者落地保存
 			}
 			s.Output.WriteStringLn(line)
 		}
@@ -121,7 +117,7 @@ func (s *CommandSession) run(command, dir string) {
 
 	go func() {
 		for line := range errorOutput {
-			println(line)
+			//println(line)//让clang dump ast的错误在后面写入文件，这里和后面调用s.Error.String()重复输出错误了
 			s.Error.WriteStringLn(line)
 		}
 		done <- struct{}{}
