@@ -100,18 +100,20 @@ func (c *Client) request() *Client {
 
 	request.Header = c.head
 	if c.debug {
-		println(mylog.DumpRequest(request, true))
+		mylog.Request(request, true)
 	}
 	response := mylog.Check2(c.Client.Do(request))
 	defer func() {
 		if c.debug {
-			println(mylog.DumpResponse(response, true))
+			mylog.Response(response, true)
 		}
 		mylog.Check(response.Body.Close())
 	}()
 	switch response.StatusCode {
 	case http.StatusOK, c.stopCode:
-		b := mylog.Check2(io.ReadAll(response.Body))
+		body, backBody := CloneBody(response.Body)
+		response.Body = body
+		b := mylog.Check2(io.ReadAll(backBody))
 		c.Buffer = stream.NewBuffer(b)
 		if request.Header.Get("Content-Encoding") == "gzip" {
 			c.Buffer = stream.ReaderGzip(b)
@@ -123,8 +125,18 @@ func (c *Client) request() *Client {
 	return c
 }
 
-func (c *Client) SetJsonHead(header map[string]string) *Client {
-	c.SetHead(header)
+func CloneBody(b io.ReadCloser) (body, backBody io.ReadCloser) {
+	mylog.CheckNil(b)
+	if b == http.NoBody || b == nil {
+		return http.NoBody, http.NoBody
+	}
+	var buf bytes.Buffer
+	mylog.Check2(buf.ReadFrom(b))
+	mylog.Check(b.Close())
+	return io.NopCloser(&buf), io.NopCloser(bytes.NewReader(buf.Bytes()))
+}
+
+func (c *Client) SetJsonHead() *Client {
 	c.head.Set("content-type", "application/json")
 	return c
 }

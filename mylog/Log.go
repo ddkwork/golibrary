@@ -103,9 +103,10 @@ func (l *log) Success(title string, msg ...any) {
 }
 
 const (
-	inHttp  = ">>>--------------->>>--------------->>>--------------->>>\n"
-	outHttp = "<<<---------------<<<---------------<<<---------------<<<\n"
-	endHttp = "----------------------------------------------------------------------------------------------------------------------------------------\n"
+	inHttp  = ">>>-----------------------request--------------------------->>>\n"
+	outHttp = "<<<----------------------response---------------------------<<<\n"
+	endHttp = ""
+	//endHttp = "----------------------------------------------------------------------------------------------------------------------------------------\n"
 )
 
 func (l *log) Request(Request *http.Request, body bool) {
@@ -129,8 +130,23 @@ func (l *log) DumpRequest(Request *http.Request, body bool) string {
 	if e != nil {
 		return l.DumpRequest(Request, false)
 	}
+	b := strings.TrimSuffix(string(dumpRequest), "\n")
+	if Request.Header.Get("Content-Type") == "application/json" {
+		buf := strings.Builder{}
+		for s := range strings.Lines(b) {
+			if strings.TrimSpace(s) == "" {
+				continue
+			}
+			if strings.HasPrefix(s, "{") {
+				s = JsonIndent([]byte(s))
+				s += "\n"
+			}
+			buf.WriteString(s)
+		}
+		b = buf.String()
+	}
 	s := inHttp + Request.URL.String() + "\n"
-	s += strings.TrimSuffix(string(dumpRequest), "\n")
+	s += b
 	s += endHttp
 	return s
 }
@@ -159,7 +175,21 @@ func (l *log) DumpResponse(Response *http.Response, body bool) string {
 			panic(e)
 		}
 	}
-	s := outHttp + strings.TrimSuffix(string(dumpResponse), "\n")
+	b := strings.TrimSuffix(string(dumpResponse), "\n")
+	if Response.Header.Get("Content-Type") == "application/json" {
+		buf := strings.Builder{}
+		for s := range strings.Lines(b) {
+			if strings.TrimSpace(s) == "" {
+				continue
+			}
+			if strings.HasPrefix(s, "{") {
+				s = JsonIndent([]byte(s))
+			}
+			buf.WriteString(s)
+		}
+		b = buf.String()
+	}
+	s := outHttp + b
 	s += "\n" + endHttp
 	return s
 }
