@@ -219,7 +219,15 @@ func WriteGoFile[T Type](name string, data T) {
 	if e != nil {
 		join := filepath.Join("tmp", name)
 		join = filepath.ToSlash(join)
-		mylog.Warning("bad file ", join+":1")
+
+		//318:65: missing ',' in parameter list
+		errBody := e.Error()
+		lineNember := "1"
+		if strings.Contains(errBody, ":") {
+			lineNember = strings.Split(errBody, ":")[0]
+		}
+
+		mylog.Warning("bad file ", join+":"+lineNember)
 		write(join, false, s.Bytes())
 		mylog.Json(cmp2.Diff(s.Bytes(), source))
 		return
