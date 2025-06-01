@@ -3,6 +3,7 @@ package clang
 import (
 	"bytes"
 	_ "embed"
+	"github.com/ddkwork/golibrary/waitgroup"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -14,9 +15,10 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
-type  object struct{
+type object struct {
 	once sync.Once
 }
+
 func New() *object { return &object{} }
 
 func (o *object) writeClangFormatBody(rootPath string) {
@@ -24,18 +26,22 @@ func (o *object) writeClangFormatBody(rootPath string) {
 	stream.WriteTruncate(join, clangFormatBody)
 }
 
-func Walk(root string)  {
+func Walk(root string) {
 	New().Walk(root)
 }
 
 func (o *object) Walk(root string) {
+	g := waitgroup.New()
 	filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
 		switch filepath.Ext(path) {
 		case ".h", ".c", ".cpp":
-			o.Format(path)
+			g.Go(func() {
+				o.Format(path)
+			})
 		}
 		return err
 	})
+	g.Wait()
 }
 func (o *object) Format(absPath string) {
 	o.once.Do(func() {
@@ -52,7 +58,7 @@ func (o *object) Format(absPath string) {
 	stream.RunCommand(command)
 }
 
-////////////////////////
+// //////////////////////
 // 核心修复：确保函数返回类型和签名在同一行
 func fixFunctionSignatures(content string) string {
 	// 正则模式匹配返回类型单独一行的情况
@@ -163,7 +169,6 @@ func removeCppComments(source []byte) bytes.Buffer {
 	out.WriteString(s)
 	return out
 }
-
 
 const clangFormatBody = `
 
@@ -289,7 +294,6 @@ MaxEmptyLinesToKeep: 1                  # 全局最多保留连续1个空行
 KeepEmptyLinesAtTheStartOfBlocks: false   # 删除函数体开头的空行
 SeparateDefinitionBlocks: Always         # 强制函数定义间加空行
 ColumnLimit: 0                  # 禁用行宽限制，防止自动换行
-BreakAfterReturnType: None    # Clang-Format 10+ 替代选项
 TypeNames: [Param]             # 类型名单独一行
 BreakAfterReturnType: None
 AllowShortFunctionsOnASingleLine: Empty  # 允许空函数单行显示
