@@ -1,27 +1,50 @@
 package clang
 
 import (
+	"bytes"
 	_ "embed"
+	"io/fs"
+	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"sync"
 
+	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream"
 )
 
-type (
-	Interface interface {
-		WriteClangFormatBody(rootPath string)
-		Format(absPath string)
-	}
-	object struct{}
-)
+type  object struct{
+	once sync.Once
+}
+func New() *object { return &object{} }
 
-func (o *object) WriteClangFormatBody(rootPath string) {
+func (o *object) writeClangFormatBody(rootPath string) {
 	join := filepath.Join(rootPath, ".clang-format")
 	stream.WriteTruncate(join, clangFormatBody)
 }
 
+func Walk(root string)  {
+	New().Walk(root)
+}
+
+func (o *object) Walk(root string) {
+	filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
+		switch filepath.Ext(path) {
+		case ".h", ".c", ".cpp":
+			o.Format(path)
+		}
+		return err
+	})
+}
 func (o *object) Format(absPath string) {
+	o.once.Do(func() {
+		o.writeClangFormatBody(filepath.Dir(absPath))
+	})
+
+	g := removeCppComments(mylog.Check2(os.ReadFile(absPath)))
+	stream.WriteTruncate(absPath, g.String())
+
 	if strings.Contains(absPath, `\`) {
 		absPath = strings.ReplaceAll(absPath, `\`, `\\`)
 	}
@@ -29,9 +52,121 @@ func (o *object) Format(absPath string) {
 	stream.RunCommand(command)
 }
 
-func New() Interface { return &object{} }
+////////////////////////
+// 核心修复：确保函数返回类型和签名在同一行
+func fixFunctionSignatures(content string) string {
+	// 正则模式匹配返回类型单独一行的情况
+	pattern := regexp.MustCompile(`(\w[\w\s:]*?\s*[*&]*)\s*\r?\n\s*(\w[\w:]*\s*\([^)]*\)\s*(\{|;))`)
 
-var clangFormatBody = `
+	// 替换为同行的形式
+	result := pattern.ReplaceAllString(content, "$1 $2")
+
+	// 处理没有参数的函数
+	pattern2 := regexp.MustCompile(`(\w[\w\s:]*?\s*[*&]*)\s*\r?\n\s*(\w[\w:]*\s*\(\s*\)\s*(\{|;))`)
+	result = pattern2.ReplaceAllString(result, "$1 $2")
+
+	return result
+}
+
+func removeComments2(code string) {
+	g := stream.NewGeneratedFile()
+	skip := false
+	for s := range strings.Lines(code) {
+		if strings.HasPrefix(strings.TrimSpace(s), "/*") {
+			skip = true
+		}
+		if strings.TrimSpace(s) == "*/" {
+			skip = false
+			continue
+		}
+		if skip {
+			continue
+		}
+		g.P(s)
+	}
+}
+
+func removeCppComments(source []byte) bytes.Buffer {
+	removeComments2("") //working
+	var out bytes.Buffer
+	const (
+		stateCode = iota
+		stateLineComment
+		stateBlockComment
+		stateString
+		stateChar
+	)
+
+	state := stateCode
+	prev := byte(0)
+
+	for _, ch := range source {
+		switch state {
+		case stateCode:
+			switch {
+			case ch == '/' && prev == '/':
+				out.Truncate(out.Len() - 1)
+				state = stateLineComment
+			case ch == '*' && prev == '/':
+				out.Truncate(out.Len() - 1)
+				state = stateBlockComment
+			case ch == '"':
+				state = stateString
+				out.WriteByte(ch)
+			case ch == '\'':
+				state = stateChar
+				out.WriteByte(ch)
+			default:
+				out.WriteByte(ch)
+			}
+
+		case stateLineComment:
+			if ch == '\n' {
+				state = stateCode
+				out.WriteByte(ch)
+			}
+
+		case stateBlockComment:
+			if ch == '/' && prev == '*' {
+				state = stateCode
+				prev = 0
+				continue
+			}
+
+		case stateString:
+			out.WriteByte(ch)
+			if ch == '"' && prev != '\\' {
+				state = stateCode
+			}
+
+		case stateChar:
+			out.WriteByte(ch)
+			if ch == '\'' && prev != '\\' {
+				state = stateCode
+			}
+		}
+
+		// Update prev for all states
+		if state == stateString || state == stateChar {
+			if ch == '\\' {
+				prev = 0
+			} else {
+				prev = ch
+			}
+		} else {
+			prev = ch
+		}
+	}
+	s := out.String()
+	s = fixFunctionSignatures(s)
+	out.Reset()
+	out.WriteString(s)
+	return out
+}
+
+
+const clangFormatBody = `
+
 # Generated from CLion C/C++ Code Style settings
 #Language: Cpp
 BasedOnStyle: LLVM
@@ -40,13 +175,11 @@ AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: None
 AlignOperands: Align
 AllowAllConstructorInitializersOnNextLine: false
-AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
-AlwaysBreakTemplateDeclarations: Yes
+#AlwaysBreakTemplateDeclarations: Yes
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: false
@@ -70,7 +203,6 @@ ContinuationIndentWidth: 8
 IndentCaseLabels: true
 IndentPPDirectives: None
 IndentWidth: 4
-KeepEmptyLinesAtTheStartOfBlocks: true
 NamespaceIndentation: All
 ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: true
@@ -149,21 +281,24 @@ StatementMacros: [
 ]
 
 # 控制空行
-MaxEmptyLinesToKeep: 0         # 函数体内最多保留 0 空行，函数间保留 1 空行
-SeparateDefinitionBlocks: Always  # 强制函数间空行（需 clang-format 14+）
+AllowAllParametersOfDeclarationOnNextLine: false  # 参数较多时换行方式
+AlwaysBreakAfterDefinitionReturnType: None        # 禁止返回类型后换行
 
-# 参数在同一行
-ColumnLimit: 180
-AllowAllParametersOfDeclarationOnNextLine: false
+# 核心空行控制配置
+MaxEmptyLinesToKeep: 1                  # 全局最多保留连续1个空行
+KeepEmptyLinesAtTheStartOfBlocks: false   # 删除函数体开头的空行
+SeparateDefinitionBlocks: Always         # 强制函数定义间加空行
+ColumnLimit: 0                  # 禁用行宽限制，防止自动换行
+BreakAfterReturnType: None    # Clang-Format 10+ 替代选项
+TypeNames: [Param]             # 类型名单独一行
+BreakAfterReturnType: None
+AllowShortFunctionsOnASingleLine: Empty  # 允许空函数单行显示
+AllowShortBlocksOnASingleLine: Empty     # 允许空代码块单行显示
 BinPackParameters: true
 AllowAllArgumentsOnNextLine: false
-
-# 强制返回类型与函数名同行
-AlwaysBreakAfterDefinitionReturnType: None
-AlwaysBreakAfterReturnType: None
-PenaltyReturnTypeOnItsOwnLine: 1000000
-
+PenaltyReturnTypeOnItsOwnLine: 10000
 TabWidth: 4
 UseTab: Never
+
 
 `
