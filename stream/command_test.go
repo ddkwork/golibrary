@@ -15,7 +15,7 @@ func Test_cmd(t *testing.T) {
 	// println(stream.RunCommand("cc").Output.String())
 	// return
 	session := stream.RunCommand(" clang -fsyntax-only -nobuiltininc -emit-llvm -Xclang -fdump-record-layouts -Xclang -fdump-record-layouts-complete merged_headers.h")
-	println(session.Output.String())
+	println(session.Stdout.String())
 	return
 	stream.RunCommand("cd")
 	stream.RunCommand("./a.sh")
