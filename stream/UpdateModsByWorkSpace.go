@@ -63,7 +63,7 @@ var skips = []string{
 func GetLastCommitHashLocal(repositoryDir string) string { // 如果失败了，发现禁用模块代理可以成功，那么需要再提交点别的，然后模块代理就会识别新的提交hash，很诡异
 	originPath := mylog.Check2(os.Getwd())
 	mylog.Check(os.Chdir(repositoryDir))
-	hash := RunCommand("git rev-parse HEAD").Output.String()
+	hash := RunCommand("git rev-parse HEAD").Stdout.String()
 	mylog.Check(os.Chdir(originPath))
 	return hash
 }

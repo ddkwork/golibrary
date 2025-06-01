@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -15,55 +16,70 @@ import (
 )
 
 type CommandSession struct {
-	Output           *Buffer
-	Error            *Buffer
-	CurrentDirectory string
+	cmdKey  string
+	command string
+	Path    string
+	isClang bool
+	Args    []string
+	Env     []string
+	Dir     string
+	Stdin   *Buffer
+	Stdout  *Buffer
+	Stderr  *Buffer
 }
 
-func RunCommandArgs(arg ...string) *CommandSession { return RunCommand(strings.Join(arg, " ")) }
-func RunCommand(command string) (session *CommandSession) {
-	mylog.Call(func() {
-		session = &CommandSession{
-			Output:           NewBuffer(""),
-			Error:            NewBuffer(""),
-			CurrentDirectory: mylog.Check2(os.Getwd()),
-		}
-		session.run(command, session.CurrentDirectory)
-	})
-	return
+func newCommandSession() *CommandSession {
+	return &CommandSession{
+		cmdKey:  "command", //isClang the key is clang target file path
+		command: "",
+		Path:    "",
+		isClang: false,
+		Args:    nil,
+		Env:     nil,
+		Dir:     mylog.Check2(os.Getwd()),
+		Stdin:   NewBuffer(""),
+		Stdout:  NewBuffer(""),
+		Stderr:  NewBuffer(""),
+	}
 }
 
-func RunCommandWithDir(command, dir string) (session *CommandSession) {
-	mylog.Call(func() {
-		session = &CommandSession{
-			Output:           NewBuffer(""),
-			Error:            NewBuffer(""),
-			CurrentDirectory: dir,
-		}
-		session.run(command, session.CurrentDirectory)
-	})
-	return
+func RunCommandArgs(arg ...string) *CommandSession {
+	s := newCommandSession()
+	if arg[0] == "clang" {
+		s.cmdKey = filepath.Base(arg[len(arg)-1])
+		s.Path = s.cmdKey
+		s.isClang = true
+		s.command = strings.Join(arg, " ")
+	}
+	return s.run()
 }
 
-func (s *CommandSession) run(command, dir string) {
+func RunCommand(command string) *CommandSession {
+	s := newCommandSession()
+	s.command = command
+	return s.run()
+}
+
+func RunCommandWithDir(command, dir string) *CommandSession {
+	s := newCommandSession()
+	s.command = command
+	s.Dir = dir
+	return s.run()
+}
+
+func (s *CommandSession) run() *CommandSession {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	skipLog := false
-	if strings.Contains(command, "clang") {
-		skipLog = true
-		//mylog.Info("", "skip log in clang")
-	}
-
 	fnInitCmd := func() *exec.Cmd {
 		if runtime.GOOS == "windows" {
-			return exec.Command("cmd", "/C", command)
+			return exec.Command("cmd", "/C", s.command)
 		}
-		return exec.Command("bash", "-c", command)
+		return exec.Command("bash", "-c", s.command)
 	}
 	cmd := fnInitCmd()
-	cmd.Dir = dir
+	cmd.Dir = s.Dir
 
-	mylog.Info("command", command)
+	mylog.Info(s.cmdKey, s.command)
 
 	stdoutPipe := mylog.Check2(cmd.StdoutPipe())
 	stderrPipe := mylog.Check2(cmd.StderrPipe())
@@ -107,10 +123,10 @@ func (s *CommandSession) run(command, dir string) {
 	done := make(chan struct{})
 	go func() {
 		for line := range output {
-			if !skipLog {
+			if !s.isClang {
 				println(line) //对于json，不需要每一行都输出，而是一次性返回解码或者落地保存
 			}
-			s.Output.WriteStringLn(line)
+			s.Stdout.WriteStringLn(line)
 		}
 		done <- struct{}{}
 	}()
@@ -118,7 +134,7 @@ func (s *CommandSession) run(command, dir string) {
 	go func() {
 		for line := range errorOutput {
 			//println(line)//让clang dump ast的错误在后面写入文件，这里和后面调用s.Error.String()重复输出错误了
-			s.Error.WriteStringLn(line)
+			s.Stderr.WriteStringLn(line)
 		}
 		done <- struct{}{}
 	}()
@@ -131,12 +147,13 @@ func (s *CommandSession) run(command, dir string) {
 
 	e := cmd.Wait()
 	if e != nil {
-		mylog.Check(ConvertUtf82Gbk(e.Error() + "\n" + s.Error.String()))
+		mylog.Check(ConvertUtf82Gbk(e.Error() + "\n" + s.Stderr.String()))
 	}
-	//s.Output.NewLine()
-	ss := trimTrailingEmptyLines(s.Output.String())
-	s.Output.Reset()
-	s.Output.WriteString(ss)
+	//s.Stdout.NewLine()
+	ss := trimTrailingEmptyLines(s.Stdout.String())
+	s.Stdout.Reset()
+	s.Stdout.WriteString(ss)
+	return s
 }
 
 func trimTrailingEmptyLines(s string) string {
