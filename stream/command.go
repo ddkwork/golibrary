@@ -45,11 +45,11 @@ func newCommandSession() *CommandSession {
 
 func RunCommandArgs(arg ...string) *CommandSession {
 	s := newCommandSession()
+	s.command = strings.Join(arg, " ")
 	if arg[0] == "clang" {
 		s.cmdKey = filepath.Base(arg[len(arg)-1])
 		s.Path = s.cmdKey
 		s.isClang = true
-		s.command = strings.Join(arg, " ")
 	}
 	return s.run()
 }
