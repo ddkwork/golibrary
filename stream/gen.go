@@ -22,7 +22,7 @@ type GeneratedFile struct {
 	values       []uint32 // stream.Signed
 	callBack     func(is bool, v string) string
 	keepOrigName bool
-	Imports      map[string]bool
+	imports      map[string]bool
 }
 
 func (g *GeneratedFile) SetKeepOrigName(keepOrigName bool) *GeneratedFile {
@@ -44,11 +44,12 @@ func (g *GeneratedFile) SetFilePath(filePath string) *GeneratedFile {
 	return g
 }
 
+func (g *GeneratedFile) AddImport(pkg string) { g.imports[pkg] = true }
 func (g *GeneratedFile) InsertPackageWithImports(packageName string) *GeneratedFile {
 	g.packageName = packageName
 	g.P("package ", packageName)
 	g.P("import (")
-	for s := range g.Imports {
+	for s := range g.imports {
 		g.P(strconv.Quote(s))
 	}
 	g.P(")")
@@ -65,7 +66,7 @@ func NewGeneratedFile() (g *GeneratedFile) {
 		values:       nil,
 		callBack:     nil,
 		keepOrigName: false,
-		Imports:      nil,
+		imports:      make(map[string]bool),
 	}
 }
 
