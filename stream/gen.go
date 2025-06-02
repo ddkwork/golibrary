@@ -47,12 +47,15 @@ func (g *GeneratedFile) SetFilePath(filePath string) *GeneratedFile {
 func (g *GeneratedFile) AddImport(pkg string) { g.imports[pkg] = true }
 func (g *GeneratedFile) InsertPackageWithImports(packageName string) *GeneratedFile {
 	g.packageName = packageName
+	s := g.String()
+	g.Reset()
 	g.P("package ", packageName)
 	g.P("import (")
 	for s := range g.imports {
 		g.P(strconv.Quote(s))
 	}
 	g.P(")")
+	g.P(s)
 	return g
 }
 
