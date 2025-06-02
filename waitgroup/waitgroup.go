@@ -15,7 +15,12 @@ type Group struct {
 }
 
 func New() *Group {
-	return &Group{}
+	return &Group{
+		wg:       sync.WaitGroup{},
+		sem:      nil,
+		mu:       sync.Mutex{},
+		UseMutex: true,
+	}
 }
 
 func (g *Group) done() {
