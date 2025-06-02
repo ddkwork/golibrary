@@ -8,9 +8,10 @@ import (
 type token struct{}
 
 type Group struct {
-	wg  sync.WaitGroup
-	sem chan token
-	mu  sync.Mutex
+	wg       sync.WaitGroup
+	sem      chan token
+	mu       sync.Mutex
+	UseMutex bool
 }
 
 func New() *Group {
@@ -37,8 +38,10 @@ func (g *Group) add(f func()) {
 	g.wg.Add(1)
 	go func() {
 		defer g.done()
-		g.mu.Lock()
-		defer g.mu.Unlock()
+		if g.UseMutex {
+			g.mu.Lock()
+			defer g.mu.Unlock()
+		}
 		f()
 	}()
 }

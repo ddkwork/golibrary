@@ -86,12 +86,13 @@ func (s *CommandSession) run() *CommandSession {
 
 	mylog.Check(cmd.Start())
 
-	wg := waitgroup.New()
+	g := waitgroup.New()
+	g.UseMutex = false
 	output := make(chan string)
 	errorOutput := make(chan string)
 
 	// 启动 goroutine 读取 stdout
-	wg.Go(func() {
+	g.Go(func() {
 		mylog.Call(func() {
 			scanner := bufio.NewScanner(stdoutPipe)
 			for scanner.Scan() {
@@ -102,7 +103,7 @@ func (s *CommandSession) run() *CommandSession {
 	})
 
 	// 启动 goroutine 读取 stderr
-	wg.Go(func() {
+	g.Go(func() {
 		mylog.Call(func() {
 			scanner := bufio.NewScanner(stderrPipe)
 			for scanner.Scan() {
@@ -115,7 +116,7 @@ func (s *CommandSession) run() *CommandSession {
 	// 启动 goroutine 统一处理输出
 	go func() {
 		mylog.Call(func() {
-			wg.Wait()
+			g.Wait()
 			close(output)
 		})
 	}()
