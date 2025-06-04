@@ -88,15 +88,20 @@ func (s *CommandSession) run() *CommandSession {
 
 	g := waitgroup.New()
 	g.UseMutex = false
+	g.SetLimit(1000)
 	output := make(chan string)
 	errorOutput := make(chan string)
 
 	// 启动 goroutine 读取 stdout
 	g.Go(func() {
 		mylog.Call(func() {
+			if s.isClang {
+				s.Stdout.ReadFrom(stdoutPipe)
+				return
+			}
 			scanner := bufio.NewScanner(stdoutPipe)
 			for scanner.Scan() {
-				output <- ConvertUtf82Gbk(scanner.Text())
+				output <- ConvertUtf82Gbk(s.isClang,scanner.Text())
 			}
 			mylog.Check(stdoutPipe.Close())
 		})
@@ -105,9 +110,13 @@ func (s *CommandSession) run() *CommandSession {
 	// 启动 goroutine 读取 stderr
 	g.Go(func() {
 		mylog.Call(func() {
+			if s.isClang {
+				s.Stderr.ReadFrom(stderrPipe)
+				return
+			}
 			scanner := bufio.NewScanner(stderrPipe)
 			for scanner.Scan() {
-				errorOutput <- ConvertUtf82Gbk(scanner.Text())
+				errorOutput <- ConvertUtf82Gbk(s.isClang,scanner.Text())
 			}
 			mylog.Check(stderrPipe.Close())
 		})
@@ -148,9 +157,11 @@ func (s *CommandSession) run() *CommandSession {
 
 	e := cmd.Wait()
 	if e != nil {
-		mylog.Check(ConvertUtf82Gbk(e.Error() + "\n" + s.Stderr.String()))
+		mylog.Check(ConvertUtf82Gbk(s.isClang,e.Error() + "\n" + s.Stderr.String()))
 	}
-	//s.Stdout.NewLine()
+	if s.isClang {
+		return s
+	}
 	ss := trimTrailingEmptyLines(s.Stdout.String())
 	s.Stdout.Reset()
 	s.Stdout.WriteString(ss)
@@ -163,7 +174,10 @@ func trimTrailingEmptyLines(s string) string {
 	return re.ReplaceAllString(s, "")
 }
 
-func ConvertUtf82Gbk(src string) string {
+func ConvertUtf82Gbk(isCalng bool,src string) string {
+	if isCalng {
+		return src
+	}
 	if IsWindows() {
 		c := mylog.Check2(simplifiedchinese.GB18030.NewDecoder().String(src)) // todo test rune
 		return strings.TrimSuffix(c, "\r\n")
@@ -171,12 +185,3 @@ func ConvertUtf82Gbk(src string) string {
 	return src
 }
 
-// func runCmd(command string) string { // std error not support
-//	fnInitCmd := func() *exec.Cmd {
-//		if runtime.GOOS == "windows" {
-//			return exec.Command("cmd", "/C", command)
-//		}
-//		return exec.Command("bash", "-c", command)
-//	}
-//	return ConvertUtf82Gbk(string(mylog.Check2(fnInitCmd().CombinedOutput())))
-// }
