@@ -87,7 +87,7 @@ func (s *CommandSession) run() *CommandSession {
 	mylog.Check(cmd.Start())
 
 	g := waitgroup.New()
-	g.UseMutex = false
+	//g.UseMutex = false
 	output := make(chan string)
 	errorOutput := make(chan string)
 
