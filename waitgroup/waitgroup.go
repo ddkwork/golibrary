@@ -2,8 +2,8 @@ package waitgroup
 
 import (
 	"fmt"
-	"sync"
 	"github.com/ddkwork/golibrary/mylog"
+	"sync"
 )
 
 type token struct{}
@@ -48,7 +48,7 @@ func (g *Group) add(f func()) {
 			g.mu.Lock()
 			defer g.mu.Unlock()
 		}
-		mylog.Call(func() {f()})
+		mylog.Call(func() { f() })
 	}()
 }
 

@@ -101,7 +101,7 @@ func (s *CommandSession) run() *CommandSession {
 			}
 			scanner := bufio.NewScanner(stdoutPipe)
 			for scanner.Scan() {
-				output <- ConvertUtf82Gbk(s.isClang,scanner.Text())
+				output <- ConvertUtf82Gbk(s.isClang, scanner.Text())
 			}
 			mylog.Check(stdoutPipe.Close())
 		})
@@ -116,7 +116,7 @@ func (s *CommandSession) run() *CommandSession {
 			}
 			scanner := bufio.NewScanner(stderrPipe)
 			for scanner.Scan() {
-				errorOutput <- ConvertUtf82Gbk(s.isClang,scanner.Text())
+				errorOutput <- ConvertUtf82Gbk(s.isClang, scanner.Text())
 			}
 			mylog.Check(stderrPipe.Close())
 		})
@@ -157,7 +157,7 @@ func (s *CommandSession) run() *CommandSession {
 
 	e := cmd.Wait()
 	if e != nil {
-		mylog.Check(ConvertUtf82Gbk(s.isClang,e.Error() + "\n" + s.Stderr.String()))
+		mylog.Check(ConvertUtf82Gbk(s.isClang, e.Error()+"\n"+s.Stderr.String()))
 	}
 	if s.isClang {
 		return s
@@ -174,7 +174,7 @@ func trimTrailingEmptyLines(s string) string {
 	return re.ReplaceAllString(s, "")
 }
 
-func ConvertUtf82Gbk(isCalng bool,src string) string {
+func ConvertUtf82Gbk(isCalng bool, src string) string {
 	if isCalng {
 		return src
 	}
@@ -184,4 +184,3 @@ func ConvertUtf82Gbk(isCalng bool,src string) string {
 	}
 	return src
 }
-
