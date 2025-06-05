@@ -3,11 +3,10 @@ package stream
 import (
 	"bufio"
 	"context"
-	"os"
+	"io"
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 
 	"github.com/ddkwork/golibrary/mylog"
@@ -15,157 +14,142 @@ import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
-type CommandSession struct {
-	cmdKey  string
-	command string
-	Path    string
-	isClang bool
-	Args    []string
-	Env     []string
-	Dir     string
-	Stdin   *Buffer
-	Stdout  *Buffer
-	Stderr  *Buffer
+func RunCommand(arg ...string) (stdOut *GeneratedFile) {
+	return runCommand("", arg...)
 }
 
-func newCommandSession() *CommandSession {
-	return &CommandSession{
-		cmdKey:  "command", //isClang the key is clang target file path
-		command: "",
-		Path:    "",
-		isClang: false,
-		Args:    nil,
-		Env:     nil,
-		Dir:     mylog.Check2(os.Getwd()),
-		Stdin:   NewBuffer(""),
-		Stdout:  NewBuffer(""),
-		Stderr:  NewBuffer(""),
+func RunCommandWithDir(dir string, arg ...string) (stdOut *GeneratedFile) {
+	return runCommand(dir, arg...)
+}
+
+func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
+	type setup struct {
+		init       func()
+		fastModel  func()
+		slowModel  func()
+		handleWait func() //merge exit code.and error
 	}
-}
+	cmdKey := "command" //fast the key is clang target file path
+	fast := false
+	stdOut = NewGeneratedFile()
+	stderr := NewGeneratedFile()
 
-func RunCommandArgs(arg ...string) *CommandSession {
-	s := newCommandSession()
-	s.command = strings.Join(arg, " ")
-	if arg[0] == "clang" {
-		s.cmdKey = filepath.Base(arg[len(arg)-1])
-		s.Path = s.cmdKey
-		s.isClang = true
-	}
-	return s.run()
-}
+	var (
+		cmd         *exec.Cmd
+		stdoutPipe  io.ReadCloser
+		stderrPipe  io.ReadCloser
+		output      = make(chan string)
+		errorOutput = make(chan string)
+		done        = make(chan struct{})
+	)
 
-func RunCommand(command string) *CommandSession {
-	s := newCommandSession()
-	s.command = command
-	return s.run()
-}
-
-func RunCommandWithDir(command, dir string) *CommandSession {
-	s := newCommandSession()
-	s.command = command
-	s.Dir = dir
-	return s.run()
-}
-
-func (s *CommandSession) run() *CommandSession {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	fnInitCmd := func() *exec.Cmd {
-		if runtime.GOOS == "windows" {
-			return exec.Command("cmd", "/C", s.command)
-		}
-		return exec.Command("bash", "-c", s.command)
+
+	s := setup{
+		init: func() {
+			switch { //todo add more need fast model
+			case arg[0] == "clang":
+				cmdKey = filepath.Base(arg[len(arg)-1])
+				fast = true
+			}
+			binaryPath := arg[0]
+			//switch runtime.GOOS {
+			//case "windows":
+			//	arg = slices.Insert(arg, 0, "cmd", "/C")
+			//default: //todo handle more system
+			//	arg = slices.Insert(arg, 0, "bash", "-c")
+			//}
+			cmd = exec.CommandContext(ctx, binaryPath, arg[1:]...)
+			cmd.Dir = dir //需要切换到对应目录，避免使用os.chdir,应用场景：批量更新工作区下的mod
+
+			mylog.Success(cmdKey, cmd.String())
+
+			stdoutPipe = mylog.Check2(cmd.StdoutPipe())
+			stderrPipe = mylog.Check2(cmd.StderrPipe())
+		},
+		fastModel: func() {
+			mylog.Trace("fast model")
+			mylog.Check2(stdOut.ReadFrom(stdoutPipe))
+			mylog.Check2(stderr.ReadFrom(stderrPipe))
+		},
+		slowModel: func() {
+			mylog.Warning("slow model")
+			g := waitgroup.New(false)
+			g.SetLimit(1000)
+
+			// 启动 goroutine 读取 stdout
+			g.Go(func() {
+				mylog.Call(func() {
+					scanner := bufio.NewScanner(stdoutPipe)
+					for scanner.Scan() {
+						output <- ConvertUtf82Gbk(scanner.Text())
+					}
+					mylog.Check(stdoutPipe.Close())
+				})
+			})
+
+			// 启动 goroutine 读取 stderr
+			g.Go(func() {
+				mylog.Call(func() {
+					scanner := bufio.NewScanner(stderrPipe)
+					for scanner.Scan() {
+						errorOutput <- ConvertUtf82Gbk(scanner.Text())
+					}
+					mylog.Check(stderrPipe.Close())
+				})
+			})
+
+			// 启动 goroutine 统一处理输出
+			go func() {
+				mylog.Call(func() {
+					g.Wait()
+					close(output)
+				})
+			}()
+
+			go func() {
+				for line := range output {
+					println(line)
+					stdOut.P(line)
+				}
+				done <- struct{}{}
+			}()
+
+			go func() {
+				for line := range errorOutput {
+					stderr.P(line)
+				}
+				done <- struct{}{}
+			}()
+
+			select { // 等待 goroutine 完成,不写在这里会导致全部携程死锁，原因不明
+			case <-ctx.Done():
+				mylog.Check(cmd.Process.Kill())
+			case <-done:
+			}
+		},
+		handleWait: func() {
+			e := cmd.Wait()
+			if e != nil {
+				bug := stderr.String() + "\n" + e.Error()
+				mylog.Check(bug)
+			}
+		},
 	}
-	cmd := fnInitCmd()
-	cmd.Dir = s.Dir
-
-	mylog.Info(s.cmdKey, s.command)
-
-	stdoutPipe := mylog.Check2(cmd.StdoutPipe())
-	stderrPipe := mylog.Check2(cmd.StderrPipe())
-
+	s.init()
 	mylog.Check(cmd.Start())
-
-	g := waitgroup.New()
-	g.UseMutex = false
-	g.SetLimit(1000)
-	output := make(chan string)
-	errorOutput := make(chan string)
-
-	// 启动 goroutine 读取 stdout
-	g.Go(func() {
-		mylog.Call(func() {
-			if s.isClang {
-				s.Stdout.ReadFrom(stdoutPipe)
-				return
-			}
-			scanner := bufio.NewScanner(stdoutPipe)
-			for scanner.Scan() {
-				output <- ConvertUtf82Gbk(s.isClang, scanner.Text())
-			}
-			mylog.Check(stdoutPipe.Close())
-		})
-	})
-
-	// 启动 goroutine 读取 stderr
-	g.Go(func() {
-		mylog.Call(func() {
-			if s.isClang {
-				s.Stderr.ReadFrom(stderrPipe)
-				return
-			}
-			scanner := bufio.NewScanner(stderrPipe)
-			for scanner.Scan() {
-				errorOutput <- ConvertUtf82Gbk(s.isClang, scanner.Text())
-			}
-			mylog.Check(stderrPipe.Close())
-		})
-	})
-
-	// 启动 goroutine 统一处理输出
-	go func() {
-		mylog.Call(func() {
-			g.Wait()
-			close(output)
-		})
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		for line := range output {
-			if !s.isClang {
-				println(line) //对于json，不需要每一行都输出，而是一次性返回解码或者落地保存
-			}
-			s.Stdout.WriteStringLn(line)
-		}
-		done <- struct{}{}
-	}()
-
-	go func() {
-		for line := range errorOutput {
-			//println(line)//让clang dump ast的错误在后面写入文件，这里和后面调用s.Error.String()重复输出错误了
-			s.Stderr.WriteStringLn(line)
-		}
-		done <- struct{}{}
-	}()
-
-	select {
-	case <-ctx.Done():
-		mylog.Check(cmd.Process.Kill())
-	case <-done:
+	if fast {
+		s.fastModel()
+		s.handleWait()
+		return
 	}
-
-	e := cmd.Wait()
-	if e != nil {
-		mylog.Check(ConvertUtf82Gbk(s.isClang, e.Error()+"\n"+s.Stderr.String()))
-	}
-	if s.isClang {
-		return s
-	}
-	ss := trimTrailingEmptyLines(s.Stdout.String())
-	s.Stdout.Reset()
-	s.Stdout.WriteString(ss)
-	return s
+	s.slowModel()
+	s.handleWait()
+	ss := trimTrailingEmptyLines(stdOut.String())
+	stdOut.Reset()
+	stdOut.WriteString(ss)
+	return
 }
 
 func trimTrailingEmptyLines(s string) string {
@@ -174,10 +158,7 @@ func trimTrailingEmptyLines(s string) string {
 	return re.ReplaceAllString(s, "")
 }
 
-func ConvertUtf82Gbk(isCalng bool, src string) string {
-	if isCalng {
-		return src
-	}
+func ConvertUtf82Gbk(src string) string {
 	if IsWindows() {
 		c := mylog.Check2(simplifiedchinese.GB18030.NewDecoder().String(src)) // todo test rune
 		return strings.TrimSuffix(c, "\r\n")

@@ -58,12 +58,27 @@ func reason(err any) string {
 }
 
 func layoutStack(k kind, value string, child bool) string {
-	value = strings.TrimSuffix(value, "\n")
 	if child {
 		leftIndent := align.StringWidth[int](GetTimeNowString()+k.String()) + hexDumpIndentLen
 		return strings.Repeat(" ", leftIndent) + " │ " + value + "\n"
 	}
 	leftIndent := hexDumpIndentLen // - align.StringWidth[int](key)
+	if strings.Contains(value, "\n") {
+		b := strings.Builder{}
+		b.WriteString("\n")
+		for s := range strings.Lines(value) {
+			if s == "" || s == "\n" {
+				continue
+			}
+			s = strings.TrimSuffix(s, "\r\n")
+			s = strings.TrimSuffix(s, "\n")
+			s = strings.Repeat(" ", leftIndent+len(GetTimeNowString()+k.String())) + " │ " + s
+			b.WriteString(s) //todo indent
+			b.WriteString("\n")
+		}
+		value = b.String()
+	}
+	value = strings.TrimSuffix(value, "\n")
 	return GetTimeNowString() + k.String() + strings.Repeat(" ", leftIndent) + " │ " + value + "\n"
 }
 
@@ -94,17 +109,17 @@ func (l *log) printAndWrite2() {
 		stackChildren = append(stackChildren, s+"\n")
 	}
 
-	builder := strings.Builder{}
+	b := strings.Builder{}
 	if l.row.Value() == "" {
 		l.row.value = `""`
 	}
-	builder.WriteString(layoutStack(l.kind, l.row.Value(), false))
+	b.WriteString(layoutStack(l.kind, l.row.Value(), false))
 	for _, child := range stackChildren {
-		builder.WriteString(layoutStack(l.kind, child, true))
+		b.WriteString(layoutStack(l.kind, child, true))
 	}
 	l.row = keyValue{
 		key:   "",
-		value: builder.String(),
+		value: b.String(),
 	}
 	s := l.row.String()
 	s += "\n"

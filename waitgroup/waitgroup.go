@@ -9,18 +9,18 @@ import (
 type token struct{}
 
 type Group struct {
-	wg       sync.WaitGroup
-	sem      chan token
-	mu       sync.Mutex
-	UseMutex bool
+	wg    sync.WaitGroup
+	sem   chan token
+	mu    sync.Mutex
+	mutex bool
 }
 
-func New() *Group {
+func New(mutex bool) *Group {
 	return &Group{
-		wg:       sync.WaitGroup{},
-		sem:      nil,
-		mu:       sync.Mutex{},
-		UseMutex: true,
+		wg:    sync.WaitGroup{},
+		sem:   nil,
+		mu:    sync.Mutex{},
+		mutex: mutex,
 	}
 }
 
@@ -31,7 +31,9 @@ func (g *Group) done() {
 	g.wg.Done()
 }
 
-func (g *Group) Wait() { g.wg.Wait() }
+func (g *Group) Wait() {
+	g.wg.Wait()
+}
 
 func (g *Group) Go(f func()) {
 	if g.sem != nil {
@@ -44,10 +46,10 @@ func (g *Group) add(f func()) {
 	g.wg.Add(1)
 	go func() {
 		defer g.done()
-		if g.UseMutex {
-			g.mu.Lock()
-			defer g.mu.Unlock()
-		}
+		//if g.mutex {
+		g.mu.Lock()
+		defer g.mu.Unlock()
+		//}
 		mylog.Call(func() { f() })
 	}()
 }

@@ -31,7 +31,7 @@ func Walk(root string) {
 }
 
 func (o *object) Walk(root string) {
-	g := waitgroup.New()
+	g := waitgroup.New(false)
 	filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
 		switch filepath.Ext(path) {
 		case ".h", ".c", ".cpp":

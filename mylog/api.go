@@ -49,7 +49,15 @@ type keyValue struct {
 }
 
 func (k keyValue) Value() string {
-	return strings.TrimSuffix(k.value, "\n")
+	b := strings.Builder{}
+	for s := range strings.Lines(k.value) {
+		if s == "" || s == "\n" {
+			continue
+		}
+		b.WriteString(s)
+	}
+	k.value = b.String()
+	return k.value
 }
 
 func (k keyValue) String() string {
