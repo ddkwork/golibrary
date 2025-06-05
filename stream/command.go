@@ -19,6 +19,9 @@ func RunCommand(arg ...string) (stdOut *GeneratedFile) {
 }
 
 func RunCommandWithDir(dir string, arg ...string) (stdOut *GeneratedFile) {
+	if !IsDir(dir) {
+		panic(dir + " is not exist,please check your arg ")
+	}
 	return runCommand(dir, arg...)
 }
 
