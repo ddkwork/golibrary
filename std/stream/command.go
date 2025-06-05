@@ -134,7 +134,6 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 		handleWait: func() {
 			select { // 等待 goroutine 完成,不写在这里会导致全部携程死锁，原因不明
 			case <-ctx.Done():
-				mylog.Check(cmd.Process.Kill())
 			case <-done:
 			default:
 			}
