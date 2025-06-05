@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"io"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -67,10 +68,18 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			mylog.Success(cmdKey, cmd.String())
 
 			stdoutPipe = mylog.Check2(cmd.StdoutPipe())
+			if isRunningOnGitHubActions() {
+				cmd.Stderr = os.Stderr
+				return
+			}
+
 			stderrPipe = mylog.Check2(cmd.StderrPipe())
 		},
 		fastModel: func() {
 			mylog.Check2(stdOut.ReadFrom(stdoutPipe))
+			if isRunningOnGitHubActions() {
+				return
+			}
 			mylog.Check2(stderr.ReadFrom(stderrPipe))
 		},
 		slowModel: func() {
@@ -149,6 +158,10 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 	stdOut.Reset()
 	stdOut.WriteString(ss)
 	return
+}
+
+func isRunningOnGitHubActions() bool {
+	return os.Getenv("GITHUB_ACTIONS") == "true"
 }
 
 func trimTrailingEmptyLines(s string) string {
