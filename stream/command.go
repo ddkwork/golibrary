@@ -51,12 +51,13 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 
 	s := setup{
 		init: func() {
-			switch { //todo add more need fast model
-			case arg[0] == "clang":
+			binaryPath := arg[0]
+			switch binaryPath { //todo add more need fast model
+			case "clang", "clang-format":
 				cmdKey = filepath.Base(arg[len(arg)-1])
 				fast = true
 			}
-			binaryPath := arg[0]
+
 			cmd = exec.CommandContext(ctx, binaryPath, arg[1:]...)
 			cmd.Dir = dir //需要切换到对应目录，避免使用os.chdir,应用场景：批量更新工作区下的mod
 
