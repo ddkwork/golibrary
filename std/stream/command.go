@@ -142,6 +142,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 	if fast {
 		s.fastModel()
 		s.handleWait()
+		stdOut.TrimSuffix("\n")
 		return
 	}
 	s.slowModel()
