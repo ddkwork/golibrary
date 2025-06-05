@@ -23,6 +23,9 @@ func RunCommandWithDir(dir string, arg ...string) (stdOut *GeneratedFile) {
 }
 
 func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
+	if strings.Contains(arg[0], " ") {
+		panic("you shold split commands")
+	}
 	type setup struct {
 		init       func()
 		fastModel  func()

@@ -54,8 +54,7 @@ func (o *object) Format(absPath string) {
 	if strings.Contains(absPath, `\`) {
 		absPath = strings.ReplaceAll(absPath, `\`, `\\`)
 	}
-	command := "clang-format -i --style=file " + absPath
-	stream.RunCommand(command)
+	stream.RunCommand("clang-format", "-i", "--style=file", absPath)
 }
 
 // //////////////////////
