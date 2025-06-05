@@ -126,7 +126,7 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 	updateModFile := mylog.Check2(f.Format())
 	// println(string(updateModFile))
 	WriteTruncate(originMod, updateModFile)
-	g := waitgroup.New(true)
+	g := waitgroup.New()
 	g.Go(func() {
 		RunCommandWithDir("go mod tidy", dir)
 		v := newModMap.GetMust("github.com/ddkwork/golibrary")
@@ -166,7 +166,7 @@ func setVersion(r *modfile.Require, v string) {
 
 func UpdateDependencies(path string) { // 模块代理刷新的不及时，需要禁用代理,已经使用clone仓库远程完成更新
 	var mutex sync.Mutex
-	g := waitgroup.New(true)
+	g := waitgroup.New()
 	for s := range ReadFileToLines(filepath.Join(GetDesktopDir(), "dep.txt")) { // 因为要经常更新，我们不embed
 		s = strings.TrimSpace(s)
 		if strings.HasPrefix(s, "::") || strings.HasPrefix(s, "//") || s == "" {
@@ -211,7 +211,7 @@ func updateModsByWorkSpace(isUpdateAll bool) {
 
 	modChan := make(chan string, len(mods))
 
-	g := waitgroup.New(true)
+	g := waitgroup.New()
 	for _, modPath := range mods {
 		g.Go(func() { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
 			UpdateDependenciesFromModFile(modPath) // 锁应该在这里面

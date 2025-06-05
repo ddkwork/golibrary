@@ -9,18 +9,16 @@ import (
 type token struct{}
 
 type Group struct {
-	wg    sync.WaitGroup
-	sem   chan token
-	mu    sync.Mutex
-	mutex bool
+	wg  sync.WaitGroup
+	sem chan token
+	mu  sync.Mutex
 }
 
-func New(mutex bool) *Group {
+func New() *Group {
 	return &Group{
-		wg:    sync.WaitGroup{},
-		sem:   nil,
-		mu:    sync.Mutex{},
-		mutex: mutex,
+		wg:  sync.WaitGroup{},
+		sem: nil,
+		mu:  sync.Mutex{},
 	}
 }
 
@@ -31,7 +29,7 @@ func (g *Group) done() {
 	g.wg.Done()
 }
 
-func (g *Group) Wait() {
+func (g *Group) Wait() { //todo 其它地方使用select会导致死锁
 	g.wg.Wait()
 }
 
@@ -46,11 +44,11 @@ func (g *Group) add(f func()) {
 	g.wg.Add(1)
 	go func() {
 		defer g.done()
-		//if g.mutex {
-		g.mu.Lock()
-		defer g.mu.Unlock()
-		//}
-		mylog.Call(func() { f() })
+		mylog.Call(func() {
+			g.mu.Lock()
+			defer g.mu.Unlock()
+			f()
+		})
 	}()
 }
 

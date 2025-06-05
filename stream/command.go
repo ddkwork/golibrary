@@ -54,12 +54,6 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 				fast = true
 			}
 			binaryPath := arg[0]
-			//switch runtime.GOOS {
-			//case "windows":
-			//	arg = slices.Insert(arg, 0, "cmd", "/C")
-			//default: //todo handle more system
-			//	arg = slices.Insert(arg, 0, "bash", "-c")
-			//}
 			cmd = exec.CommandContext(ctx, binaryPath, arg[1:]...)
 			cmd.Dir = dir //需要切换到对应目录，避免使用os.chdir,应用场景：批量更新工作区下的mod
 
@@ -69,13 +63,11 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			stderrPipe = mylog.Check2(cmd.StderrPipe())
 		},
 		fastModel: func() {
-			mylog.Trace("fast model")
 			mylog.Check2(stdOut.ReadFrom(stdoutPipe))
 			mylog.Check2(stderr.ReadFrom(stderrPipe))
 		},
 		slowModel: func() {
-			mylog.Warning("slow model")
-			g := waitgroup.New(false)
+			g := waitgroup.New()
 			g.SetLimit(1000)
 
 			// 启动 goroutine 读取 stdout
