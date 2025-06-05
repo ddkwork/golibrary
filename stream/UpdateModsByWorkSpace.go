@@ -128,7 +128,7 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 	WriteTruncate(originMod, updateModFile)
 	g := waitgroup.New()
 	g.Go(func() {
-		RunCommandWithDir("go mod tidy", dir)
+		RunCommandWithDir(dir,"go mod tidy")
 		v := newModMap.GetMust("github.com/ddkwork/golibrary")
 		b := NewBuffer(originMod)
 		if !b.Contains("golibrary") {
@@ -137,8 +137,8 @@ func UpdateDependenciesFromModFile(dir string) { // 实现替换，不要网络�
 			b.WriteStringLn(line).ReWriteSelf()
 		}
 		// https://github.com/ddkwork/tools/blob/master/gopls/doc/analyzers.md
-		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...", dir)
-		RunCommandWithDir("go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...", dir)
+		RunCommandWithDir(dir,"go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...")
+		RunCommandWithDir(dir,"go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...")
 	})
 	g.Wait()
 }
@@ -176,12 +176,12 @@ func UpdateDependencies(path string) { // 模块代理刷新的不及时，需�
 			continue
 		}
 		g.Go(func() { // 这样之后tidy就不在最后执行了，同时升级多个依赖+读写锁定
-			RunCommandWithDir(s, path)
+			RunCommandWithDir(path,s)
 		})
 		g.Wait()
 	}
 	mutex.Lock()
-	RunCommandWithDir("go mod tidy", path) // 所有yield都执行完了，再执行tidy
+	RunCommandWithDir(path,"go mod tidy") // 所有yield都执行完了，再执行tidy
 	mutex.Unlock()
 }
 
