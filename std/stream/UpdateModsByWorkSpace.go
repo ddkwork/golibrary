@@ -14,6 +14,16 @@ import (
 	"strings"
 )
 
+func UpdateAllLocalRep() {
+	reps := []string{
+		"D:\\workspace\\workspace\\golibrary",
+		"D:\\workspace\\workspace\\ux",
+	}
+	for _, rep := range reps {
+		RunCommand("go get -x github.com/ddkwork/"+filepath.Base(rep)+"@", GetLastCommitHashLocal(rep))
+	}
+}
+
 func GetLastCommitHashLocal(repositoryDir string) string {
 	return RunCommandWithDir(repositoryDir, "git rev-parse HEAD").String()
 }

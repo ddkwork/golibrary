@@ -60,7 +60,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			case "ping":
 				cmdKey = filepath.Base(arg[len(arg)-1])
 				fast = false
-			}本地
+			}
 
 			cmd = exec.CommandContext(ctx, binaryPath, arg[1:]...)
 			cmd.Dir = dir //需要切换到对应目录，避免使用os.chdir,应用场景：批量更新工作区下的mod
