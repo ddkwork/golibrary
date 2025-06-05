@@ -14,7 +14,13 @@ import (
 	"strings"
 )
 
+func isRunningOnGitHubActions() bool {
+	return os.Getenv("GITHUB_ACTIONS") == "true"
+}
 func UpdateAllLocalRep() {
+	if isRunningOnGitHubActions() {
+		return
+	}
 	reps := []string{
 		"D:\\workspace\\workspace\\golibrary",
 		"D:\\workspace\\workspace\\ux",
