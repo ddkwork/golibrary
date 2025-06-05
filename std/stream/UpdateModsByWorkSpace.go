@@ -26,7 +26,7 @@ func UpdateAllLocalRep() {
 		"D:\\workspace\\workspace\\ux",
 	}
 	for _, rep := range reps {
-		RunCommand("go get -x github.com/ddkwork/"+filepath.Base(rep)+"@", GetLastCommitHashLocal(rep))
+		RunCommand("go get -x github.com/ddkwork/" + filepath.Base(rep) + "@" + GetLastCommitHashLocal(rep))
 	}
 }
 
