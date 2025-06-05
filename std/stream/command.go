@@ -92,7 +92,6 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 					for scanner.Scan() {
 						output <- ConvertUtf82Gbk(scanner.Text())
 					}
-					mylog.Check(stdoutPipe.Close())
 				})
 			})
 
@@ -103,7 +102,6 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 					for scanner.Scan() {
 						errorOutput <- ConvertUtf82Gbk(scanner.Text())
 					}
-					mylog.Check(stderrPipe.Close())
 				})
 			})
 
