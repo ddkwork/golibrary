@@ -63,7 +63,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			binaryPath := arg[0]
 			switch binaryPath { //todo add more need fast model
 			//case "clang", "clang-format":
-			case "ping":
+			case "ping", "go":
 				cmdKey = filepath.Base(arg[len(arg)-1])
 				fast = false
 			}
