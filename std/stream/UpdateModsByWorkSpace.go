@@ -14,81 +14,58 @@ import (
 	"strings"
 )
 
+func GetLastCommitHashLocal(repositoryDir string) string {
+	return RunCommandWithDir(repositoryDir, "git rev-parse HEAD").String()
+}
+
 func UpdateWorkSpace(isUpdateAll bool) {
 	mylog.Call(func() { updateWorkSpace(isUpdateAll) })
 }
-
-var skips = []string{
-	"module gioui.org",
-	"module gioui.org/cmd",
-	"module gioui.org/example",
-	"module gioui.org/x",
-}
-
-// GetLastCommitHash
-// git ls-remote https://github.com/ddkwork/toolbox refs/heads/master
-// git ls-remote https://github.com/gioui/gio refs/heads/main
-// 但是要传递本地的仓库目录，太麻烦了
-// func GetLastCommitHash(repositoryName string) string {
-//	//理论上获取到hash再使用模块代理，这样才刷新的快？
-//	//或者使用action得到hash先？
-//
-//	mylog.Check(os.Setenv("GOPROXY", "direct")) // 如果模块代理导致获取到的不是最新的提交哈希那么需要禁用模块代理，最可靠的方式是 GetLastCommitHashLocal
-//	defer mylog.Check(os.Setenv("GOPROXY", "https://goproxy.cn,direct"))
-//
-//	//defer RunCommand("go env -w GOPROXY=https://goproxy.cn,direct")
-//	s := RunCommand("git ls-remote " + repositoryName + " refs/heads/master").Output.String()
-//	for hash := range strings.FieldsSeq(s) {
-//		return hash
-//	}
-//	s = RunCommand("git ls-remote " + repositoryName + " refs/heads/main").Output.String()
-//	for hash := range strings.FieldsSeq(s) {
-//		return hash
-//	}
-//	panic("no commit hash found in master and main branch")
-//	/*
-//		# 获取最新提交哈希
-//		$hash = (git ls-remote https://github.com/ddkwork/toolbox refs/heads/master).Split("`t")[0]
-//		# 带哈希安装
-//		go get -x "github.com/ddkwork/toolbox@$hash"
-
-func GetLastCommitHashLocal(repositoryDir string) string { // 如果失败了，发现禁用模块代理可以成功，那么需要再提交点别的，然后模块代理就会识别新的提交hash，很诡异
-	originPath := mylog.Check2(os.Getwd())
-	mylog.Check(os.Chdir(repositoryDir))
-	hash := RunCommand("git rev-parse HEAD").String()
-	mylog.Check(os.Chdir(originPath))
-	return hash
-}
-
-func ParseGoMod(file string, data []byte) *safemap.M[string, string] {
-	f := mylog.Check2(modfile.Parse(file, data, nil))
-	return safemap.NewOrdered[string, string](func(yield func(string, string) bool) {
-		for _, req := range f.Require {
-			yield(req.Mod.Path, req.Mod.Version)
-		}
-	})
-}
-
-func GetDesktopDir() string {
-	// 获取用户主目录
-	homeDir := mylog.Check2(os.UserHomeDir())
-	// 根据操作系统处理路径
-	switch runtime.GOOS {
-	case "windows", "darwin":
-		// Windows和macOS直接拼接Desktop
-		return filepath.Join(homeDir, "Desktop")
-	case "linux":
-		// Linux优先检查XDG环境变量
-		if xdgDir := os.Getenv("XDG_DESKTOP_DIR"); xdgDir != "" {
-			return xdgDir
-		}
-		// 默认使用主目录下的Desktop
-		return filepath.Join(homeDir, "Desktop")
-	default:
-		panic("unsupported platform")
+func updateWorkSpace(isUpdateAll bool) {
+	if !FileExists("go.work") {
+		updateMod(mylog.Check2(os.Getwd()))
+		return
 	}
-}
+	RunCommand("go work use -r .")
+	mods := make([]string, 0)
+	for line := range ReadFileToLines("go.work") {
+		for _, skip := range skips {
+			if line == skip {
+				mylog.Warning("skip", skip)
+				continue
+			}
+		}
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, ".") {
+			abs := mylog.Check2(filepath.Abs(line))
+			if filepath.Base(abs) == "golibrary" {
+				continue
+			}
+			mods = append(mods, abs)
+		}
+	}
 
+	modChan := make(chan string, len(mods))
+
+	g := waitgroup.New()
+	for _, modPath := range mods {
+		g.Go(func() { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
+			updateMod(modPath) // 锁应该在这里面
+			if isUpdateAll {
+				RunCommand("go get -u -x all") // need lock,但是不使用这个，太慢了
+			}
+			modChan <- modPath
+		})
+	}
+	g.Go(func() {
+		for mod := range modChan {
+			mylog.Success("updated mod", strconv.Quote(mod))
+		}
+		close(modChan)
+	})
+	g.Wait()
+	mylog.Success("all work finished")
+}
 func updateMod(dir string) { // 实现替换，不要网络访问了，太慢了
 	if filepath.Base(dir) == "golibrary" {
 		return
@@ -135,9 +112,17 @@ func updateMod(dir string) { // 实现替换，不要网络访问了，太慢了
 	g.Wait()
 }
 
+func ParseGoMod(file string, data []byte) *safemap.M[string, string] {
+	f := mylog.Check2(modfile.Parse(file, data, nil))
+	return safemap.NewOrdered[string, string](func(yield func(string, string) bool) {
+		for _, req := range f.Require {
+			yield(req.Mod.Path, req.Mod.Version)
+		}
+	})
+}
+
 func setVersion(r *modfile.Require, v string) {
 	r.Mod.Version = v
-
 	if line := r.Syntax; len(line.Token) > 0 {
 		if line.InBlock {
 			// If the line is preceded by an empty line, remove it; see
@@ -156,48 +141,29 @@ func setVersion(r *modfile.Require, v string) {
 	}
 }
 
-func updateWorkSpace(isUpdateAll bool) {
-	if !FileExists("go.work") {
-		updateMod(mylog.Check2(os.Getwd()))
-		return
-	}
-	RunCommand("go work use -r .")
-	mods := make([]string, 0)
-	for line := range ReadFileToLines("go.work") {
-		for _, skip := range skips {
-			if line == skip {
-				mylog.Warning("skip", skip)
-				continue
-			}
-		}
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, ".") {
-			abs := mylog.Check2(filepath.Abs(line))
-			if filepath.Base(abs) == "golibrary" {
-				continue
-			}
-			mods = append(mods, abs)
-		}
-	}
+var skips = []string{
+	"module gioui.org",
+	"module gioui.org/cmd",
+	"module gioui.org/example",
+	"module gioui.org/x",
+}
 
-	modChan := make(chan string, len(mods))
-
-	g := waitgroup.New()
-	for _, modPath := range mods {
-		g.Go(func() { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
-			updateMod(modPath) // 锁应该在这里面
-			if isUpdateAll {
-				RunCommand("go get -u -x all") // need lock,但是不使用这个，太慢了
-			}
-			modChan <- modPath
-		})
-	}
-	go func() {
-		for mod := range modChan {
-			mylog.Success("updated mod", strconv.Quote(mod))
+func GetDesktopDir() string {
+	// 获取用户主目录
+	homeDir := mylog.Check2(os.UserHomeDir())
+	// 根据操作系统处理路径
+	switch runtime.GOOS {
+	case "windows", "darwin":
+		// Windows和macOS直接拼接Desktop
+		return filepath.Join(homeDir, "Desktop")
+	case "linux":
+		// Linux优先检查XDG环境变量
+		if xdgDir := os.Getenv("XDG_DESKTOP_DIR"); xdgDir != "" {
+			return xdgDir
 		}
-		close(modChan)
-	}()
-	g.Wait()
-	mylog.Success("all work finished")
+		// 默认使用主目录下的Desktop
+		return filepath.Join(homeDir, "Desktop")
+	default:
+		panic("unsupported platform")
+	}
 }
