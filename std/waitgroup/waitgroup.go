@@ -11,14 +11,14 @@ type token struct{}
 type Group struct {
 	wg  sync.WaitGroup
 	sem chan token
-	mu  sync.Mutex
+	mu  sync.RWMutex
 }
 
 func New() *Group {
 	return &Group{
 		wg:  sync.WaitGroup{},
 		sem: nil,
-		mu:  sync.Mutex{},
+		mu:  sync.RWMutex{},
 	}
 }
 
