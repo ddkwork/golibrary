@@ -24,7 +24,7 @@ func RunCommandWithDir(dir string, arg ...string) (stdOut *GeneratedFile) {
 
 func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 	if strings.Contains(arg[0], " ") {
-		panic("you shold split commands")
+		arg = strings.Split(arg[0], " ")
 	}
 	type setup struct {
 		init       func()
