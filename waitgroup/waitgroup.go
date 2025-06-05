@@ -45,8 +45,8 @@ func (g *Group) add(f func()) {
 	go func() {
 		defer g.done()
 		mylog.Call(func() {
-			g.mu.Lock()
-			defer g.mu.Unlock()
+			//g.mu.Lock() //action go get 无限等待
+			//defer g.mu.Unlock()
 			f()
 		})
 	}()
