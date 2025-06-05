@@ -25,9 +25,13 @@ func UpdateAllLocalRep() {
 		"D:\\workspace\\workspace\\golibrary",
 		"D:\\workspace\\workspace\\ux",
 	}
+	w := waitgroup.New()
 	for _, rep := range reps {
-		RunCommand("go get -x github.com/ddkwork/" + filepath.Base(rep) + "@" + GetLastCommitHashLocal(rep))
+		w.Go(func() {
+			RunCommand("go get -x github.com/ddkwork/" + filepath.Base(rep) + "@" + GetLastCommitHashLocal(rep))
+		})
 	}
+	w.Wait()
 }
 
 func GetLastCommitHashLocal(repositoryDir string) string {
