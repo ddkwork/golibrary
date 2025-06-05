@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/ddkwork/golibrary/std/mylog"
 	"github.com/ddkwork/golibrary/std/waitgroup"
@@ -49,7 +50,12 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 		done        = make(chan struct{})
 	)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	const (
+		execTimeout = 1 * time.Minute // 命令最大执行时间
+		waitDelay   = 5 * time.Second // 结束后的最大等待时间
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), execTimeout)
 	defer cancel()
 
 	s := setup{
@@ -64,6 +70,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 
 			cmd = exec.CommandContext(ctx, binaryPath, arg[1:]...)
 			cmd.Dir = dir //需要切换到对应目录，避免使用os.chdir,应用场景：批量更新工作区下的mod
+			cmd.WaitDelay = waitDelay
 
 			mylog.Success(cmdKey, cmd.String())
 
@@ -101,35 +108,36 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			})
 
 			// 启动 goroutine 统一处理输出
-			go func() {
+			g.Go(func() {
 				mylog.Call(func() {
 					g.Wait()
 					close(output)
 				})
-			}()
+			})
 
-			go func() {
+			g.Go(func() {
 				for line := range output {
 					println(line)
 					stdOut.P(line)
 				}
 				done <- struct{}{}
-			}()
+			})
 
-			go func() {
+			g.Go(func() {
 				for line := range errorOutput {
 					stderr.P(line)
 				}
 				done <- struct{}{}
-			}()
+			})
 
+		},
+		handleWait: func() {
 			select { // 等待 goroutine 完成,不写在这里会导致全部携程死锁，原因不明
 			case <-ctx.Done():
 				mylog.Check(cmd.Process.Kill())
 			case <-done:
+			default:
 			}
-		},
-		handleWait: func() {
 			e := cmd.Wait()
 			if e != nil {
 				bug := stderr.String() + "\n" + e.Error()
