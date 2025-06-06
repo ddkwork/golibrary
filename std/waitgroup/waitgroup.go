@@ -9,16 +9,23 @@ import (
 type token struct{}
 
 type Group struct {
-	wg  sync.WaitGroup
-	sem chan token
-	mu  sync.RWMutex
+	wg       sync.WaitGroup
+	sem      chan token
+	mu       sync.RWMutex
+	useMutex bool
 }
 
+func NewWithMutex() *Group {
+	g := New()
+	g.useMutex = true
+	return g
+}
 func New() *Group {
 	return &Group{
-		wg:  sync.WaitGroup{},
-		sem: nil,
-		mu:  sync.RWMutex{},
+		wg:       sync.WaitGroup{},
+		sem:      nil,
+		mu:       sync.RWMutex{},
+		useMutex: false,
 	}
 }
 
@@ -45,10 +52,10 @@ func (g *Group) add(f func()) {
 	go func() {
 		defer g.done()
 		mylog.Call(func() {
-			//if g.UseMutex {
-			//	g.mu.Lock() //action go get 无限等待，对于更新工作区下的模块同时多次读写，需要进一步测试，理论上需要加读写锁，那么应用场景只有这一个需要加锁？
-			//	defer g.mu.Unlock()
-			//}
+			if g.useMutex {
+				g.mu.Lock() //action go get 无限等待，对于更新工作区下的模块同时多次读写，需要进一步测试，理论上需要加读写锁，那么应用场景只有这一个需要加锁？
+				defer g.mu.Unlock()
+			}
 			f()
 		})
 	}()
