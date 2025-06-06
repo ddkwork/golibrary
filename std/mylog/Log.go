@@ -212,7 +212,7 @@ func (l *log) MarshalJson(title string, msg any) {
 	l.Json(title, string(indent))
 }
 
-var lock sync.Mutex
+var lock sync.RWMutex
 
 func (l *log) printAndWrite() {
 	lock.Lock()

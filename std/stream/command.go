@@ -6,7 +6,6 @@ import (
 	"io"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
@@ -27,7 +26,7 @@ func RunCommandWithDir(dir string, arg ...string) (stdOut *GeneratedFile) {
 }
 
 func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
-	if strings.Contains(arg[0], " ") {
+	if strings.Contains(arg[0], " ") && len(arg) == 1 { //命令已被合并，需要分割，取出第一个命令作为执行的path
 		arg = strings.Split(arg[0], " ")
 	}
 	type setup struct {
@@ -62,9 +61,9 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 		init: func() {
 			binaryPath := arg[0]
 			switch binaryPath { //todo add more need fast model
-			//case "clang", "clang-format":
-			case "ping", "go":
+			case "clang", "clang-format":
 				cmdKey = filepath.Base(arg[len(arg)-1])
+			case "ping", "go":
 				fast = false
 			}
 
@@ -144,24 +143,16 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 	}
 	s.init()
 	mylog.Check(cmd.Start())
-	if fast {
-		s.fastModel()
+	defer func() {
 		s.handleWait()
 		stdOut.TrimSuffix("\n")
+	}()
+	if fast {
+		s.fastModel()
 		return
 	}
 	s.slowModel()
-	s.handleWait()
-	ss := trimTrailingEmptyLines(stdOut.String())
-	stdOut.Reset()
-	stdOut.WriteString(ss)
 	return
-}
-
-func trimTrailingEmptyLines(s string) string {
-	// 使用正则表达式匹配末尾的所有空白行，包括空格、制表符和换行符
-	re := regexp.MustCompile(`\s*\n*$`)
-	return re.ReplaceAllString(s, "")
 }
 
 func ConvertUtf82Gbk(src string) string {

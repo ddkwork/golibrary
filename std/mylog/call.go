@@ -72,8 +72,8 @@ func layoutStack(k kind, value string, child bool) string {
 			}
 			s = strings.TrimSuffix(s, "\r\n")
 			s = strings.TrimSuffix(s, "\n")
-			s = strings.Repeat(" ", leftIndent+len(GetTimeNowString()+k.String())) + " │ " + s
-			b.WriteString(s) //todo indent
+			indent := strings.Repeat(" ", leftIndent+len(GetTimeNowString()+k.String())) + " │ " + s
+			b.WriteString(indent)
 			b.WriteString("\n")
 		}
 		value = b.String()
