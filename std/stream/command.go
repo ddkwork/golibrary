@@ -72,6 +72,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			cmd.WaitDelay = waitDelay
 
 			mylog.Success(cmdKey, cmd.String())
+			WriteAppend("cmd.cmd", binaryPath+" "+strings.Join(arg[1:], " ")+"\n")
 
 			stdoutPipe = mylog.Check2(cmd.StdoutPipe())
 			stderrPipe = mylog.Check2(cmd.StderrPipe())

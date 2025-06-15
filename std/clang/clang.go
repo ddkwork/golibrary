@@ -21,7 +21,7 @@ type object struct {
 
 func New() *object { return &object{} }
 
-func (o *object) writeClangFormatBody(rootPath string) {
+func (o *object)WriteClangFormatBody(rootPath string) {
 	join := filepath.Join(rootPath, ".clang-format")
 	stream.WriteTruncate(join, clangFormatBody)
 }
@@ -45,7 +45,7 @@ func (o *object) Walk(root string) {
 }
 func (o *object) Format(absPath string) {
 	o.once.Do(func() {
-		o.writeClangFormatBody(filepath.Dir(absPath))
+		o.WriteClangFormatBody(filepath.Dir(absPath))
 	})
 
 	g := removeCppComments(mylog.Check2(os.ReadFile(absPath)))
