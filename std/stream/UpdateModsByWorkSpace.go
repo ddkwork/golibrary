@@ -29,7 +29,7 @@ func UpdateAllLocalRep() {
 	w := sync.WaitGroup{}
 	for _, rep := range reps {
 		w.Go(func() {
-			RunCommand("go get -x github.com/ddkwork/" + filepath.Base(rep) + "@" + GetLastCommitHashLocal(rep))
+			RunCommandSafe("go get -x github.com/ddkwork/" + filepath.Base(rep) + "@" + GetLastCommitHashLocal(rep))
 		})
 	}
 	w.Wait()
@@ -73,7 +73,7 @@ func updateWorkSpace(isUpdateAll bool) {
 		g.Go(func() { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
 			updateMod(modPath) // 锁应该在这里面
 			if isUpdateAll {
-				RunCommand("go get -u -x all") // need lock,但是不使用这个，太慢了
+				RunCommandSafe("go get -u -x all") // need lock,但是不使用这个，太慢了
 			}
 			modChan <- modPath
 		})
