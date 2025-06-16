@@ -11,10 +11,16 @@ import (
 	"time"
 
 	"github.com/ddkwork/golibrary/std/mylog"
-
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
+var mu sync.Mutex
+
+func RunCommandSafe(arg ...string) (stdOut *GeneratedFile) {
+	mu.Lock()
+	defer mu.Unlock()
+	return RunCommand(arg...)
+}
 func RunCommand(arg ...string) (stdOut *GeneratedFile) {
 	return runCommand("", arg...)
 }
