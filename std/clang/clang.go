@@ -3,7 +3,7 @@ package clang
 import (
 	"bytes"
 	_ "embed"
-	"github.com/ddkwork/golibrary/std/waitgroup"
+
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -21,7 +21,7 @@ type object struct {
 
 func New() *object { return &object{} }
 
-func (o *object)WriteClangFormatBody(rootPath string) {
+func (o *object) WriteClangFormatBody(rootPath string) {
 	join := filepath.Join(rootPath, ".clang-format")
 	stream.WriteTruncate(join, clangFormatBody)
 }
@@ -31,7 +31,7 @@ func Walk(root string) {
 }
 
 func (o *object) Walk(root string) {
-	g := waitgroup.New()
+	g := sync.WaitGroup{}
 	filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
 		switch filepath.Ext(path) {
 		case ".h", ".c", ".cpp":

@@ -7,10 +7,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ddkwork/golibrary/std/mylog"
-	"github.com/ddkwork/golibrary/std/waitgroup"
+
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
@@ -82,7 +83,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			mylog.Check2(stderr.ReadFrom(stderrPipe))
 		},
 		slowModel: func() {
-			g := waitgroup.New() //这里只是处理单个文件的命令输出，不要加锁，否则会无限等待。应该在外部的文件列表遍历的地方加锁来保证同一个mod的并发更新读写模块安全
+			g := sync.WaitGroup{} //这里只是处理单个文件的命令输出，不要加锁，否则会无限等待。应该在外部的文件列表遍历的地方加锁来保证同一个mod的并发更新读写模块安全
 
 			// 启动 goroutine 读取 stdout
 			g.Go(func() {

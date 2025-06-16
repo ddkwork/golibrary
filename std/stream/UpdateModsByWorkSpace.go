@@ -4,7 +4,8 @@ import (
 	"archive/zip"
 	"github.com/ddkwork/golibrary/std/mylog"
 	"github.com/ddkwork/golibrary/std/safemap"
-	"github.com/ddkwork/golibrary/std/waitgroup"
+	"sync"
+
 	"golang.org/x/mod/modfile"
 	"io"
 	"os"
@@ -25,7 +26,7 @@ func UpdateAllLocalRep() {
 		"D:\\workspace\\workspace\\golibrary",
 		"D:\\workspace\\workspace\\ux",
 	}
-	w := waitgroup.NewWithMutex()
+	w := sync.WaitGroup{}
 	for _, rep := range reps {
 		w.Go(func() {
 			RunCommand("go get -x github.com/ddkwork/" + filepath.Base(rep) + "@" + GetLastCommitHashLocal(rep))
@@ -67,7 +68,7 @@ func updateWorkSpace(isUpdateAll bool) {
 
 	modChan := make(chan string, len(mods))
 
-	g := waitgroup.NewWithMutex()
+	g := sync.WaitGroup{}
 	for _, modPath := range mods {
 		g.Go(func() { // 每个模块单独跑,这里不能加锁，否则很慢，谨慎使用读写锁
 			updateMod(modPath) // 锁应该在这里面
@@ -115,7 +116,7 @@ func updateMod(dir string) { // 实现替换，不要网络访问了，太慢了
 	updateModFile := mylog.Check2(f.Format())
 	// println(string(updateModFile))
 	WriteTruncate(originMod, updateModFile)
-	g := waitgroup.NewWithMutex()
+	g := sync.WaitGroup{}
 	g.Go(func() {
 		RunCommandWithDir(dir, "go mod tidy")
 		v := newModMap.GetMust("github.com/ddkwork/golibrary")
