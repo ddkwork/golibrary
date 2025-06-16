@@ -26,8 +26,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25-rc1'
-          stable: false
+          go-version: 'stable'
 
       #      - name: Install C library dependencies on Ubuntu
       #        if: matrix.os == 'ubuntu-latest'
@@ -59,8 +58,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25-rc1'
-          stable: false
+          go-version: 'stable'
 
       - name: Install dependencies
         run: go mod tidy
