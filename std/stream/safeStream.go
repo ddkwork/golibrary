@@ -787,7 +787,7 @@ func CurrentDirName(path string) (currentDirName string) {
 	return split[len(split)-1]
 }
 
-func CopyDir(dst, src string) {
+func CopyDir(src, dst string) {
 	mylog.Check(os.CopyFS(dst, os.DirFS(src)))
 }
 
