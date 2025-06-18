@@ -15,11 +15,11 @@ import (
 	"strings"
 )
 
-func isRunningOnGitHubActions() bool {
+func IsRunningOnGitHubActions() bool {
 	return os.Getenv("GITHUB_ACTIONS") == "true"
 }
 func UpdateAllLocalRep() {
-	if isRunningOnGitHubActions() {
+	if IsRunningOnGitHubActions() {
 		return
 	}
 	reps := []string{
