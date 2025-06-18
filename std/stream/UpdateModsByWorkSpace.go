@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"github.com/ddkwork/golibrary/std/mylog"
 	"github.com/ddkwork/golibrary/std/safemap"
+	"os/user"
 	"sync"
 
 	"golang.org/x/mod/modfile"
@@ -16,8 +17,36 @@ import (
 )
 
 func IsRunningOnGitHubActions() bool {
-	return os.Getenv("GITHUB_ACTIONS") == "true"
+	// 1. 首先检查标准环境变量（非sudo场景）
+	if os.Getenv("GITHUB_ACTIONS") == "true" {
+		return true
+	}
+
+	// 2. 检查当前用户和工作目录特征（处理sudo场景）
+	currentUser := mylog.Check2(user.Current())
+	// GitHub Actions的运行器用户
+	if strings.HasPrefix(currentUser.Username, "runner") {
+		return true
+	}
+
+	// GitHub Actions的标准工作目录
+	workdir := mylog.Check2(os.Getwd())
+	if strings.Contains(workdir, "/home/runner/work") ||
+		strings.Contains(workdir, "/__w/") {
+		return true
+	}
+
+	// 3. 检查运行器工具缓存目录（备用检测）
+	if IsDir("/opt/hostedtoolcache") {
+		return true
+	}
+	if IsDir("/Users/runner/hostedtoolcache") {
+		return true
+	}
+
+	return false
 }
+
 func UpdateAllLocalRep() {
 	if IsRunningOnGitHubActions() {
 		return
