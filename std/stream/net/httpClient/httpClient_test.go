@@ -16,5 +16,5 @@ func TestName(t *testing.T) {
 }
 
 func do() {
-	httpClient.New().Get().Url("").Request()
+	httpClient.New().Get("").Request()
 }

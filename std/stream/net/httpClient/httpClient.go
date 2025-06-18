@@ -22,12 +22,12 @@ type (
 	Client struct {
 		debug bool
 		*http.Client
+		*http.Response
 		cookiejar       *cookiejar.Jar
 		form            url.Values
 		requestBody     []byte
 		method          string
-		requestUrl      string
-		path            string
+		url             string
 		head            http.Header
 		stopCode        int
 		BadRequestCount int
@@ -50,8 +50,7 @@ func New() *Client {
 		form:        make(url.Values),
 		requestBody: make([]byte, 0),
 		method:      "",
-		requestUrl:  "",
-		path:        "",
+		url:         "",
 		head:        http.Header{},
 		stopCode:    http.StatusOK,
 	}
@@ -60,25 +59,29 @@ func New() *Client {
 	return o
 }
 
-func (c *Client) IsBadRequest() bool                         { return c.BadRequestCount > 0 }
-func (c *Client) SetDebug(debug bool) *Client                { c.debug = debug; return c }
-func (c *Client) Get() *Client                               { c.method = http.MethodGet; return c }
-func (c *Client) Post() *Client                              { c.method = http.MethodPost; return c }
-func (c *Client) Url(RequestUrl string) *Client              { c.requestUrl = RequestUrl; return c }
-func (c *Client) SetPath(path string) *Client                { c.path = path; return c }
-func (c *Client) StopCode(stopCode int) *Client              { c.stopCode = stopCode; return c }
-func (c *Client) BaseURL() string                            { return c.requestUrl }
-func (c *Client) Cookiejar() *cookiejar.Jar                  { return c.cookiejar }
-func (c *Client) SetForm(form url.Values) *Client            { c.form = form; return c }
-func (c *Client) Body(requestBody []byte) *Client            { c.requestBody = requestBody; return c }
-func (c *Client) BodyStream(s *stream.Buffer) *Client        { c.requestBody = s.Bytes(); return c }
-func (c *Client) CreatNewClient(client *http.Client) *Client { c.Client = client; return c }
-func (c *Client) ProxyHttp(s string) *Client                 { return c.SetProxy(HttpType, s) }
-func (c *Client) ProxyHttps(s string) *Client                { return c.SetProxy(HttpsType, s) }
-func (c *Client) ProxySocket5Layer(s string) *Client         { return c.SetProxy(Socket5Type, s) }
-func (c *Client) ProxySocket4Layer(s string) *Client         { return c.SetProxy(Socket4Type, s) }
-func (c *Client) ProxyWebSocketLayer(s string) *Client       { return c.SetProxy(WebSocketType, s) }
-func (c *Client) ProxyWebsocketTlsLayer(s string) *Client    { return c.SetProxy(WebsocketTlsType, s) }
+func (c *Client) IsBadRequest() bool          { return c.BadRequestCount > 0 }
+func (c *Client) SetDebug(debug bool) *Client { c.debug = debug; return c }
+func (c *Client) Get(url string) *Client {
+	c.url = url
+	c.method = http.MethodGet
+	return c
+}
+func (c *Client) Post(url string) *Client {
+	c.url = url
+	c.method = http.MethodPost
+	return c
+}
+func (c *Client) StopCode(stopCode int) *Client           { c.stopCode = stopCode; return c }
+func (c *Client) Cookiejar() *cookiejar.Jar               { return c.cookiejar }
+func (c *Client) SetForm(form url.Values) *Client         { c.form = form; return c }
+func (c *Client) Body(requestBody []byte) *Client         { c.requestBody = requestBody; return c }
+func (c *Client) BodyStream(s *stream.Buffer) *Client     { c.requestBody = s.Bytes(); return c }
+func (c *Client) ProxyHttp(s string) *Client              { return c.SetProxy(HttpType, s) }
+func (c *Client) ProxyHttps(s string) *Client             { return c.SetProxy(HttpsType, s) }
+func (c *Client) ProxySocket5Layer(s string) *Client      { return c.SetProxy(Socket5Type, s) }
+func (c *Client) ProxySocket4Layer(s string) *Client      { return c.SetProxy(Socket4Type, s) }
+func (c *Client) ProxyWebSocketLayer(s string) *Client    { return c.SetProxy(WebSocketType, s) }
+func (c *Client) ProxyWebsocketTlsLayer(s string) *Client { return c.SetProxy(WebsocketTlsType, s) }
 func (c *Client) CheckProtocol(protocol string, port string) bool {
 	return false
 }
@@ -95,7 +98,7 @@ func (c *Client) request() *Client {
 		}
 		return strings.NewReader(c.form.Encode())
 	}
-	request := mylog.Check2(http.NewRequest(c.method, c.requestUrl+c.path, fnReader()))
+	request := mylog.Check2(http.NewRequest(c.method, c.url, fnReader()))
 	request.Close = false
 
 	request.Header = c.head
@@ -103,6 +106,7 @@ func (c *Client) request() *Client {
 		mylog.Request(request, true)
 	}
 	response := mylog.Check2(c.Client.Do(request))
+	c.Response = response
 	defer func() {
 		if c.debug {
 			mylog.Response(response, true)
@@ -266,7 +270,7 @@ func MockProtoBufPacket(proxyPort string) {
 		"Content-Type": "application/x-protobuf",
 	}
 
-	c.Url("https://www.baidu.com").BodyStream(stream.NewBuffer(LogeventBuf)).Post().SetHead(header).Request()
+	c.Post("https://www.baidu.com").BodyStream(stream.NewBuffer(LogeventBuf)).SetHead(header).Request()
 }
 
 var (

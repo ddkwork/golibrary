@@ -39,7 +39,7 @@ func (o *object) HandlePacket() (ok bool) {
 	for i, handle := range o.Handles() {
 		handle.PacketIndex = i + 1
 		mylog.Info("", stream.MarshalJSON(handle))
-		o.HttpClient().Url(handle.ReqUrl)
+		o.HttpClient().Get(handle.ReqUrl) //todo
 		if !handle.Fn() {
 			mylog.Check("请检查发包数据结构是否正确")
 		}
