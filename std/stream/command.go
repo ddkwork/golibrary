@@ -33,7 +33,12 @@ func RunCommandWithDir(dir string, arg ...string) (stdOut *GeneratedFile) {
 }
 
 func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
+	notPanic := false
 	if strings.Contains(arg[0], " ") && len(arg) == 1 { //命令已被合并，需要分割，取出第一个命令作为执行的path
+		diff := "go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./..."
+		if arg[0] == diff {
+			notPanic = true
+		}
 		arg = strings.Split(arg[0], " ")
 	}
 	type setup struct {
@@ -144,6 +149,10 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			e := cmd.Wait()
 			if e != nil {
 				bug := stderr.String() + "\n" + e.Error()
+				if notPanic {
+					mylog.Warning(bug)
+					return
+				}
 				mylog.Check(bug)
 			}
 		},
