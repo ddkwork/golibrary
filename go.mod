@@ -4,6 +4,6 @@ go 1.25
 
 require (
 	github.com/google/go-cmp v0.7.0
-	golang.org/x/mod v0.29.0
-	golang.org/x/text v0.30.0
+	golang.org/x/mod v0.30.0
+	golang.org/x/text v0.31.0
 )
