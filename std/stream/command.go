@@ -22,7 +22,7 @@ func RunCommandSafe(arg ...string) (stdOut *GeneratedFile) {
 	return RunCommand(arg...)
 }
 
-func init() {
+func fixCodeStyle() {
 	if IsAndroid() {
 		return
 	}
