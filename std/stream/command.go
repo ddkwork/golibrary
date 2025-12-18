@@ -21,6 +21,31 @@ func RunCommandSafe(arg ...string) (stdOut *GeneratedFile) {
 	defer mu.Unlock()
 	return RunCommand(arg...)
 }
+
+func init() {
+	if IsAndroid() {
+		return
+	}
+	RunCommands(`
+go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./...
+go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...
+go run mvdan.cc/gofumpt@latest -l -w .`)
+}
+
+func RunCommands(commands string) {
+	group := sync.WaitGroup{}
+	for s := range strings.Lines(commands) {
+		c := strings.TrimSpace(s)
+		if c == "" {
+			continue
+		}
+		group.Go(func() {
+			RunCommand(c)
+		})
+	}
+	group.Wait()
+}
+
 func RunCommand(arg ...string) (stdOut *GeneratedFile) {
 	return runCommand("", arg...)
 }
