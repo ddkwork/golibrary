@@ -8,6 +8,8 @@ import (
 	r "reflect"
 	"strconv"
 	"strings"
+
+	"github.com/ddkwork/golibrary/types"
 )
 
 const (
@@ -87,28 +89,28 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 
 	switch val.Kind() {
 	case r.Int, r.Int64:
-		io.WriteString(p.Out, FormatInteger(val.Int()))
+		io.WriteString(p.Out, types.FormatInteger(val.Int()))
 		p.checkStringer(val)
 	case r.Int8:
-		io.WriteString(p.Out, FormatInteger(int8(val.Int())))
+		io.WriteString(p.Out, types.FormatInteger(int8(val.Int())))
 		p.checkStringer(val)
 	case r.Int16:
-		io.WriteString(p.Out, FormatInteger(int16(val.Int())))
+		io.WriteString(p.Out, types.FormatInteger(int16(val.Int())))
 		p.checkStringer(val)
 	case r.Int32:
-		io.WriteString(p.Out, FormatInteger(int32(val.Int())))
+		io.WriteString(p.Out, types.FormatInteger(int32(val.Int())))
 		p.checkStringer(val)
 	case r.Uint, r.Uint64, r.Uintptr: // Uintptr for Windows api use etc
-		io.WriteString(p.Out, FormatInteger(val.Uint()))
+		io.WriteString(p.Out, types.FormatInteger(val.Uint()))
 		p.checkStringer(val)
 	case r.Uint8:
-		io.WriteString(p.Out, FormatInteger(byte(val.Uint())))
+		io.WriteString(p.Out, types.FormatInteger(byte(val.Uint())))
 		p.checkStringer(val)
 	case r.Uint16:
-		io.WriteString(p.Out, FormatInteger(uint16(val.Uint())))
+		io.WriteString(p.Out, types.FormatInteger(uint16(val.Uint())))
 		p.checkStringer(val)
 	case r.Uint32:
-		io.WriteString(p.Out, FormatInteger(uint32(val.Uint())))
+		io.WriteString(p.Out, types.FormatInteger(uint32(val.Uint())))
 		p.checkStringer(val)
 	case r.Float32, r.Float64:
 		io.WriteString(p.Out, strconv.FormatFloat(val.Float(), 'f', -1, 64))
@@ -139,13 +141,13 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 
 	case r.Array, r.Slice:
 		l := val.Len()
-		if ValueIsBytesType(val) {
+		if types.ValueIsBytesType(val) {
 			if val.Kind() == r.Array {
 				if !val.CanAddr() {
 					panic("如果结构体字段是数组，那么字段格式化不可寻址，请使用指针类型,在外部 &object传进来,字段类型保持不变") // panic("reflect.Value.Bytes of unaddressable byte array")
 				}
 			}
-			io.WriteString(p.Out, strings.Replace(DumpHex(val.Bytes()), "}", "},", 1))
+			io.WriteString(p.Out, strings.Replace(types.DumpHex(val.Bytes()), "}", "},", 1))
 			p.checkStringer(val)
 			return
 		}

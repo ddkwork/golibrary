@@ -145,7 +145,7 @@ func (g *GeneratedFile) EnumTypes(name string, TypeTooltipMap *safemap.M[string,
 
 		g.P(`
 import (
-	"github.com/ddkwork/golibrary/std/stream"
+	"github.com/ddkwork/golibrary/types"
 	"strings"
 )
 `)
@@ -195,7 +195,7 @@ import (
 		g.P("}")
 		g.P("")
 
-		g.P("func ", method, "By ", "[T stream.Integer](v T)", method, "  {")
+		g.P("func ", method, "By ", "[T types.Integer](v T)", method, "  {")
 		g.P("  return ", method, "(v)")
 		g.P("}")
 		g.P("")

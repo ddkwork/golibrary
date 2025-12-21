@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ddkwork/golibrary/std/assert/common"
+	"github.com/ddkwork/golibrary/types"
 
 	"github.com/ddkwork/golibrary/std/mylog"
 	"github.com/google/go-cmp/cmp"
@@ -169,7 +170,7 @@ import (
 //	t.Error(fmt.Sprintf("expected %v, got %v", want, got))
 // }
 
-func UnsignedInteger[T Unsigned](t common.T, want, got T, opts ...cmp.Option) {
+func UnsignedInteger[T types.Unsigned](t common.T, want, got T, opts ...cmp.Option) {
 	t.Helper()
 	if want == got {
 		return
@@ -251,7 +252,7 @@ func NotEqual[T any](t common.T, want, got T, opts ...cmp.Option) {
 	t.Error(fmt.Sprintf("expected want != got\nwant: %+v\n got: %+v", want, got))
 }
 
-func LessThan[T Ordered](t common.T, small, big T) {
+func LessThan[T types.Ordered](t common.T, small, big T) {
 	t.Helper()
 	if small < big {
 		return
@@ -259,7 +260,7 @@ func LessThan[T Ordered](t common.T, small, big T) {
 	t.Error(fmt.Sprintf("expected %v < %v", small, big))
 }
 
-func LessThanOrEqual[T Ordered](t common.T, small, big T) {
+func LessThanOrEqual[T types.Ordered](t common.T, small, big T) {
 	t.Helper()
 	if small <= big {
 		return
@@ -267,7 +268,7 @@ func LessThanOrEqual[T Ordered](t common.T, small, big T) {
 	t.Error(fmt.Sprintf("expected %v <= %v", small, big))
 }
 
-func GreaterThan[T Ordered](t common.T, big, small T) {
+func GreaterThan[T types.Ordered](t common.T, big, small T) {
 	t.Helper()
 	if big > small {
 		return
@@ -275,7 +276,7 @@ func GreaterThan[T Ordered](t common.T, big, small T) {
 	t.Error(fmt.Sprintf("expected %v > %v", big, small))
 }
 
-func GreaterThanOrEqual[T Ordered](t common.T, big, small T) {
+func GreaterThanOrEqual[T types.Ordered](t common.T, big, small T) {
 	t.Helper()
 	if big >= small {
 		return

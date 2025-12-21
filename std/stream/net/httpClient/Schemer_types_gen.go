@@ -1,7 +1,7 @@
 package httpClient
 
 import (
-	"github.com/ddkwork/golibrary/std/stream"
+	"github.com/ddkwork/golibrary/types"
 	"strings"
 )
 
@@ -30,7 +30,7 @@ func (t SchemerType) Valid() bool {
 	return t >= HttpType && t <= SshType
 }
 
-func SchemerTypeBy[T stream.Integer](v T) SchemerType {
+func SchemerTypeBy[T types.Integer](v T) SchemerType {
 	return SchemerType(v)
 }
 

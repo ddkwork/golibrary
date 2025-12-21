@@ -12,6 +12,7 @@ import (
 	"github.com/ddkwork/golibrary/std/assert"
 	"github.com/ddkwork/golibrary/std/mylog"
 	"github.com/ddkwork/golibrary/std/stream"
+	"github.com/ddkwork/golibrary/types"
 )
 
 func TestWrap(t *testing.T) {
@@ -334,7 +335,7 @@ func TestSetGitProxy(t *testing.T) {
 }
 
 func TestIsASCIIDigit(t *testing.T) {
-	assert.False(t, stream.IsASCIIDigit("MessageBoxA"))
-	assert.False(t, stream.IsASCIIDigit("user32.dll"))
-	assert.True(t, stream.IsASCIIDigit("1290"))
+	assert.False(t, types.IsASCIIDigit("MessageBoxA"))
+	assert.False(t, types.IsASCIIDigit("user32.dll"))
+	assert.True(t, types.IsASCIIDigit("1290"))
 }

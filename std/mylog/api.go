@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/ddkwork/golibrary/std/stream/align"
+	"github.com/ddkwork/golibrary/types"
 )
 
 type (
@@ -136,17 +137,17 @@ func ChdirToGithubWorkspace() {
 }
 
 func HexDump[K keyType, V []byte | *bytes.Buffer](title K, buf V) {
-	l.hexDump(fmt.Sprint(title), DumpHex(buf))
+	l.hexDump(fmt.Sprint(title), types.DumpHex(buf))
 }
 
 func Todo(body any) {
 	Warning("TODO", body)
 }
 
-type keyType interface{ string | Integer }
+type keyType interface{ string | types.Integer }
 
-func Hex[K keyType, V Unsigned](title K, v V) string {
-	return l.hex(fmt.Sprint(title), FormatInteger(v))
+func Hex[K keyType, V types.Unsigned](title K, v V) string {
+	return l.hex(fmt.Sprint(title), types.FormatInteger(v))
 }
 func Info[K keyType](title K, msg ...any)             { l.Info(fmt.Sprint(title), msg...) }
 func Trace[K keyType](title K, msg ...any)            { l.Trace(fmt.Sprint(title), msg...) }
