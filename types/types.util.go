@@ -6,8 +6,8 @@ import (
 )
 
 func ValueIsBytesType(v reflect.Value) bool {
-	//i,ok := v.Interface().([]byte)
-	//assert, b := reflect.TypeAssert[[]byte](v)
+	// i,ok := v.Interface().([]byte)
+	// assert, b := reflect.TypeAssert[[]byte](v)
 	return v.Type().Elem().Kind() == reflect.Uint8
 }
 

@@ -432,11 +432,11 @@ func isAllLetters(s string) bool {
 
 func (b *Buffer) Join(sep string, size int) string {
 	Check(!isAllLetters(b.String()))
-	result := ""
+	var result strings.Builder
 	for block := range slices.Chunk(b.Bytes(), size) {
-		result += string(block) + sep
+		result.WriteString(string(block) + sep)
 	}
-	return strings.TrimSuffix(result, sep)
+	return strings.TrimSuffix(result.String(), sep)
 }
 
 func (b *Buffer) AppendByteSlice(bytesSlice ...[]byte) []byte {

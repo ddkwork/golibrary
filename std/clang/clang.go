@@ -3,7 +3,6 @@ package clang
 import (
 	"bytes"
 	_ "embed"
-
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -43,6 +42,7 @@ func (o *object) Walk(root string) {
 	})
 	g.Wait()
 }
+
 func (o *object) Format(absPath string) {
 	o.once.Do(func() {
 		o.WriteClangFormatBody(filepath.Dir(absPath))
@@ -92,7 +92,7 @@ func removeComments2(code string) {
 }
 
 func removeCppComments(source []byte) bytes.Buffer {
-	removeComments2("") //working
+	removeComments2("") // working
 	var out bytes.Buffer
 	const (
 		stateCode = iota

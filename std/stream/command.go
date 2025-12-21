@@ -49,7 +49,7 @@ func RunCommandWithDir(dir string, arg ...string) (stdOut *GeneratedFile) {
 
 func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 	notPanic := false
-	if strings.Contains(arg[0], " ") && len(arg) == 1 { //命令已被合并，需要分割，取出第一个命令作为执行的path
+	if strings.Contains(arg[0], " ") && len(arg) == 1 { // 命令已被合并，需要分割，取出第一个命令作为执行的path
 		diff := "go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -diff ./..."
 		if arg[0] == diff {
 			notPanic = true
@@ -60,9 +60,9 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 		init       func()
 		fastModel  func()
 		slowModel  func()
-		handleWait func() //merge exit code.and error
+		handleWait func() // merge exit code.and error
 	}
-	cmdKey := "command" //fast the key is clang target file path
+	cmdKey := "command" // fast the key is clang target file path
 	fast := true
 	stdOut = NewGeneratedFile()
 	stderr := NewGeneratedFile()
@@ -87,7 +87,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 	s := setup{
 		init: func() {
 			binaryPath := arg[0]
-			switch binaryPath { //todo add more need fast model
+			switch binaryPath { // todo add more need fast model
 			case "clang", "clang-format":
 				cmdKey = filepath.Base(arg[len(arg)-1])
 			case "ping", "go":
@@ -95,7 +95,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			}
 
 			cmd = exec.CommandContext(ctx, binaryPath, arg[1:]...)
-			cmd.Dir = dir //需要切换到对应目录，避免使用os.chdir,应用场景：批量更新工作区下的mod
+			cmd.Dir = dir // 需要切换到对应目录，避免使用os.chdir,应用场景：批量更新工作区下的mod
 			cmd.WaitDelay = waitDelay
 
 			mylog.Success(cmdKey, cmd.String())
@@ -109,7 +109,7 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 			mylog.Check2(stderr.ReadFrom(stderrPipe))
 		},
 		slowModel: func() {
-			g := sync.WaitGroup{} //这里只是处理单个文件的命令输出，不要加锁，否则会无限等待。应该在外部的文件列表遍历的地方加锁来保证同一个mod的并发更新读写模块安全
+			g := sync.WaitGroup{} // 这里只是处理单个文件的命令输出，不要加锁，否则会无限等待。应该在外部的文件列表遍历的地方加锁来保证同一个mod的并发更新读写模块安全
 
 			// 启动 goroutine 读取 stdout
 			g.Go(func() {
@@ -153,7 +153,6 @@ func runCommand(dir string, arg ...string) (stdOut *GeneratedFile) {
 				}
 				done <- struct{}{}
 			})
-
 		},
 		handleWait: func() {
 			select { // 等待 goroutine 完成,不写在这里会导致全部携程死锁，原因不明

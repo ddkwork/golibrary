@@ -123,8 +123,8 @@ func Unquote_(text string) string {
 }
 
 func Unquote(line string) string {
-	begin := strings.Index(line, `\"`)
-	if begin < 0 {
+	found := strings.Contains(line, `\"`)
+	if !found {
 		return line
 	}
 	ss := NewBuffer("")

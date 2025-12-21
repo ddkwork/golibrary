@@ -5,7 +5,6 @@ import (
 )
 
 func TestClangFormat(t *testing.T) {
-
 }
 
 func TestFixFunctionSignatures(t *testing.T) {

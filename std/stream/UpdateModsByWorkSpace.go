@@ -2,18 +2,19 @@ package stream
 
 import (
 	"archive/zip"
-	"github.com/ddkwork/golibrary/std/mylog"
-	"github.com/ddkwork/golibrary/std/safemap"
-	"os/user"
-	"sync"
-
-	"golang.org/x/mod/modfile"
 	"io"
 	"os"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
+
+	"github.com/ddkwork/golibrary/std/mylog"
+	"github.com/ddkwork/golibrary/std/safemap"
+
+	"golang.org/x/mod/modfile"
 )
 
 func IsRunningOnGitHubActions() bool {
@@ -71,6 +72,7 @@ func GetLastCommitHashLocal(repositoryDir string) string {
 func UpdateWorkSpace(isUpdateAll bool) {
 	mylog.Call(func() { updateWorkSpace(isUpdateAll) })
 }
+
 func updateWorkSpace(isUpdateAll bool) {
 	if !FileExists("go.work") {
 		updateMod(mylog.Check2(os.Getwd()))
@@ -116,6 +118,7 @@ func updateWorkSpace(isUpdateAll bool) {
 	g.Wait()
 	mylog.Success("all work finished")
 }
+
 func updateMod(dir string) { // 实现替换，不要网络访问了，太慢了
 	if filepath.Base(dir) == "golibrary" {
 		return

@@ -66,6 +66,7 @@ func (c *Client) Get(url string) *Client {
 	c.method = http.MethodGet
 	return c
 }
+
 func (c *Client) Post(url string) *Client {
 	c.url = url
 	c.method = http.MethodPost

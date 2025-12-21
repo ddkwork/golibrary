@@ -32,10 +32,11 @@ type Number interface {
 
 // todo D:\workspace\workspace\ux\demo\airtable\sdk\cell.value.detect.go
 func ParseNumber[T Number | ~string]() {}
-func ParseBool[T Integer | ~string]() {
 
+func ParseBool[T Integer | ~string]() {
 }
-func Integer2Bool[T Integer](value T) bool { //todo多维表格那波转换移动到这里，支持字符串解析到bool
+
+func Integer2Bool[T Integer](value T) bool { // todo多维表格那波转换移动到这里，支持字符串解析到bool
 	switch v := any(value).(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr:
 		if v == 1 {
