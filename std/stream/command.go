@@ -3,7 +3,6 @@ package stream
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -107,9 +106,9 @@ func runCommand(dir string, silent bool, arg ...string) (stdOut *GeneratedFile) 
 			cmd.Dir = dir // 需要切换到对应目录，避免使用os.chdir,应用场景：批量更新工作区下的mod
 			cmd.WaitDelay = waitDelay
 
-			cmdMerge := fmt.Sprintf("%-180s", strings.Join(arg, " "))
+			cmdMerge := strings.Join(arg, " ")
 			if !silent {
-				mylog.Success(cmdKey, cmdMerge)
+				mylog.SuccessNoCaller(cmdKey, cmdMerge)
 			}
 			WriteAppend("cmd.cmd", cmdMerge+"\n")
 

@@ -17,10 +17,11 @@ import (
 
 type (
 	log struct {
-		kind     kind             // type of log
-		row      keyValue         // 不要使用map，因为允许重复key
-		debug    bool             // display print and write log
-		callBack func(row string) // for ux logView
+		kind       kind             // type of log
+		row        keyValue         // 不要使用map，因为允许重复key
+		debug      bool             // display print and write log
+		callBack   func(row string) // for ux logView
+		showCaller bool             // whether to show caller line number
 	}
 )
 
@@ -90,10 +91,11 @@ func dataDir() string {
 
 func New() *log {
 	return &log{
-		kind:     0,
-		row:      keyValue{},
-		debug:    true,
-		callBack: nil,
+		kind:       0,
+		row:        keyValue{},
+		debug:      true,
+		callBack:   nil,
+		showCaller: true,
 	}
 }
 
@@ -163,3 +165,23 @@ func DumpRequest(req *http.Request, body bool) string { return l.DumpRequest(req
 func DumpResponse(resp *http.Response, body bool) string {
 	return l.DumpResponse(resp, body)
 }
+
+// 不带行号的日志函数
+
+func HexDumpNoCaller[K keyType, V []byte | *bytes.Buffer](title K, buf V) {
+	l.hexDumpNoCaller(fmt.Sprint(title), types.DumpHex(buf))
+}
+
+func HexNoCaller[K keyType, V types.Unsigned](title K, v V) string {
+	return l.hexNoCaller(fmt.Sprint(title), types.FormatInteger(v))
+}
+
+func InfoNoCaller[K keyType](title K, msg ...any)         { l.InfoNoCaller(fmt.Sprint(title), msg...) }
+func TraceNoCaller[K keyType](title K, msg ...any)        { l.TraceNoCaller(fmt.Sprint(title), msg...) }
+func WarningNoCaller[K keyType](title K, msg ...any)      { l.WarningNoCaller(fmt.Sprint(title), msg...) }
+func MarshalJsonNoCaller[K keyType](title K, msg any)     { l.MarshalJsonNoCaller(fmt.Sprint(title), msg) }
+func JsonNoCaller[K keyType](title K, msg ...any)         { l.JsonNoCaller(fmt.Sprint(title), msg...) }
+func SuccessNoCaller[K keyType](title K, msg ...any)      { l.SuccessNoCaller(fmt.Sprint(title), msg...) }
+func StructNoCaller(object any)                           { l.StructNoCaller(reflect.TypeOf(object).String(), object) }
+func RequestNoCaller(Request *http.Request, body bool)    { l.RequestNoCaller(Request, body) }
+func ResponseNoCaller(Response *http.Response, body bool) { l.ResponseNoCaller(Response, body) }

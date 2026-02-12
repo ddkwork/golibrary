@@ -212,6 +212,124 @@ func (l *log) MarshalJson(title string, msg any) {
 	l.Json(title, string(indent))
 }
 
+// 不带行号的日志方法
+
+func (l *log) hexDumpNoCaller(title string, dump string) {
+	*l = log{
+		kind:       hexDumpKind,
+		row:        keyValue{key: title, value: dump},
+		debug:      l.debug,
+		callBack:   l.callBack,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) hexNoCaller(title, msg string) string {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       hexKind,
+		row:        keyValue{key: title, value: msg},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+	return l.row.Value()
+}
+
+func (l *log) InfoNoCaller(title string, msg ...any) {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       infoKind,
+		row:        keyValue{key: title, value: sprint(msg...)},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) TraceNoCaller(title string, msg ...any) {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       traceKind,
+		row:        keyValue{key: title, value: sprint(msg...)},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) WarningNoCaller(title string, msg ...any) {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       warningKind,
+		row:        keyValue{key: title, value: sprint(msg...)},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) JsonNoCaller(title string, msg ...any) {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       jsonKind,
+		row:        keyValue{key: title, value: sprint(msg...)},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) SuccessNoCaller(title string, msg ...any) {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       successKind,
+		row:        keyValue{key: title, value: sprint(msg...)},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) RequestNoCaller(Request *http.Request, body bool) {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       jsonKind,
+		row:        keyValue{key: "", value: l.DumpRequest(Request, body)},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) ResponseNoCaller(Response *http.Response, body bool) {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       jsonKind,
+		row:        keyValue{key: "", value: l.DumpResponse(Response, body)},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) StructNoCaller(title string, msg any) {
+	*l = log{
+		callBack:   l.callBack,
+		kind:       structKind,
+		row:        keyValue{key: title, value: pretty.Format(msg)},
+		debug:      l.debug,
+		showCaller: false,
+	}
+	l.printAndWrite()
+}
+
+func (l *log) MarshalJsonNoCaller(title string, msg any) {
+	indent := Check2(json.MarshalIndent(msg, "", " "))
+	l.JsonNoCaller(title, string(indent))
+}
+
 var lock sync.RWMutex
 
 func (l *log) printAndWrite() {
@@ -219,18 +337,25 @@ func (l *log) printAndWrite() {
 	defer lock.Unlock()
 
 	v := l.row.Value()
-	end := " //" + caller()
+	var end string
+	if l.showCaller {
+		end = " //" + caller()
+	}
 	switch l.kind {
 	case hexDumpKind:
 		isLongHexdump := strings.Contains(l.row.value, "\n")
 		if isLongHexdump {
 			v = "\n" + v
-			end = "\n" + end
+			if l.showCaller {
+				end = "\n" + end
+			}
 		}
 		v += end
 	case jsonKind, structKind:
 		v = "\n" + v
-		end = "\n" + end
+		if l.showCaller {
+			end = "\n" + end
+		}
 		v += end
 	default:
 		v += end
