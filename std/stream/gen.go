@@ -261,9 +261,7 @@ import (
 		g.P("")
 		path := name + "_types_gen.go"
 		WriteGoFile(filepath.Join(g.filePath, path), g.Buffer)
-		RunCommands(`
-go fix ./...
-go run mvdan.cc/gofumpt@latest -l -w .`)
+		Fix(".")
 		g.Reset()
 	})
 }

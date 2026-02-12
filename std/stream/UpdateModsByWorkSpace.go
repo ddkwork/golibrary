@@ -159,7 +159,7 @@ func updateMod(dir string) { // 实现替换，不要网络访问了，太慢了
 			b.WriteStringLn(line).ReWriteSelf()
 		}
 		// https://github.com/ddkwork/tools/blob/master/gopls/doc/analyzers.md
-		RunCommandWithDir(dir, "go fix ./...")
+		Fix(dir)
 	})
 	g.Wait()
 }
