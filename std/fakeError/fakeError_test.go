@@ -139,14 +139,13 @@ func (o *object) readDstBuf() {
 }
 
 func TestAll(t *testing.T) {
-	skips := map[string]string{
-		"test8":  "不确定是否应该删除",
-		"test10": "todo bug",
-	}
 	for name, td := range m.Range() {
 		t.Run(name, func(t *testing.T) {
-			if skip, ok := skips[name]; ok {
-				t.Skip(skip)
+			switch name {
+			case "test8":
+				t.Skip("不确定是否应该删除")
+			case "test10":
+				t.Skip("todo bug")
 			}
 			assert.Equal(t, td.want, get(name, td.code))
 		})
