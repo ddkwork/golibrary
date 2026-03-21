@@ -648,7 +648,7 @@ func Apply(text string, replaces []Edit) string {
 		if r.StartPos > r.EndPos {
 			panic("起始位置大于终止位置")
 		}
-		text = text[:r.StartPos-1] + r.NewContent + text[r.EndPos-1:]
+		text = text[:r.StartPos-1] + r.NewContent + text[r.EndPos-1:] //todo bug runtime error: slice bounds out of range [4736:4624]
 	}
 	text = strings.ReplaceAll(text, `var err error`, "")
 	lib := "github.com/ddkwork/golibrary/std/mylog"
