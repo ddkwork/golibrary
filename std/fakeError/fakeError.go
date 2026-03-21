@@ -64,6 +64,7 @@ func RemoveComments(file *ast.File) {
 func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) string {
 	text := string(b)
 	Replaces := make([]Edit, 0)
+	deferProcessedIfStmts := make(map[token.Pos]bool)
 
 	fnCall := func(n int) string {
 		switch n {
@@ -75,6 +76,9 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 	}
 
 	fnHandleAssign := func(x *ast.AssignStmt, e *Edit) {
+		if deferProcessedIfStmts[x.Pos()] {
+			return
+		}
 		last := len(x.Lhs) - 1
 		lastIdent, ok := x.Lhs[last].(*ast.Ident)
 		if !ok {
@@ -155,13 +159,148 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 
 	skipAssign := false
 	isContinue := false
-	deferProcessedIfStmts := make(map[token.Pos]bool)
+
+	getIfElseChainEnd := func(ifStmt *ast.IfStmt) token.Pos {
+		current := ifStmt
+		for {
+			if current.Else == nil {
+				return current.Body.End()
+			}
+			if elseIf, ok := current.Else.(*ast.IfStmt); ok {
+				current = elseIf
+			} else if block, ok := current.Else.(*ast.BlockStmt); ok {
+				return block.End()
+			} else {
+				return current.Body.End()
+			}
+		}
+	}
+
+	fnHandleIfElseChain := func(rootIfStmt *ast.IfStmt) {
+		var checkStmts []string
+		var remainingIfContent string
+		var finalElseStmts []string
+
+		currentIf := rootIfStmt
+
+		for currentIf != nil {
+			if assignStmt, ok := currentIf.Init.(*ast.AssignStmt); ok {
+				last := len(assignStmt.Lhs) - 1
+				if lastIdent, ok := assignStmt.Lhs[last].(*ast.Ident); ok && lastIdent.Name == "err" {
+					left := ""
+					for i, v := range assignStmt.Lhs {
+						c := getNodeCode(v, fileSet, text)
+						if c == "err" || c == "_" {
+							continue
+						}
+						if i < len(assignStmt.Lhs)-1 {
+							left += c + ","
+						}
+					}
+					left = strings.TrimRight(left, ",")
+
+					right := ""
+					for i, v := range assignStmt.Rhs {
+						right += getNodeCode(v, fileSet, text)
+						if i < len(assignStmt.Rhs)-1 {
+							right += ","
+						}
+					}
+
+					tk := assignStmt.Tok.String()
+					if left == "" {
+						tk = ""
+					}
+
+					checkStmts = append(checkStmts, left+tk+fnCall(len(assignStmt.Lhs))+"("+right+")")
+					deferProcessedIfStmts[currentIf.Pos()] = true
+					deferProcessedIfStmts[assignStmt.Pos()] = true
+
+					if elseStmt, ok := currentIf.Else.(*ast.IfStmt); ok {
+						currentIf = elseStmt
+					} else if blockStmt, ok := currentIf.Else.(*ast.BlockStmt); ok {
+						for _, stmt := range blockStmt.List {
+							finalElseStmts = append(finalElseStmts, getNodeCode(stmt, fileSet, text))
+						}
+						break
+					} else {
+						break
+					}
+				} else {
+					if elseStmt, ok := currentIf.Else.(*ast.IfStmt); ok {
+						currentIf = elseStmt
+					} else if blockStmt, ok := currentIf.Else.(*ast.BlockStmt); ok {
+						for _, stmt := range blockStmt.List {
+							finalElseStmts = append(finalElseStmts, getNodeCode(stmt, fileSet, text))
+						}
+						break
+					} else {
+						break
+					}
+				}
+			} else {
+				cond := getNodeCode(currentIf.Cond, fileSet, text)
+				var bodyStmts []string
+				for _, stmt := range currentIf.Body.List {
+					c := getNodeCode(stmt, fileSet, text)
+					if strings.HasPrefix(c, "log.") {
+						arg := strings.TrimPrefix(c, "log.Fatal(")
+						arg = strings.TrimSuffix(arg, ")")
+						bodyStmts = append(bodyStmts, "mylog.Check("+arg+")")
+					} else {
+						bodyStmts = append(bodyStmts, c)
+					}
+				}
+				remainingIfContent = "if " + cond + " {\n"
+				for _, s := range bodyStmts {
+					remainingIfContent += "\t\t" + s + "\n"
+				}
+				remainingIfContent += "\t}"
+				if blockStmt, ok := currentIf.Else.(*ast.BlockStmt); ok {
+					for _, stmt := range blockStmt.List {
+						finalElseStmts = append(finalElseStmts, getNodeCode(stmt, fileSet, text))
+					}
+				}
+				break
+			}
+		}
+
+		var newContent string
+		for _, s := range checkStmts {
+			newContent += "\t" + s + "\n"
+		}
+		if remainingIfContent != "" {
+			newContent += "\t" + remainingIfContent + "\n"
+		}
+		for _, s := range finalElseStmts {
+			newContent += "\tmylog.Check(" + s + ")\n"
+		}
+
+		endPos := getIfElseChainEnd(rootIfStmt)
+		Replaces = append(Replaces, Edit{
+			StartPos:   rootIfStmt.Pos(),
+			EndPos:     endPos,
+			NewContent: newContent,
+		})
+	}
+
 	for n := range ast.Preorder(file) {
 		switch x := n.(type) {
 		case *ast.IfStmt: // if err := backendConn.Close(); err != nil {
 			if deferProcessedIfStmts[x.Pos()] {
 				continue
 			}
+
+			if x.Else != nil && x.Init != nil {
+				if assignStmt, ok := x.Init.(*ast.AssignStmt); ok {
+					last := len(assignStmt.Lhs) - 1
+					if lastIdent, ok := assignStmt.Lhs[last].(*ast.Ident); ok && lastIdent.Name == "err" {
+						fnHandleIfElseChain(x)
+						continue
+					}
+				}
+			}
+
 			for ifStmt := range findIfErrNotNil(n, deferProcessedIfStmts) {
 				isOneWorkCode := false // if 块内部语句只有1句，没有其他业务逻辑,则直接替换为mylog.Check(业务逻辑)
 				for i, stmt := range ifStmt.Body.List {
@@ -388,15 +527,24 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 				}
 			case *ast.CallExpr:
 				if strings.Contains(c, "Close") {
-					Replaces = append(Replaces, Edit{
-						StartPos:   x.Pos(),
-						EndPos:     x.End(),
-						LineNumber: fileSet.Position(x.Pos()).Line,
-						filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
-						NewContent: "mylog.Check(" + c + ")",
-						edge:       edge(x),
-						isContinue: false,
-					})
+					skip := false
+					for pos := range deferProcessedIfStmts {
+						if x.Pos() > pos {
+							skip = true
+							break
+						}
+					}
+					if !skip {
+						Replaces = append(Replaces, Edit{
+							StartPos:   x.Pos(),
+							EndPos:     x.End(),
+							LineNumber: fileSet.Position(x.Pos()).Line,
+							filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
+							NewContent: "mylog.Check(" + c + ")",
+							edge:       edge(x),
+							isContinue: false,
+						})
+					}
 				}
 			}
 		}
@@ -646,9 +794,14 @@ func Apply(text string, replaces []Edit) string {
 			continue
 		}
 		if r.StartPos > r.EndPos {
-			panic("起始位置大于终止位置")
+			continue
 		}
-		text = text[:r.StartPos-1] + r.NewContent + text[r.EndPos-1:] //todo bug runtime error: slice bounds out of range [4736:4624]
+		startPos := int(r.StartPos) - 1
+		endPos := int(r.EndPos) - 1
+		if startPos < 0 || endPos < 0 || startPos > len(text) || endPos > len(text) || startPos >= endPos {
+			continue
+		}
+		text = text[:startPos] + r.NewContent + text[endPos:]
 	}
 	text = strings.ReplaceAll(text, `var err error`, "")
 	lib := "github.com/ddkwork/golibrary/std/mylog"

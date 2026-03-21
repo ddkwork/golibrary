@@ -33,6 +33,10 @@ func TestAll(t *testing.T) {
 	t.Run("test14", func(t *testing.T) {
 		assert.Equal(t, m.GetMust("test14").want, get("test14", m.GetMust("test14").code))
 	})
+	t.Run("test15", func(t *testing.T) {
+		assert.Equal(t, m.GetMust("test15").want, get("test15", m.GetMust("test15").code))
+	})
+
 }
 
 func get(path, text string) string {
@@ -851,6 +855,33 @@ func (o *object) readDstBuf() {
 		DstBufChan <- o.Bytes()[:o.BufSize]
 	default:
 	}
+}
+`,
+	})
+	yield("test15", testData{
+		code: `package tmp
+
+func main() {
+	if f, err := os.Create("ntstatus_generated.go"); err != nil {
+		log.Fatal(err)
+	} else if n, err := f.Write(out); err != nil {
+		log.Fatal(err)
+	} else if n != len(out) {
+		log.Fatal("output size mismatch")
+	} else {
+		f.Close()
+	}
+}`,
+		want: `package tmp
+
+func main() {
+	f := mylog.Check2(os.Create("ntstatus_generated.go"))
+	n := mylog.Check2(f.Write(out))
+	if n != len(out) {
+		mylog.Check("output size mismatch")
+	}
+	mylog.Check(f.Close())
+
 }
 `,
 	})
