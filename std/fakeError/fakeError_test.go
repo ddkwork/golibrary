@@ -139,48 +139,16 @@ func (o *object) readDstBuf() {
 }
 
 func TestAll(t *testing.T) {
-	tests := []struct {
-		name  string
-		skip  string
-		check func(t *testing.T)
-	}{
-		{"test1", "", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test1").want, get("test1", m.GetMust("test1").code))
-		}},
-		{"test2", "", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test2").want, get("test2", m.GetMust("test2").code))
-		}},
-		{"test3", "", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test3").want, get("test3", m.GetMust("test3").code))
-		}},
-		{"test4", "", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test4").want, get("test4", m.GetMust("test4").code))
-		}},
-		{"test5", "", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test5").want, get("test5", m.GetMust("test5").code))
-		}},
-		{"test6", "", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test6").want, get("test6", m.GetMust("test6").code))
-		}},
-		{"test7", "", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test7").want, get("test7", m.GetMust("test7").code))
-		}},
-		{"test8", "不确定是否应该删除\n\tif err != nil && !errors.Is(err, fs.ErrNotExist) {\n\t\treturn nil, nil, err\n\t}", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test8").want, get("test8", m.GetMust("test8").code))
-		}},
-		{"test9", "", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test9").want, get("test9", m.GetMust("test9").code))
-		}},
-		{"test10", "todo bug", func(t *testing.T) {
-			assert.Equal(t, m.GetMust("test10").want, get("test10", m.GetMust("test10").code))
-		}},
+	skips := map[string]string{
+		"test8":  "不确定是否应该删除",
+		"test10": "todo bug",
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.skip != "" {
-				t.Skip(tt.skip)
+	for name, td := range m.Range() {
+		t.Run(name, func(t *testing.T) {
+			if skip, ok := skips[name]; ok {
+				t.Skip(skip)
 			}
-			tt.check(t)
+			assert.Equal(t, td.want, get(name, td.code))
 		})
 	}
 }
