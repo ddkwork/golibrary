@@ -113,18 +113,9 @@ func main() {
 
 ## ⚠️ 忽略错误
 
-如果需要忽略错误（不处理、不记录、不返回），可以使用以下方法：
+fakeError 会转换所有使用 `err` 或 `_` 的错误处理。如果需要忽略错误，可以使用以下方法：
 
-### 方法 1：使用 `_` 忽略（仅当返回类型不是 error）
-
-**不会被转换：**
-```go
-result, _ := someFunc()
-```
-
-**注意**：如果最后一个返回类型是 `error`，使用 `_` 仍会被转换为 `mylog.CheckIgnore(err)`
-
-### 方法 2：使用不同的错误变量名
+### 方法 1：使用不同的错误变量名
 
 fakeError 只识别 `err` 变量，使用其他变量名可以避免转换：
 
@@ -134,9 +125,9 @@ data, e := os.ReadFile("file.txt")
 // 不处理 e，直接忽略
 ```
 
-### 方法 3：在 if 块中添加其他逻辑
+### 方法 2：在 if 块中添加其他逻辑
 
-如果 if 块中有其他逻辑，fakeError 不会转换：
+如果 if 块中有其他逻辑（不仅仅是 panic/log/return/continue），fakeError 不会转换：
 
 **不会被转换：**
 ```go
@@ -145,6 +136,34 @@ if err != nil {
     // 添加注释或其他逻辑，避免被转换
     _ = err
 }
+```
+
+### 方法 3：避免使用 `_` 接收 error 类型（仅限本文件函数）
+
+**会被转换：**
+```go
+result, _ := localFuncReturningError()
+// 转换为：result := mylog.CheckIgnore(err)
+```
+
+**不会被转换：**
+```go
+result, _ := localFuncReturningNonError()
+// 如果最后一个返回类型不是 error，则不会被转换
+```
+
+**重要说明**：
+- fakeError 通过 AST 分析**本文件中定义的函数**的返回类型
+- 对于**外部库函数**，AST 无法获取返回类型，使用 `_` 不会被转换
+- 如果外部库函数返回 error，使用 `_` 会导致错误被忽略（不会转换为 CheckIgnore）
+
+**示例：**
+```go
+// 外部库函数，AST 无法获取返回类型
+data, _ := os.ReadFile("file.txt")  // 不会被转换，错误被忽略
+
+// 本文件函数，AST 可以获取返回类型
+result, _ := myFuncReturningError()  // 转换为：result := mylog.CheckIgnore(err)
 ```
 
 ## 工作原理
