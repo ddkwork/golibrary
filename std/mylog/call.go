@@ -141,6 +141,19 @@ var RuntimePrefixesToFilter = []string{
 	"testing.",
 	"github.com/ddkwork/golibrary/std/mylog.callWithHandler",
 	"github.com/ddkwork/golibrary/std/mylog.Call",
+	"github.com/ddkwork/golibrary/std/mylog.Check",
+	"github.com/ddkwork/golibrary/std/mylog.Check2",
+	"github.com/ddkwork/golibrary/std/mylog.Check3",
+	"github.com/ddkwork/golibrary/std/mylog.Check4",
+	"github.com/ddkwork/golibrary/std/mylog.Check5",
+	"github.com/ddkwork/golibrary/std/mylog.Check6",
+	"github.com/ddkwork/golibrary/std/mylog.CheckNil",
+	"github.com/ddkwork/golibrary/std/mylog.CheckIgnore",
+	"github.com/ddkwork/golibrary/std/mylog.Check2Ignore",
+	"github.com/ddkwork/golibrary/std/mylog.Check2Bool",
+	"github.com/ddkwork/golibrary/std/mylog.Check3Bool",
+	"github.com/ddkwork/golibrary/std/mylog.Check4Bool",
+	"github.com/ddkwork/golibrary/std/mylog.Check5Bool",
 }
 
 func callStack() []uintptr {
