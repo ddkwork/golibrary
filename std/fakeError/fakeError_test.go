@@ -36,7 +36,9 @@ func TestAll(t *testing.T) {
 	t.Run("test15", func(t *testing.T) {
 		assert.Equal(t, m.GetMust("test15").want, get("test15", m.GetMust("test15").code))
 	})
-
+	t.Run("test16", func(t *testing.T) {
+		assert.Equal(t, m.GetMust("test16").want, get("test16", m.GetMust("test16").code))
+	})
 }
 
 func get(path, text string) string {
@@ -882,6 +884,33 @@ func main() {
 	}
 	mylog.Check(f.Close())
 
+}
+`,
+	})
+	yield("test16", testData{
+		code: `package tmp
+
+func main() {
+	if err := generateHelperFile(); err != nil {
+		fmt.Fprintf(os.Stderr, "生成辅助函数文件失败: %v\n", err)
+		os.Exit(1)
+	}
+
+	for _, config := range configs {
+		if err := generateMCPServer(interfacePath, config); err != nil {
+			fmt.Fprintf(os.Stderr, "生成 %s 失败: %v\n", config.Interface, err)
+			os.Exit(1)
+		}
+	}
+}`,
+		want: `package tmp
+
+func main() {
+	mylog.Check(generateHelperFile())
+
+	for _, config := range configs {
+		mylog.Check(generateMCPServer(interfacePath, config))
+	}
 }
 `,
 	})

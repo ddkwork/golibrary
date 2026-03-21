@@ -331,6 +331,8 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 						// case strings.HasPrefix(c, "log.") && strings.HasSuffix(c, "(err)"):
 						case strings.HasPrefix(c, "log."):
 							isOneWorkCode = true
+						case strings.HasPrefix(c, "os.Exit(1)"):
+							isOneWorkCode = true
 						}
 					case *ast.ReturnStmt:
 						c := getNodeCode(row, fileSet, text)
