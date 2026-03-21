@@ -2,18 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/ddkwork/golibrary/std/mylog"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/ddkwork/golibrary/std/mylog"
 )
 
 func main() {
 	// 【坑1】必须切换到可执行文件所在目录
 	// 否则 git 命令会在当前工作目录执行，找不到正确的仓库
-	if exe := mylog.Check2(os.Executable()); err == nil {
+	if exe, e := os.Executable(); e == nil {
 		os.Chdir(filepath.Dir(exe))
 	}
 
@@ -78,18 +79,16 @@ func main() {
 
 // 检查分支/引用是否存在
 func branchExists(ref string) bool {
-	mylog.Check(exec.Command("git", "rev-parse", "--verify", ref).Run())
-	return err == nil
+	return exec.Command("git", "rev-parse", "--verify", ref).Run() == nil
 }
 
 func getCommits() []string {
-	out := mylog.Check2(exec.Command("git", "rev-list", "--reverse", "origin/main..HEAD").Output())
-	if err != nil {
+	out, e := exec.Command("git", "rev-list", "--reverse", "origin/main..HEAD").Output()
+	if e != nil {
 		// 如果 origin/main 还是不存在，尝试 master
-		out, err = exec.Command("git", "rev-list", "--reverse", "origin/master..HEAD").Output()
-		if err != nil {
-			mylog.CheckIgnore(err)
-			continue
+		out, e = exec.Command("git", "rev-list", "--reverse", "origin/master..HEAD").Output()
+		if e != nil {
+			panic(e)
 		}
 	}
 	return strings.Fields(string(out))
