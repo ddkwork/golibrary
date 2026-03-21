@@ -24,9 +24,9 @@ func (o *object) TransportUDP(DstIP string, DstPort int) {
 	o.GetSrcAddrConn()
 	defer func() {
 		mylog.Check(o.SrcConn == nil)
-		mylog.Check(mylog.Check(mylog.Check(o.SrcConn.Close())))
+		mylog.Check(o.SrcConn.Close())
 		mylog.Check(o.DstConn == nil)
-		mylog.Check(mylog.Check(mylog.Check(o.DstConn.Close())))
+		mylog.Check(o.DstConn.Close())
 	}()
 	for {
 		SrcBufChan <- o.Bytes()[:o.BufSize]

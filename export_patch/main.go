@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ddkwork/golibrary/std/mylog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,7 +13,7 @@ import (
 func main() {
 	// 【坑1】必须切换到可执行文件所在目录
 	// 否则 git 命令会在当前工作目录执行，找不到正确的仓库
-	if exe, err := os.Executable(); err == nil {
+	if exe := mylog.Check2(os.Executable()); err == nil {
 		os.Chdir(filepath.Dir(exe))
 	}
 
@@ -61,7 +62,7 @@ func main() {
 		// git 原生输出就是正确的 UTF-8 邮件格式
 		tmpFile, err := exec.Command("git", "format-patch", "-1", hash, "-o", "patches").Output()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "导出失败 %s: %v\n", hash, err)
+			mylog.CheckIgnore(err)
 			continue
 		}
 
@@ -69,10 +70,7 @@ func main() {
 		// 我们需要重命名为自定义格式
 		oldPath := strings.TrimSpace(string(tmpFile))
 		newPath := fmt.Sprintf("patches/%s-%s.patch", num, safe)
-		if err := os.Rename(oldPath, newPath); err != nil {
-			fmt.Fprintf(os.Stderr, "重命名失败 %s -> %s: %v\n", oldPath, newPath, err)
-			continue
-		}
+		mylog.Check(os.Rename(oldPath, newPath))
 
 		fmt.Println(newPath)
 	}
@@ -80,27 +78,26 @@ func main() {
 
 // 检查分支/引用是否存在
 func branchExists(ref string) bool {
-	err := exec.Command("git", "rev-parse", "--verify", ref).Run()
+	mylog.Check(exec.Command("git", "rev-parse", "--verify", ref).Run())
 	return err == nil
 }
 
 func getCommits() []string {
-	out, err := exec.Command("git", "rev-list", "--reverse", "origin/main..HEAD").Output()
+	out := mylog.Check2(exec.Command("git", "rev-list", "--reverse", "origin/main..HEAD").Output())
 	if err != nil {
 		// 如果 origin/main 还是不存在，尝试 master
 		out, err = exec.Command("git", "rev-list", "--reverse", "origin/master..HEAD").Output()
 		if err != nil {
-			panic(err)
+			mylog.CheckIgnore(err)
+			continue
 		}
 	}
 	return strings.Fields(string(out))
 }
 
 func getSubject(hash string) string {
-	out, err := exec.Command("git", "log", "-1", "--format=%s", hash).Output()
-	if err != nil {
-		return "unknown"
-	}
+	out := mylog.Check2(exec.Command("git", "log", "-1", "--format=%s", hash).Output())
+
 	return strings.TrimSpace(string(out))
 }
 

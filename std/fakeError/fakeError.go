@@ -206,6 +206,16 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 					}
 				}
 				if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") {
+					hasBusinessLogic := false
+					for _, stmt := range ifStmt.Body.List {
+						switch stmt.(type) {
+						case *ast.AssignStmt, *ast.IfStmt, *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt:
+							hasBusinessLogic = true
+						}
+					}
+					if hasBusinessLogic {
+						break
+					}
 					b := `if err != nil {
 					mylog.CheckIgnore(err)
 					continue
