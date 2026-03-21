@@ -139,17 +139,58 @@ func (o *object) readDstBuf() {
 }
 
 func TestAll(t *testing.T) {
-	for name, td := range m.Range() {
-		t.Run(name, func(t *testing.T) {
-			switch name {
-			case "test8":
-				t.Skip("不确定是否应该删除")
-			case "test10":
-				t.Skip("todo bug")
-			}
-			assert.Equal(t, td.want, get(name, td.code))
-		})
-	}
+	t.Run("test1", test1)
+	t.Run("test2", test2)
+	t.Run("test3", test3)
+	t.Run("test4", test4)
+	t.Run("test5", test5)
+	t.Run("test6", test6)
+	t.Run("test7", test7)
+	t.Run("test8", test8)
+	t.Run("test9", test9)
+	t.Run("test10", test10)
+}
+
+func test1(t *testing.T) {
+	assert.Equal(t, m.GetMust("test1").want, get("test1", m.GetMust("test1").code))
+}
+
+func test2(t *testing.T) {
+	assert.Equal(t, m.GetMust("test2").want, get("test2", m.GetMust("test2").code))
+}
+
+func test3(t *testing.T) {
+	assert.Equal(t, m.GetMust("test3").want, get("test3", m.GetMust("test3").code))
+}
+
+func test4(t *testing.T) {
+	assert.Equal(t, m.GetMust("test4").want, get("test4", m.GetMust("test4").code))
+}
+
+func test5(t *testing.T) {
+	assert.Equal(t, m.GetMust("test5").want, get("test5", m.GetMust("test5").code))
+}
+
+func test6(t *testing.T) {
+	assert.Equal(t, m.GetMust("test6").want, get("test6", m.GetMust("test6").code))
+}
+
+func test7(t *testing.T) {
+	assert.Equal(t, m.GetMust("test7").want, get("test7", m.GetMust("test7").code))
+}
+
+func test8(t *testing.T) {
+	t.Skip("不确定是否应该删除")
+	assert.Equal(t, m.GetMust("test8").want, get("test8", m.GetMust("test8").code))
+}
+
+func test9(t *testing.T) {
+	assert.Equal(t, m.GetMust("test9").want, get("test9", m.GetMust("test9").code))
+}
+
+func test10(t *testing.T) {
+	t.Skip("todo bug")
+	assert.Equal(t, m.GetMust("test10").want, get("test10", m.GetMust("test10").code))
 }
 
 func get(path, text string) string {
