@@ -4,12 +4,13 @@
 
 ## 功能特性
 
-- 多种日志级别：Info、Warning、Success、Trace
+- 多种日志级别：Info、Warning、Success、Trace、Error
 - 特殊格式支持：Hex、HexDump、Json、Struct
 - 自动时间戳和调用位置
 - 彩色终端输出
 - 自动格式化值
 - **自动填充 key**：自动使用调用者函数名作为 key，无需手动指定
+- **简化错误堆栈**：自动过滤 mylog 内部函数，只显示用户代码调用栈
 
 ## 使用方法
 
@@ -21,9 +22,9 @@ package main
 import "github.com/ddkwork/golibrary/std/mylog"
 
 func main() {
-    mylog.Info("user_id", 12345, "ip", "192.168.1.1")
-    mylog.Warning("available_gb", 5)
-    mylog.Success("task_id", "abc-123")
+    mylog.Info("processing data...")
+    mylog.Warning("disk space low")
+    mylog.Success("task completed")
 }
 ```
 
@@ -57,6 +58,24 @@ mylog.Json(`{"key": "value"}`)
 mylog.Struct(myStruct)
 ```
 
+### 错误处理
+
+```go
+func ReadFile(path string) {
+    data, err := os.ReadFile(path)
+    mylog.Check(err)  // 错误时打印堆栈并继续
+    mylog.Info("file size", len(data))
+}
+
+func SafeOperation() {
+    mylog.Call(func() {
+        // 错误会自动捕获并打印堆栈
+        f := mylog.Check2(os.Open("config.json"))
+        defer f.Close()
+    })
+}
+```
+
 ## API 参考
 
 ### 基础日志函数
@@ -80,8 +99,9 @@ func Struct(object any)
 ### 错误处理函数
 
 ```go
-func Check(err error)
+func Check(err error) bool
 func Check2[T any](v T, err error) T
+func CheckNil(ptr any)
 func Call(f func())
 ```
 
@@ -93,6 +113,13 @@ func Call(f func())
 |------|------|
 | 不能为空 | value 必须提供有效内容 |
 | 不能包含格式化语法 | 禁止使用 `%s`、`%d` 等格式化符号，因为 mylog 会自动格式化 |
+
+### Key 限制
+
+| 规则 | 说明 |
+|------|------|
+| 自动填充 | 使用调用者函数名作为 key |
+| 最大长度 10 | 超长函数名截断为 `xxx...` 格式 |
 
 ## 错误示例
 
@@ -121,16 +148,29 @@ mylog.Info("用户登录成功")
 
 ## 日志输出格式
 
+### 普通日志
+
 ```
-2026-03-22 02:05:07    Info ->           ProcessData │ processing data... //main.ProcessData main.go:10
+2026-03-22 02:47:26    Info -> ProcessData │ processing data... main.go:10
 ```
 
 格式说明：
 - 时间戳
-- 日志级别
+- 日志级别（右对齐）
 - 调用者函数名（自动填充）
 - value 内容
 - 调用位置（文件名:行号）
+
+### 错误堆栈
+
+```
+2026-03-22 02:47:26   Error ->           │ open 2332: The system cannot find the file specified.
+                                         │ mylog_test.bug check_test.go:82
+                                         │ mylog_test.m5 check_test.go:77
+                                         │ mylog_test.TestCheckM5 check_test.go:16
+```
+
+错误堆栈自动过滤 mylog 内部函数（Check、Check2 等），只显示用户代码调用栈。
 
 ## Panic 情况
 
