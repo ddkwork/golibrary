@@ -111,65 +111,41 @@ func main() {
 
 转换设计用于减少样板错误处理代码，同时通过 mylog 包保持错误可见性。
 
-## 避免被转换
+## 忽略错误
 
-如果某些代码不想被 fakeError 转换，可以使用以下方法：
+如果需要忽略错误（不处理、不记录、不返回），可以使用以下方法：
 
-### 方法 1：使用不同的错误变量名
-
-fakeError 只识别 `err` 变量，使用其他变量名可以避免转换：
-
-**会被转换：**
-```go
-data, err := os.ReadFile("file.txt")
-if err != nil {
-    return err
-}
-```
+### 方法 1：使用 `_` 忽略（仅当返回类型不是 error）
 
 **不会被转换：**
-```go
-data, e := os.ReadFile("file.txt")
-if e != nil {
-    return e
-}
-```
-
-### 方法 2：避免标准错误检查模式
-
-不要使用 `if err != nil` 模式：
-
-**会被转换：**
-```go
-if err != nil {
-    return err
-}
-```
-
-**不会被转换：**
-```go
-if err != nil {
-    // 其他逻辑
-    return err
-}
-```
-
-### 方法 3：使用 `_` 忽略错误（仅当返回类型不是 error）
-
-**会被转换：**
-```go
-result, err := someFunc()
-if err != nil {
-    return err
-}
-```
-
-**不会被转换（如果最后一个返回类型不是 error）：**
 ```go
 result, _ := someFunc()
 ```
 
 **注意**：如果最后一个返回类型是 `error`，使用 `_` 仍会被转换为 `mylog.CheckIgnore(err)`
+
+### 方法 2：使用不同的错误变量名
+
+fakeError 只识别 `err` 变量，使用其他变量名可以避免转换：
+
+**不会被转换：**
+```go
+data, e := os.ReadFile("file.txt")
+// 不处理 e，直接忽略
+```
+
+### 方法 3：在 if 块中添加其他逻辑
+
+如果 if 块中有其他逻辑，fakeError 不会转换：
+
+**不会被转换：**
+```go
+result, err := someFunc()
+if err != nil {
+    // 添加注释或其他逻辑，避免被转换
+    _ = err
+}
+```
 
 ## 工作原理
 
