@@ -364,6 +364,17 @@ func (l *log) printAndWrite() {
 		key:   GetTimeNowString() + l.kind.String() + l.textIndent(l.row.key, false),
 		value: v,
 	}
+
+	if l.row.key == "" {
+		panic("log key cannot be empty")
+	}
+
+	for _, r := range l.row.key {
+		if r >= 0x4e00 && r <= 0x9fff {
+			panic("log key cannot contain Chinese characters")
+		}
+	}
+
 	s := l.row.key + separate + l.row.value
 	s += "\n"
 	l.printColorBody(s)
