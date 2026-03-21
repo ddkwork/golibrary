@@ -9,6 +9,7 @@ import (
 	"iter"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -45,7 +46,6 @@ func Walk(path string, removeComments ...bool) {
 }
 
 func RemoveComments(file *ast.File) {
-	mylog.Todo("https://github.com/Greyh4t/nocomment")
 	newComments := make([]*ast.CommentGroup, 0) // can not be nil,why
 	for _, group := range file.Comments {
 		var newGroup ast.CommentGroup
@@ -170,7 +170,6 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 						break
 					}
 					if i > 1 {
-						mylog.Warning("if 块内部语句超过1句:" + getNodeCode(stmt, fileSet, text) + " " + fileSet.Position(stmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(stmt.Pos()).Line))
 						break
 					}
 					switch row := stmt.(type) {
@@ -287,18 +286,11 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 			fnHandleAssign(x, nil)
 		case *ast.DeferStmt:
 			c := getNodeCode(x.Call, fileSet, text)
-			mylog.Json("defer", c)
 			switch fun := x.Call.Fun.(type) {
 			case *ast.FuncLit:
-				mylog.Json("defer FuncLit", getNodeCode(fun, fileSet, text))
-				// 遍历 FuncLit 中的语句，转换错误处理
 				for _, stmt := range fun.Body.List {
-					mylog.Json("defer stmt", getNodeCode(stmt, fileSet, text))
 					if ifStmt, ok := stmt.(*ast.IfStmt); ok {
-						mylog.Json("defer ifStmt", getNodeCode(ifStmt, fileSet, text))
 						if ifStmt.Init == nil {
-							// 处理 if err != nil { ... } 的情况（没有 Init）
-							// 检查 if 块中是否只有简单的错误处理（log/return/panic）
 							isSimpleErrorCheck := false
 							if len(ifStmt.Body.List) == 1 {
 								switch row := ifStmt.Body.List[0].(type) {
@@ -315,7 +307,6 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 								}
 							}
 							if isSimpleErrorCheck {
-								// 删除整个 if 语句
 								Replaces = append(Replaces, Edit{
 									StartPos:   ifStmt.Pos(),
 									EndPos:     ifStmt.End(),
@@ -327,30 +318,21 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 								})
 							}
 						} else {
-							mylog.Json("defer ifStmt.Init", getNodeCode(ifStmt.Init, fileSet, text))
 							if assignStmt, ok := ifStmt.Init.(*ast.AssignStmt); ok {
-								mylog.Json("defer assignStmt", getNodeCode(assignStmt, fileSet, text))
-								// 检查最后一个变量名是否为 err
 								last := len(assignStmt.Lhs) - 1
-								mylog.Json("defer last", last)
 								if lastIdent, ok := assignStmt.Lhs[last].(*ast.Ident); ok {
-									mylog.Json("defer lastIdent.Name", lastIdent.Name)
 									if lastIdent.Name == "err" {
-										// 检查是否是简单的错误检查
 										isSimpleErrorCheck := false
 										if len(ifStmt.Body.List) == 1 {
 											switch row := ifStmt.Body.List[0].(type) {
 											case *ast.ExprStmt:
 												c := getNodeCode(row, fileSet, text)
-												mylog.Json("defer ExprStmt", c)
 												if strings.HasPrefix(c, "log.") {
 													isSimpleErrorCheck = true
 												}
 											}
 										}
-										mylog.Json("defer isSimpleErrorCheck", isSimpleErrorCheck)
 										if isSimpleErrorCheck {
-											// 转换为 mylog.Check
 											left := ""
 											for i, v := range assignStmt.Lhs {
 												c := getNodeCode(v, fileSet, text)
@@ -409,13 +391,12 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 			}
 		}
 	}
-	return Apply(text, Replaces)
+	return simplifyNestedChecks(Apply(text, Replaces))
 }
 
 func getNodeCode(astNode ast.Node, f *token.FileSet, code string) string {
 	c := code[f.Position(astNode.Pos()).Offset:f.Position(astNode.End()).Offset]
 	c = strings.TrimSpace(c)
-	// mylog.Json("code dump", c)
 	return c
 }
 
@@ -472,6 +453,56 @@ type Edit struct {
 	isContinue       bool
 }
 
+func simplifyNestedChecks(text string) string {
+	lines := strings.Split(text, "\n")
+	for i, line := range lines {
+		count := strings.Count(line, "mylog.Check")
+		if count < 2 {
+			continue
+		}
+		innerArg := findInnermostCheckArg(line)
+		if innerArg != "" {
+			indent := ""
+			for _, c := range line {
+				if c == ' ' || c == '\t' {
+					indent += string(c)
+				} else {
+					break
+				}
+			}
+			lines[i] = indent + "mylog.Check(" + innerArg + ")"
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func findInnermostCheckArg(line string) string {
+	checkPattern := regexp.MustCompile(`mylog\.Check\d*`)
+	locs := checkPattern.FindAllStringIndex(line, -1)
+	if len(locs) == 0 {
+		return ""
+	}
+	lastLoc := locs[len(locs)-1]
+	lastCheckEnd := lastLoc[1]
+	if lastCheckEnd >= len(line) || line[lastCheckEnd] != '(' {
+		return ""
+	}
+	argStart := lastCheckEnd + 1
+	depth := 1
+	for i := argStart; i < len(line); i++ {
+		if line[i] == '(' {
+			depth++
+		}
+		if line[i] == ')' {
+			depth--
+			if depth == 0 {
+				return line[argStart:i]
+			}
+		}
+	}
+	return ""
+}
+
 // Apply 按起始位置从大到小排序,即从后往前替换，避免处理过程中坐标变化
 // 单行:左+新内容+右
 // 多行:前+新内容+后
@@ -482,12 +513,11 @@ func Apply(text string, replaces []Edit) string {
 		return text
 	}
 	for i, r := range replaces {
-		replaces[i].filePath = " " + filepath.ToSlash(replaces[i].filePath) + " " // 为了使行号可点击定位到文件
+		replaces[i].filePath = " " + filepath.ToSlash(replaces[i].filePath) + " "
 		if i > 0 && strings.Contains(r.NewContent, "continue") && replaces[i-1].NewContent != "" {
 			replaces[i-1].isContinue = true
 		}
 	}
-	mylog.Struct(replaces)
 	sort.Slice(replaces, func(i, j int) bool {
 		return replaces[i].StartPos > replaces[j].StartPos
 	})

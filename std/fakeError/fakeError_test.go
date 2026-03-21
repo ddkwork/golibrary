@@ -14,6 +14,75 @@ import (
 	"github.com/ddkwork/golibrary/std/stream"
 )
 
+func TestName(t *testing.T) {
+	bad := `package udp
+
+import "github.com/ddkwork/golibrary/std/mylog"
+
+func (o *object) TransportUDP(DstIP string, DstPort int) {
+	o.reset(DstIP, DstPort)
+	o.GetSrcAddrConn()
+	defer func() {
+		mylog.Check(o.SrcConn == nil)
+		mylog.Check(mylog.Check(mylog.Check(o.SrcConn.Close())))
+		mylog.Check(o.DstConn == nil)
+		mylog.Check(mylog.Check(mylog.Check(o.DstConn.Close())))
+	}()
+	for {
+		SrcBufChan <- o.Bytes()[:o.BufSize]
+		o.SetDstAddrConn()
+		go o.readDstBuf()
+		mylog.Check2(o.SrcConn.WriteToUDP(<-DstBufChan, o.SrcAddr))
+	}
+}
+
+func (o *object) readDstBuf() {
+	select {
+	case b := <-SrcBufChan:
+		mylog.Check2(o.DstConn.Write(b))
+		o.Reset()
+		o.BufSize = mylog.Check2(o.DstConn.Read(o.Bytes()))
+		DstBufChan <- o.Bytes()[:o.BufSize]
+	default:
+	}
+}`
+
+	ok := `package udp
+
+import "github.com/ddkwork/golibrary/std/mylog"
+
+func (o *object) TransportUDP(DstIP string, DstPort int) {
+	o.reset(DstIP, DstPort)
+	o.GetSrcAddrConn()
+	defer func() {
+		mylog.Check(o.SrcConn == nil)
+		mylog.Check(o.SrcConn.Close())
+		mylog.Check(o.DstConn == nil)
+		mylog.Check(o.DstConn.Close())
+	}()
+	for {
+		SrcBufChan <- o.Bytes()[:o.BufSize]
+		o.SetDstAddrConn()
+		go o.readDstBuf()
+		mylog.Check2(o.SrcConn.WriteToUDP(<-DstBufChan, o.SrcAddr))
+	}
+}
+
+func (o *object) readDstBuf() {
+	select {
+	case b := <-SrcBufChan:
+		mylog.Check2(o.DstConn.Write(b))
+		o.Reset()
+		o.BufSize = mylog.Check2(o.DstConn.Read(o.Bytes()))
+		DstBufChan <- o.Bytes()[:o.BufSize]
+	default:
+	}
+}
+`
+
+	assert.Equal(t, ok, get("testName", bad))
+}
+
 func Test1(t *testing.T) {
 	assert.Equal(t, m.GetMust("test1").want, get("test1", m.GetMust("test1").code))
 }
