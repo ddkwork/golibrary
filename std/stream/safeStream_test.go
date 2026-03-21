@@ -71,15 +71,15 @@ func TestAll(t *testing.T) {
 	})
 	t.Run("TestNewHexString", func(t *testing.T) {
 		b := stream.NewHexString("1122")
-		mylog.HexDump("", b.Bytes())
+		mylog.HexDump(b.Bytes())
 	})
 	t.Run("TestStream_AppendByteSlice", func(t *testing.T) {
 		s := stream.NewBuffer("")
 		s.AppendByteSlice([]byte{0x11}, []byte{0x22})
-		mylog.HexDump("", s.Bytes())
+		mylog.HexDump(s.Bytes())
 	})
 	t.Run("TestStream_CutWithIndex", func(t *testing.T) {
-		mylog.HexDump("", stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).CutWithIndex(2, 4))
+		mylog.HexDump(stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).CutWithIndex(2, 4))
 	})
 	t.Run("TestStream_HexString", func(t *testing.T) { println(stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).HexString()) })
 	t.Run("TestStream_HexStringUpper", func(t *testing.T) { println(stream.NewBuffer([]byte{0xaa, 0xbb, 0x33, 0x44, 0x55}).HexStringUpper()) })

@@ -12,7 +12,7 @@ func TestName(t *testing.T) {
 		u := unicode.New()
 		key := "9c4077ce-81b6-4edf-8ade-a9ba7da278ba"
 		u.FromString(key)
-		mylog.HexDump("unicode", u.Bytes())
+		mylog.HexDump(u.Bytes())
 		u.ToString(u.Bytes())
 		println(u.String())
 	})
