@@ -11,19 +11,12 @@ import (
 
 	"github.com/ddkwork/golibrary/std/assert"
 	"github.com/ddkwork/golibrary/std/mylog"
-	"github.com/ddkwork/golibrary/std/safemap"
 	"github.com/ddkwork/golibrary/std/stream"
 	"github.com/ddkwork/golibrary/types"
 )
 
 func TestAll(t *testing.T) {
-	for name, fn := range m.Range() {
-		t.Run(name, fn)
-	}
-}
-
-var m = safemap.NewOrdered[string, func(t *testing.T)](func(yield func(string, func(t *testing.T)) bool) {
-	yield("TestWrap", func(t *testing.T) {
+	t.Run("TestWrap", func(t *testing.T) {
 		table := []struct {
 			Prefix string
 			Text   string
@@ -42,11 +35,11 @@ var m = safemap.NewOrdered[string, func(t *testing.T)](func(yield func(string, f
 			assert.Equal(t, one.Out, stream.Wrap(one.Prefix, one.Text, one.Max))
 		}
 	})
-	yield("TestNewHexDump", func(t *testing.T) {
+	t.Run("TestNewHexDump", func(t *testing.T) {
 		stream.NewHexDump(stream.HexDumpString(dump))
 		stream.NewHexDump(stream.HexDumpString(bugBuf))
 	})
-	yield("TestHexDumpToGoBytes", func(t *testing.T) {
+	t.Run("TestHexDumpToGoBytes", func(t *testing.T) {
 		ss := `00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00 8E 6A 64 01 15 4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47 00`
 		stream.NewBuffer(stream.HexDumpString(ss))
 		stream.NewHexDump(stream.HexDumpString(dump))
@@ -57,92 +50,86 @@ var m = safemap.NewOrdered[string, func(t *testing.T)](func(yield func(string, f
 		stream.NewHexDump(`4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47`)
 		stream.NewHexDump(`00`)
 	})
-	yield("TestIsFilePath", func(t *testing.T) {
+	t.Run("TestIsFilePath", func(t *testing.T) {
 		assert.False(t, stream.IsFilePath("wss://alive.github.com/_sockets/u/19886504/ws?ses"))
 	})
-	yield("TestAlignString", func(t *testing.T) {
+	t.Run("TestAlignString", func(t *testing.T) {
 		fmt.Println(strconv.Quote(stream.AlignString("中文SetHan═╬═dles(ha电═╬═锅锅ndles []Handle)", 55)))
 		fmt.Println(strconv.Quote(stream.AlignString("Handlesjk═╬═js 看见你地方df() []Handf的 dle", 55)))
 		fmt.Println(strconv.Quote(stream.AlignString("en═╬═flish", 55)))
 	})
-	yield("TestIsDirDeep1", func(t *testing.T) {
+	t.Run("TestIsDirDeep1", func(t *testing.T) {
 		println(stream.IsDirRoot("pkg\\cpp2go\\cpp"))
 		println(stream.IsDirRoot(".git"))
 	})
-	yield("TestSubDays", func(t *testing.T) {
-		println(stream.GetDaysDiff("2024-05-26"))
-	})
-	yield("Test_getUserConfigDirs", func(t *testing.T) {
+	t.Run("TestSubDays", func(t *testing.T) { println(stream.GetDaysDiff("2024-05-26")) })
+	t.Run("Test_getUserConfigDirs", func(t *testing.T) {
 		userConfigDirs := stream.GetUserConfigDirs()
 		for username, ConfigDir := range userConfigDirs {
 			fmt.Println(username + ": " + ConfigDir)
 		}
 	})
-	yield("TestNewHexString", func(t *testing.T) {
+	t.Run("TestNewHexString", func(t *testing.T) {
 		b := stream.NewHexString("1122")
 		mylog.HexDump("", b.Bytes())
 	})
-	yield("TestStream_AppendByteSlice", func(t *testing.T) {
+	t.Run("TestStream_AppendByteSlice", func(t *testing.T) {
 		s := stream.NewBuffer("")
 		s.AppendByteSlice([]byte{0x11}, []byte{0x22})
 		mylog.HexDump("", s.Bytes())
 	})
-	yield("TestStream_CutWithIndex", func(t *testing.T) {
+	t.Run("TestStream_CutWithIndex", func(t *testing.T) {
 		mylog.HexDump("", stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).CutWithIndex(2, 4))
 	})
-	yield("TestStream_HexString", func(t *testing.T) {
-		println(stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).HexString())
-	})
-	yield("TestStream_HexStringUpper", func(t *testing.T) {
-		println(stream.NewBuffer([]byte{0xaa, 0xbb, 0x33, 0x44, 0x55}).HexStringUpper())
-	})
-	yield("TestStream_Indent", func(t *testing.T) {
+	t.Run("TestStream_HexString", func(t *testing.T) { println(stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).HexString()) })
+	t.Run("TestStream_HexStringUpper", func(t *testing.T) { println(stream.NewBuffer([]byte{0xaa, 0xbb, 0x33, 0x44, 0x55}).HexStringUpper()) })
+	t.Run("TestStream_Indent", func(t *testing.T) {
 		s := stream.NewBuffer("1111")
 		s.Indent(3)
 		s.WriteString("3344")
 		println(s.String())
 	})
-	yield("TestStream_NewLine", func(t *testing.T) {
+	t.Run("TestStream_NewLine", func(t *testing.T) {
 		s := stream.NewBuffer("111")
 		s.NewLine()
 		println(s.String())
 	})
-	yield("TestStream_ObjectBegin", func(t *testing.T) {
+	t.Run("TestStream_ObjectBegin", func(t *testing.T) {
 		s := stream.NewBuffer("111")
 		s.NewLine()
 		s.ObjectBegin()
 		println(s.String())
 	})
-	yield("TestStream_ObjectEnd", func(t *testing.T) {
+	t.Run("TestStream_ObjectEnd", func(t *testing.T) {
 		s := stream.NewBuffer("111")
 		s.NewLine()
 		s.ObjectEnd()
 		println(s.String())
 	})
-	yield("TestStream_Quote", func(t *testing.T) {
+	t.Run("TestStream_Quote", func(t *testing.T) {
 		s := stream.NewBuffer("111")
 		s.Quote()
 		println(s.String())
 	})
-	yield("TestStream_QuoteWith", func(t *testing.T) {
+	t.Run("TestStream_QuoteWith", func(t *testing.T) {
 		s := stream.NewBuffer("111")
 		s.NewLine()
 		s.QuoteWith("//")
 		println(s.String())
 	})
-	yield("TestStream_SliceBegin", func(t *testing.T) {
+	t.Run("TestStream_SliceBegin", func(t *testing.T) {
 		s := stream.NewBuffer("111")
 		s.NewLine()
 		s.SliceBegin()
 		println(s.String())
 	})
-	yield("TestStream_SliceEnd", func(t *testing.T) {
+	t.Run("TestStream_SliceEnd", func(t *testing.T) {
 		s := stream.NewBuffer("111")
 		s.NewLine()
 		s.SliceEnd()
 		println(s.String())
 	})
-	yield("TestWrite", func(t *testing.T) {
+	t.Run("TestWrite", func(t *testing.T) {
 		body := `
 -Xms256m
 -Xmx2000m
@@ -165,24 +152,21 @@ var m = safemap.NewOrdered[string, func(t *testing.T)](func(yield func(string, f
 -Dsun.tools.attach.tmp.only=true
 `
 		stream.WriteTruncate("clion64.vmoptions", body)
-
 		stream.WriteAppend("1.txt", "111")
 		stream.WriteAppend("1.txt", "222")
 		mylog.Check(os.Remove("1.txt"))
 		mylog.Check(os.Remove("clion64.vmoptions"))
 	})
-	yield("TestReverse", func(t *testing.T) {
+	t.Run("TestReverse", func(t *testing.T) {
 		assert.Equal(t, stream.HexString("8877665544332211"), stream.NewHexString("1122334455667788").Reverse().HexStringUpper())
 	})
-	yield("TestCaseconv", func(t *testing.T) {
+	t.Run("TestCaseconv", func(t *testing.T) {
 		for _, s := range name {
 			println(stream.ToCamelUpper(s))
 		}
 	})
-	yield("TestToCamelUpper", func(t *testing.T) {
-		println(stream.ToCamelUpper("PAGE_SIZE"))
-	})
-	yield("TestSwapAdjacent", func(t *testing.T) {
+	t.Run("TestToCamelUpper", func(t *testing.T) { println(stream.ToCamelUpper("PAGE_SIZE")) })
+	t.Run("TestSwapAdjacent", func(t *testing.T) {
 		str := "abcdefg"
 		b := []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g'}
 		assert.Equal(t, "badcfeg", stream.SwapAdjacent(str).String())
@@ -190,15 +174,13 @@ var m = safemap.NewOrdered[string, func(t *testing.T)](func(yield func(string, f
 		assert.Equal(t, "ET5AA5Q3N2KTR8      ", stream.SwapAdjacent("TEA55A3Q2NTK8R      ").String())
 		assert.Equal(t, "TA1591503892      ", stream.SwapAdjacent("AT5119058329      ").String())
 	})
-	yield("TestSetGitProxy", func(t *testing.T) {
-		stream.GitProxy(true)
-	})
-	yield("TestIsASCIIDigit", func(t *testing.T) {
+	t.Run("TestSetGitProxy", func(t *testing.T) { stream.GitProxy(true) })
+	t.Run("TestIsASCIIDigit", func(t *testing.T) {
 		assert.False(t, types.IsASCIIDigit("MessageBoxA"))
 		assert.False(t, types.IsASCIIDigit("user32.dll"))
 		assert.True(t, types.IsASCIIDigit("1290"))
 	})
-})
+}
 
 var bugBuf = `
 08A73200 57 61 72 68 61 6D 6D 65 72 20 34 30 2C 30 30 30  Warhammer 40,000  
