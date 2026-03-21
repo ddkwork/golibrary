@@ -20,7 +20,7 @@ func (l *log) hexDump(title string, dump string) {
 		debug:    l.debug,
 		callBack: l.callBack,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) hex(title, msg string) string {
@@ -33,7 +33,7 @@ func (l *log) hex(title, msg string) string {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 	return l.row.Value()
 }
 
@@ -47,7 +47,7 @@ func (l *log) Info(title string, msg ...any) {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) Trace(title string, msg ...any) {
@@ -60,7 +60,7 @@ func (l *log) Trace(title string, msg ...any) {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) Warning(title string, msg ...any) {
@@ -73,7 +73,7 @@ func (l *log) Warning(title string, msg ...any) {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) Json(title string, msg ...any) {
@@ -86,7 +86,7 @@ func (l *log) Json(title string, msg ...any) {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) Success(title string, msg ...any) {
@@ -99,7 +99,7 @@ func (l *log) Success(title string, msg ...any) {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 const (
@@ -119,7 +119,7 @@ func (l *log) Request(Request *http.Request, body bool) {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) DumpRequest(Request *http.Request, body bool) string {
@@ -161,7 +161,7 @@ func (l *log) Response(Response *http.Response, body bool) {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) DumpResponse(Response *http.Response, body bool) string {
@@ -204,7 +204,7 @@ func (l *log) Struct(title string, msg any) {
 		},
 		debug: l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) MarshalJson(title string, msg any) {
@@ -216,113 +216,103 @@ func (l *log) MarshalJson(title string, msg any) {
 
 func (l *log) hexDumpNoCaller(title string, dump string) {
 	*l = log{
-		kind:       hexDumpKind,
-		row:        keyValue{key: title, value: dump},
-		debug:      l.debug,
-		callBack:   l.callBack,
-		showCaller: false,
+		kind:     hexDumpKind,
+		row:      keyValue{key: title, value: dump},
+		debug:    l.debug,
+		callBack: l.callBack,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) hexNoCaller(title, msg string) string {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       hexKind,
-		row:        keyValue{key: title, value: msg},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     hexKind,
+		row:      keyValue{key: title, value: msg},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 	return l.row.Value()
 }
 
 func (l *log) InfoNoCaller(title string, msg ...any) {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       infoKind,
-		row:        keyValue{key: title, value: sprint(msg...)},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     infoKind,
+		row:      keyValue{key: title, value: sprint(msg...)},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) TraceNoCaller(title string, msg ...any) {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       traceKind,
-		row:        keyValue{key: title, value: sprint(msg...)},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     traceKind,
+		row:      keyValue{key: title, value: sprint(msg...)},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) WarningNoCaller(title string, msg ...any) {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       warningKind,
-		row:        keyValue{key: title, value: sprint(msg...)},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     warningKind,
+		row:      keyValue{key: title, value: sprint(msg...)},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) JsonNoCaller(title string, msg ...any) {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       jsonKind,
-		row:        keyValue{key: title, value: sprint(msg...)},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     jsonKind,
+		row:      keyValue{key: title, value: sprint(msg...)},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) SuccessNoCaller(title string, msg ...any) {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       successKind,
-		row:        keyValue{key: title, value: sprint(msg...)},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     successKind,
+		row:      keyValue{key: title, value: sprint(msg...)},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) RequestNoCaller(Request *http.Request, body bool) {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       jsonKind,
-		row:        keyValue{key: "", value: l.DumpRequest(Request, body)},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     jsonKind,
+		row:      keyValue{key: "", value: l.DumpRequest(Request, body)},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) ResponseNoCaller(Response *http.Response, body bool) {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       jsonKind,
-		row:        keyValue{key: "", value: l.DumpResponse(Response, body)},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     jsonKind,
+		row:      keyValue{key: "", value: l.DumpResponse(Response, body)},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) StructNoCaller(title string, msg any) {
 	*l = log{
-		callBack:   l.callBack,
-		kind:       structKind,
-		row:        keyValue{key: title, value: pretty.Format(msg)},
-		debug:      l.debug,
-		showCaller: false,
+		callBack: l.callBack,
+		kind:     structKind,
+		row:      keyValue{key: title, value: pretty.Format(msg)},
+		debug:    l.debug,
 	}
-	l.printAndWrite()
+	l.print()
 }
 
 func (l *log) MarshalJsonNoCaller(title string, msg any) {
@@ -332,30 +322,23 @@ func (l *log) MarshalJsonNoCaller(title string, msg any) {
 
 var lock sync.RWMutex
 
-func (l *log) printAndWrite() {
+func (l *log) print() {
 	lock.Lock()
 	defer lock.Unlock()
 
 	v := l.row.Value()
-	var end string
-	if l.showCaller {
-		end = " //" + caller()
-	}
+	end := " //" + caller()
 	switch l.kind {
 	case hexDumpKind:
 		isLongHexdump := strings.Contains(l.row.value, "\n")
 		if isLongHexdump {
 			v = "\n" + v
-			if l.showCaller {
-				end = "\n" + end
-			}
+			end = "\n" + end
 		}
 		v += end
 	case jsonKind, structKind:
 		v = "\n" + v
-		if l.showCaller {
-			end = "\n" + end
-		}
+		end = "\n" + end
 		v += end
 	default:
 		v += end

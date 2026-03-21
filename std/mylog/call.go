@@ -105,7 +105,7 @@ func (l *log) printAndWrite2() {
 		if skip {
 			continue
 		}
-		s := fmt.Sprintf("%s+0x%x %s:%d", frame.Function, frame.PC-frame.Entry, frame.File, frame.Line)
+		s := fmt.Sprintf("%s %s:%d", shortenFunction(frame.Function), shortenPath(frame.File), frame.Line)
 		stackChildren = append(stackChildren, s+"\n")
 	}
 
