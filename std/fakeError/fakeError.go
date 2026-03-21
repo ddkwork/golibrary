@@ -16,44 +16,6 @@ import (
 	"github.com/ddkwork/golibrary/std/mylog"
 )
 
-// Package fakeError provides automatic error handling transformation for Go code.
-//
-// This package uses AST (Abstract Syntax Tree) analysis to convert traditional
-// error handling patterns into simplified mylog.Check* function calls.
-//
-// Supported transformations:
-//
-//  1. Simple error checking with panic/log.Fatal:
-//     if err != nil { log.Fatal(err); return } → mylog.Check(...)
-//
-//  2. Error checking with panic:
-//     if err != nil { panic(err) } → mylog.Check(...)
-//
-//  3. Error checking with continue:
-//     if err != nil { continue } → mylog.CheckIgnore(err); continue
-//
-//  4. Defer error handling:
-//     defer func() { if err := x.Close(); err != nil { ... } }()
-//     → defer mylog.Check(x.Close())
-//
-//  5. Multiple return value handling:
-//     result, err := someFunc()
-//     if err != nil { return err }
-//     → result := mylog.Check2(someFunc())
-//
-// The tool automatically:
-//   - Removes redundant "var err error" declarations
-//   - Adds necessary mylog package imports
-//   - Preserves //go: build tags and comments
-//
-// Usage:
-//
-//   fakeError.Walk(".", true)  // Walk directory and remove comments
-//
-// Note: This tool transforms code in-place. Use version control to preserve original code.
-// The transformation is designed to reduce boilerplate error handling while maintaining
-// error visibility through the mylog package.
-
 func Walk(path string, removeComments ...bool) {
 	if path == "" {
 		path = "."
@@ -113,9 +75,6 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 	}
 
 	fnHandleAssign := func(x *ast.AssignStmt, e *Edit) {
-		if len(x.Rhs) > 1 {
-			return
-		}
 		last := len(x.Lhs) - 1
 		lastIdent, ok := x.Lhs[last].(*ast.Ident)
 		if !ok {
@@ -125,6 +84,19 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 			return
 		}
 		if lastIdent.Name == "_" {
+			// 检查最后一个返回值是否为 error 类型
+			if expr, ok := x.Rhs[0].(*ast.CallExpr); ok {
+				switch fun := expr.Fun.(type) {
+				case *ast.Ident:
+					if fun.Obj == nil {
+						// 外部函数，无法获取返回类型，不转换
+						return
+					}
+				case *ast.SelectorExpr:
+					// 外部函数（如 os.ReadFile），无法获取返回类型，不转换
+					return
+				}
+			}
 			lastReturnType, ok := getLastReturnType(x)
 			if !ok {
 				return
@@ -183,10 +155,14 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 
 	skipAssign := false
 	isContinue := false
+	deferProcessedIfStmts := make(map[token.Pos]bool)
 	for n := range ast.Preorder(file) {
 		switch x := n.(type) {
 		case *ast.IfStmt: // if err := backendConn.Close(); err != nil {
-			for ifStmt := range findIfErrNotNil(n) {
+			if deferProcessedIfStmts[x.Pos()] {
+				continue
+			}
+			for ifStmt := range findIfErrNotNil(n, deferProcessedIfStmts) {
 				isOneWorkCode := false // if 块内部语句只有1句，没有其他业务逻辑,则直接替换为mylog.Check(业务逻辑)
 				for i, stmt := range ifStmt.Body.List {
 					if len(ifStmt.Body.List) == 1 {
@@ -252,6 +228,36 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 					break
 				}
 				if ifStmt.Init == nil {
+					// 处理 if err != nil { ... } 的情况（没有 Init）
+					// 检查 if 块中是否只有简单的错误处理（log/return/panic）
+					isSimpleErrorCheck := false
+					if len(ifStmt.Body.List) == 1 {
+						switch row := ifStmt.Body.List[0].(type) {
+						case *ast.ExprStmt:
+							c := getNodeCode(row, fileSet, text)
+							if strings.HasPrefix(c, "log.") || c == "panic(err)" {
+								isSimpleErrorCheck = true
+							}
+						case *ast.ReturnStmt:
+							c := getNodeCode(row, fileSet, text)
+							if strings.Contains(c, ", err") || strings.HasSuffix(c, ", err)") || c == "return err" {
+								isSimpleErrorCheck = true
+							}
+						}
+					}
+					if isSimpleErrorCheck {
+						// 删除整个 if 语句
+						Replaces = append(Replaces, Edit{
+							StartPos:   ifStmt.Pos(),
+							EndPos:     ifStmt.End(),
+							LineNumber: fileSet.Position(ifStmt.Pos()).Line,
+							filePath:   fileSet.Position(ifStmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(ifStmt.Pos()).Line),
+							NewContent: "",
+							edge:       edge(ifStmt),
+							isContinue: false,
+						})
+						break
+					}
 					break
 				}
 				if stmt, ok := ifStmt.Init.(*ast.AssignStmt); ok {
@@ -271,27 +277,122 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 				}
 			}
 		case *ast.AssignStmt: // backendConn, err := net.DialTimeout("tcp", forwardTarget, 5*time.Second)
+			if deferProcessedIfStmts[x.Pos()] {
+				continue
+			}
 			if skipAssign {
 				skipAssign = false
 				continue
 			}
 			fnHandleAssign(x, nil)
-		case *ast.DeferStmt: // todo 处理多个返回值，以及返回值检查,e.Obj.Decl.(*ast.FuncDecl)取不出来的返回类型的，nil
-			mylog.Todo("defer func() { mylog.Check(backendConn.Close()) }()")
-			break
+		case *ast.DeferStmt:
 			c := getNodeCode(x.Call, fileSet, text)
-			switch x := x.Call.Fun.(type) {
-			case *ast.FuncLit: // todo 改成检测是否实现io.Closer接口,io.NopCloser
-				if strings.Contains(c, "Close") {
-					Replaces = append(Replaces, Edit{
-						StartPos:   x.Pos(),
-						EndPos:     x.End(),
-						LineNumber: fileSet.Position(x.Pos()).Line,
-						filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
-						NewContent: "mylog.Check(" + getNodeCode(x, fileSet, text) + ")",
-						edge:       edge(x),
-						isContinue: false,
-					})
+			mylog.Json("defer", c)
+			switch fun := x.Call.Fun.(type) {
+			case *ast.FuncLit:
+				mylog.Json("defer FuncLit", getNodeCode(fun, fileSet, text))
+				// 遍历 FuncLit 中的语句，转换错误处理
+				for _, stmt := range fun.Body.List {
+					mylog.Json("defer stmt", getNodeCode(stmt, fileSet, text))
+					if ifStmt, ok := stmt.(*ast.IfStmt); ok {
+						mylog.Json("defer ifStmt", getNodeCode(ifStmt, fileSet, text))
+						if ifStmt.Init == nil {
+							// 处理 if err != nil { ... } 的情况（没有 Init）
+							// 检查 if 块中是否只有简单的错误处理（log/return/panic）
+							isSimpleErrorCheck := false
+							if len(ifStmt.Body.List) == 1 {
+								switch row := ifStmt.Body.List[0].(type) {
+								case *ast.ExprStmt:
+									c := getNodeCode(row, fileSet, text)
+									if strings.HasPrefix(c, "log.") || c == "panic(err)" {
+										isSimpleErrorCheck = true
+									}
+								case *ast.ReturnStmt:
+									c := getNodeCode(row, fileSet, text)
+									if strings.Contains(c, ", err") || strings.HasSuffix(c, ", err)") || c == "return err" {
+										isSimpleErrorCheck = true
+									}
+								}
+							}
+							if isSimpleErrorCheck {
+								// 删除整个 if 语句
+								Replaces = append(Replaces, Edit{
+									StartPos:   ifStmt.Pos(),
+									EndPos:     ifStmt.End(),
+									LineNumber: fileSet.Position(ifStmt.Pos()).Line,
+									filePath:   fileSet.Position(ifStmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(ifStmt.Pos()).Line),
+									NewContent: "",
+									edge:       edge(ifStmt),
+									isContinue: false,
+								})
+							}
+						} else {
+							mylog.Json("defer ifStmt.Init", getNodeCode(ifStmt.Init, fileSet, text))
+							if assignStmt, ok := ifStmt.Init.(*ast.AssignStmt); ok {
+								mylog.Json("defer assignStmt", getNodeCode(assignStmt, fileSet, text))
+								// 检查最后一个变量名是否为 err
+								last := len(assignStmt.Lhs) - 1
+								mylog.Json("defer last", last)
+								if lastIdent, ok := assignStmt.Lhs[last].(*ast.Ident); ok {
+									mylog.Json("defer lastIdent.Name", lastIdent.Name)
+									if lastIdent.Name == "err" {
+										// 检查是否是简单的错误检查
+										isSimpleErrorCheck := false
+										if len(ifStmt.Body.List) == 1 {
+											switch row := ifStmt.Body.List[0].(type) {
+											case *ast.ExprStmt:
+												c := getNodeCode(row, fileSet, text)
+												mylog.Json("defer ExprStmt", c)
+												if strings.HasPrefix(c, "log.") {
+													isSimpleErrorCheck = true
+												}
+											}
+										}
+										mylog.Json("defer isSimpleErrorCheck", isSimpleErrorCheck)
+										if isSimpleErrorCheck {
+											// 转换为 mylog.Check
+											left := ""
+											for i, v := range assignStmt.Lhs {
+												c := getNodeCode(v, fileSet, text)
+												if c == "err" || c == "_" {
+													continue
+												}
+												if i < len(assignStmt.Lhs)-1 {
+													left += c + ","
+												}
+											}
+											left = strings.TrimRight(left, ",")
+
+											right := ""
+											tk := assignStmt.Tok.String()
+											if left == "" {
+												tk = ""
+											}
+											for i, v := range assignStmt.Rhs {
+												right += getNodeCode(v, fileSet, text)
+												if i < len(assignStmt.Rhs)-1 {
+													right += ","
+												}
+											}
+
+											newContent := left + tk + fnCall(len(assignStmt.Lhs)) + "(" + right + ")"
+											deferProcessedIfStmts[ifStmt.Pos()] = true
+											deferProcessedIfStmts[assignStmt.Pos()] = true
+											Replaces = append(Replaces, Edit{
+												StartPos:   ifStmt.Pos(),
+												EndPos:     ifStmt.End(),
+												LineNumber: fileSet.Position(ifStmt.Pos()).Line,
+												filePath:   fileSet.Position(ifStmt.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(ifStmt.Pos()).Line),
+												NewContent: newContent,
+												edge:       edge(ifStmt) + " # " + edge(assignStmt),
+												isContinue: false,
+											})
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			case *ast.CallExpr:
 				if strings.Contains(c, "Close") {
@@ -300,7 +401,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 						EndPos:     x.End(),
 						LineNumber: fileSet.Position(x.Pos()).Line,
 						filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
-						NewContent: "mylog.Check(" + getNodeCode(x, fileSet, text) + ")",
+						NewContent: "mylog.Check(" + c + ")",
 						edge:       edge(x),
 						isContinue: false,
 					})
@@ -319,9 +420,12 @@ func getNodeCode(astNode ast.Node, f *token.FileSet, code string) string {
 }
 
 // todo 这种是否应该删除 if err != nil && !errors.Is(err, fs.ErrNotExist) {
-func findIfErrNotNil(n ast.Node) iter.Seq[*ast.IfStmt] {
+func findIfErrNotNil(n ast.Node, deferProcessedIfStmts map[token.Pos]bool) iter.Seq[*ast.IfStmt] {
 	return func(yield func(*ast.IfStmt) bool) {
 		if stmt, ok := n.(*ast.IfStmt); ok {
+			if deferProcessedIfStmts[stmt.Pos()] {
+				return
+			}
 			if b, ok := stmt.Cond.(*ast.BinaryExpr); ok {
 				if b.Op == token.NEQ {
 					if x, ok := b.X.(*ast.Ident); ok && x.Name == "err" {
@@ -379,7 +483,7 @@ func Apply(text string, replaces []Edit) string {
 	}
 	for i, r := range replaces {
 		replaces[i].filePath = " " + filepath.ToSlash(replaces[i].filePath) + " " // 为了使行号可点击定位到文件
-		if strings.Contains(r.NewContent, "continue") && replaces[i-1].NewContent != "" {
+		if i > 0 && strings.Contains(r.NewContent, "continue") && replaces[i-1].NewContent != "" {
 			replaces[i-1].isContinue = true
 		}
 	}

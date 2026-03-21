@@ -1,95 +1,74 @@
 # fakeError
 
-Go 代码错误处理自动转换工具
+## 核心理念
 
-## 功能说明
+**任何 Go 程序员都不应该忽略错误。**
 
-fakeError 使用 AST（抽象语法树）分析自动将传统的错误处理模式转换为简化的 `mylog.Check*` 函数调用。
+fakeError 的存在是为了强制执行这一原则。它会自动将所有可能被忽略的错误处理代码转换为明确的 `mylog.Check*` 调用，确保每一个错误都被处理、记录或 panic，而不是被静默忽略。
 
-## 支持的转换模式
+## 为什么需要 fakeError？
 
-### 1. 简单错误检查（panic/log.Fatal）
+在 Go 中，错误处理是显式的，但开发者经常因为以下原因忽略错误：
 
-**转换前：**
+1. **懒惰**：`result, _ := someFunc()` - 用 `_` 忽略错误
+2. **疏忽**：忘记处理 defer 中的错误
+3. **样板代码疲劳**：重复写 `if err != nil { ... }` 让人厌烦
+4. **侥幸心理**："这个函数不会失败"
+
+这些行为会导致生产环境中难以调试的问题。fakeError 通过自动化转换，让正确处理错误变得简单，让忽略错误变得困难。
+
+## fakeError 做什么？
+
+fakeError 扫描你的代码，将所有传统的错误处理模式转换为 `mylog.Check*` 函数调用：
+
+### 转换示例
+
+**被忽略的错误 → 被处理的错误**
 ```go
+// 转换前：错误被忽略
+result, _ := someFunc()
+
+// 转换后：错误被处理
+result := mylog.Check2(someFunc())
+```
+
+**冗长的错误检查 → 简洁的错误处理**
+```go
+// 转换前
+result, err := someFunc()
 if err != nil {
     log.Fatal(err)
     return
 }
-```
 
-**转换后：**
-```go
-mylog.Check(...)
-```
-
-### 2. 错误检查（panic）
-
-**转换前：**
-```go
-if err != nil {
-    panic(err)
-}
-```
-
-**转换后：**
-```go
-mylog.Check(...)
-```
-
-### 3. 错误检查（continue）
-
-**转换前：**
-```go
-if err != nil {
-    continue
-}
-```
-
-**转换后：**
-```go
-mylog.CheckIgnore(err)
-continue
-```
-
-### 4. Defer 错误处理
-
-**转换前：**
-```go
-defer func() {
-    if err := x.Close(); err != nil {
-        log.Debug(err)
-    }
-}()
-```
-
-**转换后：**
-```go
-defer mylog.Check(x.Close())
-```
-
-### 5. 多返回值处理
-
-**转换前：**
-```go
-result, err := someFunc()
-if err != nil {
-    return err
-}
-```
-
-**转换后：**
-```go
+// 转换后
 result := mylog.Check2(someFunc())
 ```
 
-## 自动功能
+**defer 中的错误 → 明确的错误处理**
+```go
+// 转换前：defer 中的错误经常被忽略
+defer func() {
+    if err := conn.Close(); err != nil {
+        log.Debug(err)
+    }
+}()
 
-- **删除冗余声明**：自动删除 `var err error` 声明
-- **自动导入**：自动添加必要的 mylog 包导入
-- **保留注释**：保留 `//go:` 构建标签和注释
+// 转换后：错误被明确处理
+defer mylog.Check(conn.Close())
+```
 
-## 使用方法
+## mylog.Check* 的价值
+
+`mylog.Check*` 函数不仅仅是语法糖，它们提供了：
+
+- **错误可见性**：所有错误都会被记录，不会静默消失
+- **快速失败**：默认 panic，让问题立即暴露
+- **可配置性**：可以通过 mylog 配置调整错误处理策略
+- **调用栈追踪**：自动记录错误发生的调用栈
+- **统一处理**：整个项目的错误处理逻辑一致
+
+## 使用 fakeError
 
 ```go
 package main
@@ -97,107 +76,57 @@ package main
 import "github.com/ddkwork/golibrary/std/fakeError"
 
 func main() {
-    // 遍历当前目录并移除注释
+    // 扫描并转换当前目录的所有 Go 文件
     fakeError.Walk(".", true)
+}
+```
+
+⚠️ **警告：此工具会原地修改代码，请使用版本控制保留原始代码**
+
+## 转换后的代码风格
+
+转换后的代码更加简洁，同时保持了错误处理的完整性：
+
+```go
+func main() {
+    config := mylog.Check2(initConfig())
     
-    // 仅遍历不移除注释
-    fakeError.Walk(".")
+    for _, rule := range config.Rules {
+        l := mylog.Check2(net.Listen("tcp", rule.ListenAddr))
+        
+        conn := mylog.Check2(l.Accept())
+        defer mylog.Check(conn.Close())
+        
+        clientHello, clientReader := mylog.Check3(PeekClientHello(conn))
+        
+        backendConn := mylog.Check2(net.DialTimeout("tcp", target, 5*time.Second))
+        defer mylog.Check(backendConn.Close())
+        
+        mylog.Check2(io.Copy(clientConn, backendConn))
+        mylog.Check2(io.Copy(backendConn, clientReader))
+    }
 }
 ```
 
-## 注意事项
+没有冗长的 `if err != nil` 检查，没有被忽略的错误，所有错误都被明确处理。
 
-⚠️ **此工具会原地修改代码，请使用版本控制保留原始代码**
+## 技术细节
 
-转换设计用于减少样板错误处理代码，同时通过 mylog 包保持错误可见性。
+fakeError 使用 AST（抽象语法树）分析来识别和转换错误处理模式：
 
-## ⚠️ 忽略错误
-
-fakeError 会转换所有使用 `err` 或 `_` 的错误处理。如果需要忽略错误，可以使用以下方法：
-
-### 方法 1：使用不同的错误变量名
-
-fakeError 只识别 `err` 变量，使用其他变量名可以避免转换：
-
-**不会被转换：**
-```go
-data, e := os.ReadFile("file.txt")
-// 不处理 e，直接忽略
-```
-
-### 方法 2：在 if 块中添加其他逻辑
-
-如果 if 块中有其他逻辑（不仅仅是 panic/log/return/continue），fakeError 不会转换：
-
-**不会被转换：**
-```go
-result, err := someFunc()
-if err != nil {
-    // 添加注释或其他逻辑，避免被转换
-    _ = err
-}
-```
-
-### 方法 3：避免使用 `_` 接收 error 类型（仅限本文件函数）
-
-**会被转换：**
-```go
-result, _ := localFuncReturningError()
-// 转换为：result := mylog.CheckIgnore(err)
-```
-
-**不会被转换：**
-```go
-result, _ := localFuncReturningNonError()
-// 如果最后一个返回类型不是 error，则不会被转换
-```
-
-**重要说明**：
-- fakeError 通过 AST 分析**本文件中定义的函数**的返回类型
-- 对于**外部库函数**，AST 无法获取返回类型，使用 `_` 不会被转换
-- 如果外部库函数返回 error，使用 `_` 会导致错误被忽略（不会转换为 CheckIgnore）
-
-**示例：**
-```go
-// 外部库函数，AST 无法获取返回类型
-data, _ := os.ReadFile("file.txt")  // 不会被转换，错误被忽略
-
-// 本文件函数，AST 可以获取返回类型
-result, _ := myFuncReturningError()  // 转换为：result := mylog.CheckIgnore(err)
-```
-
-## 工作原理
-
-1. 使用 `go/parser` 解析 Go 源代码为 AST
-2. 使用 `go/ast` 遍历语法树查找错误处理模式
-3. 根据模式应用相应的转换规则
-4. 使用 `go/format` 格式化生成的代码
-
-## 转换规则
-
-### AssignStmt 转换
-
-- 检测最后一个赋值变量为 `err` 或 `_`
-- 如果是 `_`，检查最后一个返回类型是否为 `error`
-- 转换为 `mylog.CheckN()` 调用，N 为返回值数量
-
-### IfStmt 转换
-
-- 检测 `if err != nil` 模式
-- 检查 if 块内语句数量
-- 如果只有 1 条语句且为 panic/log/return/continue，直接转换
-
-### DeferStmt 转换
-
-- 检测 defer 中的 Close 方法调用
-- 转换为 `mylog.Check()` 包装
+- **AssignStmt**：检测 `result, err := func()` 模式
+- **IfStmt**：检测 `if err != nil` 模式
+- **DeferStmt**：检测 defer 中的错误处理
+- **外部函数检测**：通过 AST 分析确定函数返回类型
 
 ## 测试
-
-运行测试套件：
 
 ```bash
 go test ./std/fakeError/...
 ```
 
-测试覆盖了 10 个不同的转换场景。
+## 哲学
+
+> "Errors are values. Treating errors as values is a critical part of Go's design, and ignoring them is a mistake."
+
+fakeError 帮助你实践这一哲学，让错误处理成为代码的一部分，而不是被忽略的负担。
