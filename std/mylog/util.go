@@ -5,6 +5,9 @@ import (
 )
 
 func sprint(msg ...any) string {
+	if len(msg) == 0 {
+		return ""
+	}
 	data := fmt.Sprint(msg...)
 	if data == "" {
 		return `""`

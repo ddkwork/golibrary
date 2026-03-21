@@ -3,7 +3,6 @@ package i18n
 import (
 	"bufio"
 	"fmt"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -130,7 +129,7 @@ func load(name string) {
 				if _, exists := translations[key]; !exists {
 					translations[key] = value
 				} else {
-					slog.Warn("i18n: ignoring duplicate key", "line", lastKeyLineStart, "file", path)
+					mylog.Warning("i18n: ignoring duplicate key", "line", lastKeyLineStart, "file", path)
 				}
 				hasKey = false
 				hasValue = false
@@ -144,7 +143,7 @@ func load(name string) {
 				mylog.Check2(fmt.Sscanf(line, "v:%q", &buffer))
 
 			} else {
-				slog.Warn("i18n: ignoring value with no previous key", "line", lineNum, "file", path)
+				mylog.Warning("i18n: ignoring value with no previous key", "line", lineNum, "file", path)
 			}
 		}
 		lineNum++
@@ -154,10 +153,10 @@ func load(name string) {
 			if _, exists := translations[key]; !exists {
 				translations[key] = value
 			} else {
-				slog.Warn("i18n: ignoring duplicate key", "line", lastKeyLineStart, "file", path)
+				mylog.Warning("i18n: ignoring duplicate key", "line", lastKeyLineStart, "file", path)
 			}
 		} else {
-			slog.Warn("i18n: ignoring key with missing value", "line", lastKeyLineStart, "file", path)
+			mylog.Warning("i18n: ignoring key with missing value", "line", lastKeyLineStart, "file", path)
 		}
 	}
 	key = strings.ToLower(name[:len(name)-len(Extension)])

@@ -2,13 +2,11 @@ package mylog
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	"github.com/ddkwork/golibrary/std/stream/align"
@@ -25,18 +23,21 @@ type (
 )
 
 const (
-	hexDumpIndentLen = 26
-	separate         = ` │ `
+	keyLen   = 10
+	separate = ` │ `
 )
 
 func (l *log) textIndent(src string, isLeftAlign bool) string {
-	spaceLen := hexDumpIndentLen - align.StringWidth[int](src)
+	spaceLen := keyLen - align.StringWidth[int](src)
 	if src == "" {
 		// spaceLen -= separateLen
 	}
 	spaceStr := ``
 	if spaceLen > 0 {
 		spaceStr = strings.Repeat(" ", spaceLen)
+	} else if spaceLen < 0 {
+		// key too long, truncate or just return without padding
+		return src
 	}
 	if isLeftAlign {
 		return src + spaceStr
@@ -107,7 +108,7 @@ func init() {
 	if FileLineCountIsMoreThan(logPath(), 2) {
 		CheckIgnore(os.Truncate(logPath(), io.SeekStart))
 	}
-	Trace("--------- key ---------", "------------------ value ------------------") // android not work,why?
+	Trace("log_header", "------------------ key & value ------------------")
 	if IsWindows() {
 		/*
 				cmd/link: enable ASLR by default on Windows
@@ -137,26 +138,24 @@ func ChdirToGithubWorkspace() {
 	Info("GITHUB_WORKSPACE", Check2(os.Getwd()))
 }
 
-func HexDump[K keyType, V []byte | *bytes.Buffer](title K, buf V) {
-	l.hexDump(fmt.Sprint(title), types.DumpHex(buf))
+func HexDump[V []byte | *bytes.Buffer](buf V) {
+	l.hexDump(callerFuncName(), types.DumpHex(buf))
 }
 
 func Todo(body any) {
 	Warning("TODO", body)
 }
 
-type keyType interface{ string | types.Integer }
-
-func Hex[K keyType, V types.Unsigned](title K, v V) string {
-	return l.hex(fmt.Sprint(title), types.FormatInteger(v))
+func Hex[V types.Unsigned](v V) string {
+	return l.hex(callerFuncName(), types.FormatInteger(v))
 }
-func Info[K keyType](title K, msg ...any)             { l.Info(fmt.Sprint(title), msg...) }
-func Trace[K keyType](title K, msg ...any)            { l.Trace(fmt.Sprint(title), msg...) }
-func Warning[K keyType](title K, msg ...any)          { l.Warning(fmt.Sprint(title), msg...) }
-func MarshalJson[K keyType](title K, msg any)         { l.MarshalJson(fmt.Sprint(title), msg) }
-func Json[K keyType](title K, msg ...any)             { l.Json(fmt.Sprint(title), msg...) }
-func Success[K keyType](title K, msg ...any)          { l.Success(fmt.Sprint(title), msg...) }
-func Struct(object any)                               { l.Struct(reflect.TypeOf(object).String(), object) } // log any type or struct
+func Info(msg ...any)                                 { l.Info(msg...) }
+func Trace(msg ...any)                                { l.Trace(msg...) }
+func Warning(msg ...any)                              { l.Warning(msg...) }
+func MarshalJson(msg any)                             { l.MarshalJson(msg) }
+func Json(msg ...any)                                 { l.Json(msg...) }
+func Success(msg ...any)                              { l.Success(msg...) }
+func Struct(object any)                               { l.Struct(object) }
 func SetDebug(debug bool)                             { l.debug = debug }
 func Request(Request *http.Request, body bool)        { l.Request(Request, body) }
 func Response(Response *http.Response, body bool)     { l.Response(Response, body) }

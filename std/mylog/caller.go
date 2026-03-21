@@ -104,7 +104,20 @@ func shortenFunction(fullFunc string) string {
 func caller() string {
 	frame := getCaller()
 	CheckNil(frame)
-	return fmt.Sprintf("%s %s:%d", shortenFunction(frame.Function), shortenPath(frame.File), frame.Line)
+	return fmt.Sprintf("%s:%d", shortenPath(frame.File), frame.Line)
+}
+
+func callerFuncName() string {
+	frame := getCaller()
+	CheckNil(frame)
+	funcName := shortenFunction(frame.Function)
+	if idx := strings.LastIndex(funcName, "."); idx != -1 {
+		funcName = funcName[idx+1:]
+	}
+	if len(funcName) > keyLen {
+		return funcName[:keyLen-3] + "..."
+	}
+	return funcName
 }
 
 func getCaller() *runtime.Frame {

@@ -52,7 +52,7 @@ func GenMask() {
 		mask := (1 << i) - 1
 		fmt.Printf("%d 位掩码: 0x%X (二进制: %08b)\n", i, mask, mask)
 	}
-	Hex("0x000001000000007E&0xFFFFFFFF", uint64(0x000001000000007E&0xFFFFFFFF))
+	Hex(uint64(0x000001000000007E & 0xFFFFFFFF))
 }
 
 func NewBuffer[T Type](data T) *Buffer {

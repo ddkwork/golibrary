@@ -59,10 +59,10 @@ func reason(err any) string {
 
 func layoutStack(k kind, value string, child bool) string {
 	if child {
-		leftIndent := align.StringWidth[int](GetTimeNowString()+k.String()) + hexDumpIndentLen
+		leftIndent := align.StringWidth[int](GetTimeNowString()+k.String()) + keyLen
 		return strings.Repeat(" ", leftIndent) + " │ " + value + "\n"
 	}
-	leftIndent := hexDumpIndentLen // - align.StringWidth[int](key)
+	leftIndent := keyLen // - align.StringWidth[int](key)
 	if strings.Contains(value, "\n") {
 		b := strings.Builder{}
 		b.Grow(len(value) + 64)

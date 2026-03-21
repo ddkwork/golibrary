@@ -37,12 +37,12 @@ func (l *log) hex(title, msg string) string {
 	return l.row.Value()
 }
 
-func (l *log) Info(title string, msg ...any) {
+func (l *log) Info(msg ...any) {
 	*l = log{
 		callBack: l.callBack,
 		kind:     infoKind,
 		row: keyValue{
-			key:   title,
+			key:   "",
 			value: sprint(msg...),
 		},
 		debug: l.debug,
@@ -50,12 +50,12 @@ func (l *log) Info(title string, msg ...any) {
 	l.print()
 }
 
-func (l *log) Trace(title string, msg ...any) {
+func (l *log) Trace(msg ...any) {
 	*l = log{
 		callBack: l.callBack,
 		kind:     traceKind,
 		row: keyValue{
-			key:   title,
+			key:   "",
 			value: sprint(msg...),
 		},
 		debug: l.debug,
@@ -63,12 +63,12 @@ func (l *log) Trace(title string, msg ...any) {
 	l.print()
 }
 
-func (l *log) Warning(title string, msg ...any) {
+func (l *log) Warning(msg ...any) {
 	*l = log{
 		callBack: l.callBack,
 		kind:     warningKind,
 		row: keyValue{
-			key:   title,
+			key:   "",
 			value: sprint(msg...),
 		},
 		debug: l.debug,
@@ -76,12 +76,12 @@ func (l *log) Warning(title string, msg ...any) {
 	l.print()
 }
 
-func (l *log) Json(title string, msg ...any) {
+func (l *log) Json(msg ...any) {
 	*l = log{
 		callBack: l.callBack,
 		kind:     jsonKind,
 		row: keyValue{
-			key:   title,
+			key:   "",
 			value: sprint(msg...),
 		},
 		debug: l.debug,
@@ -89,12 +89,12 @@ func (l *log) Json(title string, msg ...any) {
 	l.print()
 }
 
-func (l *log) Success(title string, msg ...any) {
+func (l *log) Success(msg ...any) {
 	*l = log{
 		callBack: l.callBack,
 		kind:     successKind,
 		row: keyValue{
-			key:   title,
+			key:   "",
 			value: sprint(msg...),
 		},
 		debug: l.debug,
@@ -196,12 +196,12 @@ func (l *log) DumpResponse(Response *http.Response, body bool) string {
 	return s
 }
 
-func (l *log) Struct(title string, msg any) {
+func (l *log) Struct(msg any) {
 	*l = log{
 		callBack: l.callBack,
 		kind:     structKind,
 		row: keyValue{
-			key:   title,
+			key:   "",
 			value: pretty.Format(msg),
 		},
 		debug: l.debug,
@@ -209,9 +209,9 @@ func (l *log) Struct(title string, msg any) {
 	l.print()
 }
 
-func (l *log) MarshalJson(title string, msg any) {
+func (l *log) MarshalJson(msg any) {
 	indent := Check2(json.MarshalIndent(msg, "", " "))
-	l.Json(title, string(indent))
+	l.Json(string(indent))
 }
 
 var lock sync.RWMutex
@@ -220,8 +220,17 @@ func (l *log) print() {
 	lock.Lock()
 	defer lock.Unlock()
 
+	if l.row.key == "" {
+		l.row.key = callerFuncName()
+	}
+
 	v := l.row.Value()
-	end := " //" + caller()
+
+	if v == "" {
+		panic("log value cannot be empty")
+	}
+
+	end := " " + caller()
 	switch l.kind {
 	case hexDumpKind:
 		isLongHexdump := strings.Contains(l.row.value, "\n")
@@ -237,19 +246,18 @@ func (l *log) print() {
 	default:
 		v += end
 	}
+
+	if l.row.value == "" {
+		panic("log value cannot be empty")
+	}
+
+	if strings.Contains(l.row.value, "%") {
+		panic("log value cannot contain format syntax like %s, %d, etc. Value is auto-formatted by mylog")
+	}
+
 	l.row = keyValue{
 		key:   GetTimeNowString() + l.kind.String() + l.textIndent(l.row.key, false),
 		value: v,
-	}
-
-	if l.row.key == "" {
-		panic("log key cannot be empty")
-	}
-
-	for _, r := range l.row.key {
-		if r >= 0x4e00 && r <= 0x9fff {
-			panic("log key cannot contain Chinese characters")
-		}
 	}
 
 	s := l.row.key + separate + l.row.value
