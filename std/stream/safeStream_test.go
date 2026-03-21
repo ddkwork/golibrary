@@ -11,46 +11,194 @@ import (
 
 	"github.com/ddkwork/golibrary/std/assert"
 	"github.com/ddkwork/golibrary/std/mylog"
+	"github.com/ddkwork/golibrary/std/safemap"
 	"github.com/ddkwork/golibrary/std/stream"
 	"github.com/ddkwork/golibrary/types"
 )
 
-func TestWrap(t *testing.T) {
-	table := []struct {
-		Prefix string
-		Text   string
-		Out    string
-		Max    int
-	}{
-		{Prefix: "// ", Text: "short", Max: 78, Out: "// short"},
-		{Prefix: "// ", Text: "some text that is longer", Max: 12, Out: "// some text\n// that is\n// longer"},
-		{Prefix: "// ", Text: "some text\nwith embedded line feeds", Max: 16, Out: "// some text\n// with embedded\n// line feeds"},
-		{Prefix: "", Text: "some text that is longer", Max: 12, Out: "some text\nthat is\nlonger"},
-		{Prefix: "", Text: "some text that is longer", Max: 4, Out: "some\ntext\nthat\nis\nlonger"},
-		{Prefix: "", Text: "some text that is longer, yep", Max: 4, Out: "some\ntext\nthat\nis\nlonger,\nyep"},
-		{Prefix: "", Text: "some text\nwith embedded line feeds", Max: 16, Out: "some text\nwith embedded\nline feeds"},
-	}
-	for _, one := range table {
-		assert.Equal(t, one.Out, stream.Wrap(one.Prefix, one.Text, one.Max))
+func TestAll(t *testing.T) {
+	for name, fn := range m.Range() {
+		t.Run(name, fn)
 	}
 }
 
-func TestNewHexDump(t *testing.T) {
-	stream.NewHexDump(stream.HexDumpString(dump))
-	stream.NewHexDump(stream.HexDumpString(bugBuf))
-}
+var m = safemap.NewOrdered[string, func(t *testing.T)](func(yield func(string, func(t *testing.T)) bool) {
+	yield("TestWrap", func(t *testing.T) {
+		table := []struct {
+			Prefix string
+			Text   string
+			Out    string
+			Max    int
+		}{
+			{Prefix: "// ", Text: "short", Max: 78, Out: "// short"},
+			{Prefix: "// ", Text: "some text that is longer", Max: 12, Out: "// some text\n// that is\n// longer"},
+			{Prefix: "// ", Text: "some text\nwith embedded line feeds", Max: 16, Out: "// some text\n// with embedded\n// line feeds"},
+			{Prefix: "", Text: "some text that is longer", Max: 12, Out: "some text\nthat is\nlonger"},
+			{Prefix: "", Text: "some text that is longer", Max: 4, Out: "some\ntext\nthat\nis\nlonger"},
+			{Prefix: "", Text: "some text that is longer, yep", Max: 4, Out: "some\ntext\nthat\nis\nlonger,\nyep"},
+			{Prefix: "", Text: "some text\nwith embedded line feeds", Max: 16, Out: "some text\nwith embedded\nline feeds"},
+		}
+		for _, one := range table {
+			assert.Equal(t, one.Out, stream.Wrap(one.Prefix, one.Text, one.Max))
+		}
+	})
+	yield("TestNewHexDump", func(t *testing.T) {
+		stream.NewHexDump(stream.HexDumpString(dump))
+		stream.NewHexDump(stream.HexDumpString(bugBuf))
+	})
+	yield("TestHexDumpToGoBytes", func(t *testing.T) {
+		ss := `00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00 8E 6A 64 01 15 4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47 00`
+		stream.NewBuffer(stream.HexDumpString(ss))
+		stream.NewHexDump(stream.HexDumpString(dump))
+		stream.NewHexDump(`00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00`)
+		stream.NewHexDump(`8E 6A 64 01`)
+		stream.NewHexDump(`01`)
+		stream.NewHexDump(`15`)
+		stream.NewHexDump(`4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47`)
+		stream.NewHexDump(`00`)
+	})
+	yield("TestIsFilePath", func(t *testing.T) {
+		assert.False(t, stream.IsFilePath("wss://alive.github.com/_sockets/u/19886504/ws?ses"))
+	})
+	yield("TestAlignString", func(t *testing.T) {
+		fmt.Println(strconv.Quote(stream.AlignString("中文SetHan═╬═dles(ha电═╬═锅锅ndles []Handle)", 55)))
+		fmt.Println(strconv.Quote(stream.AlignString("Handlesjk═╬═js 看见你地方df() []Handf的 dle", 55)))
+		fmt.Println(strconv.Quote(stream.AlignString("en═╬═flish", 55)))
+	})
+	yield("TestIsDirDeep1", func(t *testing.T) {
+		println(stream.IsDirRoot("pkg\\cpp2go\\cpp"))
+		println(stream.IsDirRoot(".git"))
+	})
+	yield("TestSubDays", func(t *testing.T) {
+		println(stream.GetDaysDiff("2024-05-26"))
+	})
+	yield("Test_getUserConfigDirs", func(t *testing.T) {
+		userConfigDirs := stream.GetUserConfigDirs()
+		for username, ConfigDir := range userConfigDirs {
+			fmt.Println(username + ": " + ConfigDir)
+		}
+	})
+	yield("TestNewHexString", func(t *testing.T) {
+		b := stream.NewHexString("1122")
+		mylog.HexDump("", b.Bytes())
+	})
+	yield("TestStream_AppendByteSlice", func(t *testing.T) {
+		s := stream.NewBuffer("")
+		s.AppendByteSlice([]byte{0x11}, []byte{0x22})
+		mylog.HexDump("", s.Bytes())
+	})
+	yield("TestStream_CutWithIndex", func(t *testing.T) {
+		mylog.HexDump("", stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).CutWithIndex(2, 4))
+	})
+	yield("TestStream_HexString", func(t *testing.T) {
+		println(stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).HexString())
+	})
+	yield("TestStream_HexStringUpper", func(t *testing.T) {
+		println(stream.NewBuffer([]byte{0xaa, 0xbb, 0x33, 0x44, 0x55}).HexStringUpper())
+	})
+	yield("TestStream_Indent", func(t *testing.T) {
+		s := stream.NewBuffer("1111")
+		s.Indent(3)
+		s.WriteString("3344")
+		println(s.String())
+	})
+	yield("TestStream_NewLine", func(t *testing.T) {
+		s := stream.NewBuffer("111")
+		s.NewLine()
+		println(s.String())
+	})
+	yield("TestStream_ObjectBegin", func(t *testing.T) {
+		s := stream.NewBuffer("111")
+		s.NewLine()
+		s.ObjectBegin()
+		println(s.String())
+	})
+	yield("TestStream_ObjectEnd", func(t *testing.T) {
+		s := stream.NewBuffer("111")
+		s.NewLine()
+		s.ObjectEnd()
+		println(s.String())
+	})
+	yield("TestStream_Quote", func(t *testing.T) {
+		s := stream.NewBuffer("111")
+		s.Quote()
+		println(s.String())
+	})
+	yield("TestStream_QuoteWith", func(t *testing.T) {
+		s := stream.NewBuffer("111")
+		s.NewLine()
+		s.QuoteWith("//")
+		println(s.String())
+	})
+	yield("TestStream_SliceBegin", func(t *testing.T) {
+		s := stream.NewBuffer("111")
+		s.NewLine()
+		s.SliceBegin()
+		println(s.String())
+	})
+	yield("TestStream_SliceEnd", func(t *testing.T) {
+		s := stream.NewBuffer("111")
+		s.NewLine()
+		s.SliceEnd()
+		println(s.String())
+	})
+	yield("TestWrite", func(t *testing.T) {
+		body := `
+-Xms256m
+-Xmx2000m
+-XX:ReservedCodeCacheSize=512m
+-Xss2m
+-XX:NewSize=128m
+-XX:MaxNewSize=128m
+-XX:+IgnoreUnrecognizedVMOptions
+-XX:+UseG1GC
+-XX:SoftRefLRUPolicyMSPerMB=50
+-XX:CICompilerCount=2
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:-OmitStackTraceInFastThrow
+-ea
+-Dsun.io.useCanonCaches=false
+-Djdk.http.auth.tunneling.disabledSchemes=""
+-Djdk.attach.allowAttachSelf=true
+-Djdk.module.illegalAccess.silent=true
+-Dkotlinx.coroutines.debug=off
+-Dsun.tools.attach.tmp.only=true
+`
+		stream.WriteTruncate("clion64.vmoptions", body)
 
-func TestHexDumpToGoBytes(t *testing.T) {
-	ss := `00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00 8E 6A 64 01 15 4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47 00`
-	stream.NewBuffer(stream.HexDumpString(ss))
-	stream.NewHexDump(stream.HexDumpString(dump))
-	stream.NewHexDump(`00 00 00 1A 00 00 00 09 00 01 00 00 0B 00 00 00`)
-	stream.NewHexDump(`8E 6A 64 01`)
-	stream.NewHexDump(`01`)
-	stream.NewHexDump(`15`)
-	stream.NewHexDump(`4F 53 44 4B 5F 41 42 55 53 45 5F 52 45 50 4F 52 54 49 4E 47`)
-	stream.NewHexDump(`00`)
-}
+		stream.WriteAppend("1.txt", "111")
+		stream.WriteAppend("1.txt", "222")
+		mylog.Check(os.Remove("1.txt"))
+		mylog.Check(os.Remove("clion64.vmoptions"))
+	})
+	yield("TestReverse", func(t *testing.T) {
+		assert.Equal(t, stream.HexString("8877665544332211"), stream.NewHexString("1122334455667788").Reverse().HexStringUpper())
+	})
+	yield("TestCaseconv", func(t *testing.T) {
+		for _, s := range name {
+			println(stream.ToCamelUpper(s))
+		}
+	})
+	yield("TestToCamelUpper", func(t *testing.T) {
+		println(stream.ToCamelUpper("PAGE_SIZE"))
+	})
+	yield("TestSwapAdjacent", func(t *testing.T) {
+		str := "abcdefg"
+		b := []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g'}
+		assert.Equal(t, "badcfeg", stream.SwapAdjacent(str).String())
+		assert.Equal(t, []byte{'b', 'a', 'd', 'c', 'f', 'e', 'g'}, stream.SwapAdjacent(b).Bytes())
+		assert.Equal(t, "ET5AA5Q3N2KTR8      ", stream.SwapAdjacent("TEA55A3Q2NTK8R      ").String())
+		assert.Equal(t, "TA1591503892      ", stream.SwapAdjacent("AT5119058329      ").String())
+	})
+	yield("TestSetGitProxy", func(t *testing.T) {
+		stream.GitProxy(true)
+	})
+	yield("TestIsASCIIDigit", func(t *testing.T) {
+		assert.False(t, types.IsASCIIDigit("MessageBoxA"))
+		assert.False(t, types.IsASCIIDigit("user32.dll"))
+		assert.True(t, types.IsASCIIDigit("1290"))
+	})
+})
 
 var bugBuf = `
 08A73200 57 61 72 68 61 6D 6D 65 72 20 34 30 2C 30 30 30  Warhammer 40,000  
@@ -85,178 +233,6 @@ var dump = `
 000000c0  cc d4 3e 57 b5 ef b4 23  2c 54 13 97 20 d1 cf f0  |..>W...#,T.. ...|
 000000d0  a7 b2 98 85 d3 54                                 |.....T|
 `
-
-func TestIsFilePath(t *testing.T) {
-	assert.False(t, stream.IsFilePath("wss://alive.github.com/_sockets/u/19886504/ws?ses"))
-}
-
-func TestAlignString(t *testing.T) {
-	fmt.Println(strconv.Quote(stream.AlignString("中文SetHan═╬═dles(ha电═╬═锅锅ndles []Handle)", 55)))
-	fmt.Println(strconv.Quote(stream.AlignString("Handlesjk═╬═js 看见你地方df() []Handf的 dle", 55)))
-	fmt.Println(strconv.Quote(stream.AlignString("en═╬═flish", 55)))
-}
-
-func TestIsDirDeep1(t *testing.T) {
-	println(stream.IsDirRoot("pkg\\cpp2go\\cpp"))
-	println(stream.IsDirRoot(".git"))
-}
-
-func TestSubDays(t *testing.T) {
-	println(stream.GetDaysDiff("2024-05-26"))
-}
-
-func Test_getUserConfigDirs(t *testing.T) {
-	userConfigDirs := stream.GetUserConfigDirs()
-	for username, ConfigDir := range userConfigDirs {
-		fmt.Println(username + ": " + ConfigDir)
-	}
-}
-
-func TestNewHexString(t *testing.T) {
-	b := stream.NewHexString("1122")
-	mylog.HexDump("", b.Bytes())
-}
-
-func TestStream_AppendByteSlice(t *testing.T) {
-	s := stream.NewBuffer("")
-	s.AppendByteSlice([]byte{0x11}, []byte{0x22})
-	mylog.HexDump("", s.Bytes())
-}
-
-func TestStream_CutWithIndex(t *testing.T) {
-	mylog.HexDump("", stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).CutWithIndex(2, 4))
-}
-
-func TestStream_HexString(t *testing.T) {
-	println(stream.NewBuffer([]byte{0x11, 0x22, 0x33, 0x44, 0x55}).HexString())
-}
-
-func TestStream_HexStringUpper(t *testing.T) {
-	println(stream.NewBuffer([]byte{0xaa, 0xbb, 0x33, 0x44, 0x55}).HexStringUpper())
-}
-
-func TestStream_Indent(t *testing.T) {
-	s := stream.NewBuffer("1111")
-	s.Indent(3)
-	s.WriteString("3344")
-	println(s.String())
-}
-
-func TestStream_NewLine(t *testing.T) {
-	s := stream.NewBuffer("111")
-	s.NewLine()
-	println(s.String())
-}
-
-func TestStream_ObjectBegin(t *testing.T) {
-	s := stream.NewBuffer("111")
-	s.NewLine()
-	s.ObjectBegin()
-	println(s.String())
-}
-
-func TestStream_ObjectEnd(t *testing.T) {
-	s := stream.NewBuffer("111")
-	s.NewLine()
-	s.ObjectEnd()
-	println(s.String())
-}
-
-func TestStream_Quote(t *testing.T) {
-	s := stream.NewBuffer("111")
-	s.Quote()
-	println(s.String())
-}
-
-func TestStream_QuoteWith(t *testing.T) {
-	s := stream.NewBuffer("111")
-	s.NewLine()
-	s.QuoteWith("//")
-	println(s.String())
-}
-
-func TestStream_SliceBegin(t *testing.T) {
-	s := stream.NewBuffer("111")
-	s.NewLine()
-	s.SliceBegin()
-	println(s.String())
-}
-
-func TestStream_SliceEnd(t *testing.T) {
-	s := stream.NewBuffer("111")
-	s.NewLine()
-	s.SliceEnd()
-	println(s.String())
-}
-
-func BenchmarkByBufioReaderReadLine(b *testing.B) {
-	path := "D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js"
-	for b.Loop() {
-		stream.ReadFileToLines(path)
-	}
-}
-
-func BenchmarkByStringsSplitAfter(b *testing.B) {
-	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
-	for b.Loop() {
-		strings.Lines(s.String())
-	}
-}
-
-func BenchmarkByBytessSplitAfter(b *testing.B) {
-	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
-	for b.Loop() {
-		bytes.SplitAfter(s.Bytes(), []byte("\n"))
-	}
-}
-
-func BenchmarkByRegexp(b *testing.B) {
-	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
-	re := regexp.MustCompile(`\n`)
-	for b.Loop() {
-		re.Split(s.String(), -1)
-	}
-}
-
-func TestWrite(t *testing.T) {
-	body := `
--Xms256m
--Xmx2000m
--XX:ReservedCodeCacheSize=512m
--Xss2m
--XX:NewSize=128m
--XX:MaxNewSize=128m
--XX:+IgnoreUnrecognizedVMOptions
--XX:+UseG1GC
--XX:SoftRefLRUPolicyMSPerMB=50
--XX:CICompilerCount=2
--XX:+HeapDumpOnOutOfMemoryError
--XX:-OmitStackTraceInFastThrow
--ea
--Dsun.io.useCanonCaches=false
--Djdk.http.auth.tunneling.disabledSchemes=""
--Djdk.attach.allowAttachSelf=true
--Djdk.module.illegalAccess.silent=true
--Dkotlinx.coroutines.debug=off
--Dsun.tools.attach.tmp.only=true
-`
-	stream.WriteTruncate("clion64.vmoptions", body)
-
-	stream.WriteAppend("1.txt", "111")
-	stream.WriteAppend("1.txt", "222")
-	mylog.Check(os.Remove("1.txt"))
-	mylog.Check(os.Remove("clion64.vmoptions"))
-}
-
-func TestReverse(t *testing.T) {
-	assert.Equal(t, stream.HexString("8877665544332211"), stream.NewHexString("1122334455667788").Reverse().HexStringUpper())
-}
-
-func TestCaseconv(t *testing.T) {
-	for _, s := range name {
-		println(stream.ToCamelUpper(s))
-	}
-}
 
 var name = []string{
 	"	HIDDEN_HOOK_READ_AND_WRITE                                                 ",
@@ -317,25 +293,31 @@ var name = []string{
 	"	DEBUGGER_SHOW_COMMAND_DD                                                   ",
 }
 
-func TestToCamelUpper(t *testing.T) {
-	println(stream.ToCamelUpper("PAGE_SIZE"))
+func BenchmarkByBufioReaderReadLine(b *testing.B) {
+	path := "D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js"
+	for b.Loop() {
+		stream.ReadFileToLines(path)
+	}
 }
 
-func TestSwapAdjacent(t *testing.T) {
-	str := "abcdefg"
-	b := []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g'}
-	assert.Equal(t, "badcfeg", stream.SwapAdjacent(str).String())
-	assert.Equal(t, []byte{'b', 'a', 'd', 'c', 'f', 'e', 'g'}, stream.SwapAdjacent(b).Bytes())
-	assert.Equal(t, "ET5AA5Q3N2KTR8      ", stream.SwapAdjacent("TEA55A3Q2NTK8R      ").String())
-	assert.Equal(t, "TA1591503892      ", stream.SwapAdjacent("AT5119058329      ").String())
+func BenchmarkByStringsSplitAfter(b *testing.B) {
+	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
+	for b.Loop() {
+		strings.Lines(s.String())
+	}
 }
 
-func TestSetGitProxy(t *testing.T) {
-	stream.GitProxy(true)
+func BenchmarkByBytessSplitAfter(b *testing.B) {
+	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
+	for b.Loop() {
+		bytes.SplitAfter(s.Bytes(), []byte("\n"))
+	}
 }
 
-func TestIsASCIIDigit(t *testing.T) {
-	assert.False(t, types.IsASCIIDigit("MessageBoxA"))
-	assert.False(t, types.IsASCIIDigit("user32.dll"))
-	assert.True(t, types.IsASCIIDigit("1290"))
+func BenchmarkByRegexp(b *testing.B) {
+	s := stream.NewBuffer("D:\\clone\\HyperDbg\\hyperdbg\\demo\\xxx.js")
+	re := regexp.MustCompile(`\n`)
+	for b.Loop() {
+		re.Split(s.String(), -1)
+	}
 }
