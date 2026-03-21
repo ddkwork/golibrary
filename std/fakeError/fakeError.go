@@ -83,26 +83,26 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 		if lastIdent.Name != "err" && lastIdent.Name != "_" {
 			return
 		}
+		_, isCallExpr := x.Rhs[0].(*ast.CallExpr)
+		if lastIdent.Name == "_" && !isCallExpr {
+			return
+		}
 		if lastIdent.Name == "_" {
-			// 检查最后一个返回值是否为 error 类型
 			if expr, ok := x.Rhs[0].(*ast.CallExpr); ok {
 				switch fun := expr.Fun.(type) {
-				case *ast.Ident:
-					if fun.Obj == nil {
-						// 外部函数，无法获取返回类型，不转换
+				case *ast.SelectorExpr:
+					if !returnsError(fun) {
 						return
 					}
-				case *ast.SelectorExpr:
-					// 外部函数（如 os.ReadFile），无法获取返回类型，不转换
-					return
+				case *ast.Ident:
+					lastReturnType, ok := getLastReturnType(x)
+					if !ok {
+						return
+					}
+					if lastReturnType != "error" {
+						return
+					}
 				}
-			}
-			lastReturnType, ok := getLastReturnType(x)
-			if !ok {
-				return
-			}
-			if lastReturnType != "error" {
-				return
 			}
 		}
 		left := ""
@@ -430,6 +430,76 @@ func findIfErrNotNil(n ast.Node, deferProcessedIfStmts map[token.Pos]bool) iter.
 			}
 		}
 	}
+}
+
+func returnsError(expr *ast.SelectorExpr) bool {
+	knownErrorReturningFuncs := map[string]bool{
+		"os.ReadFile":                 true,
+		"os.WriteFile":                true,
+		"os.Mkdir":                    true,
+		"os.MkdirAll":                 true,
+		"os.Remove":                   true,
+		"os.RemoveAll":                true,
+		"os.Rename":                   true,
+		"os.Open":                     true,
+		"os.Create":                   true,
+		"os.OpenFile":                 true,
+		"os.Stat":                     true,
+		"os.Lstat":                    true,
+		"filepath.Glob":               true,
+		"filepath.Walk":               true,
+		"filepath.Abs":                true,
+		"filepath.EvalSymlinks":       true,
+		"io.Copy":                     true,
+		"io.CopyN":                    true,
+		"io.CopyBuffer":               true,
+		"io.ReadAll":                  true,
+		"io.ReadFull":                 true,
+		"io.ReadAtLeast":              true,
+		"io.WriteString":              true,
+		"io/ioutil.ReadFile":          true,
+		"io/ioutil.WriteFile":         true,
+		"io/ioutil.ReadDir":           true,
+		"io/ioutil.TempDir":           true,
+		"io/ioutil.TempFile":          true,
+		"exec.Command":                false,
+		"exec.Command.Output":         true,
+		"exec.Command.Run":            true,
+		"exec.Command.CombinedOutput": true,
+		"exec.Command.Start":          true,
+		"exec.Command.Wait":           true,
+		"net.Dial":                    true,
+		"net.DialTimeout":             true,
+		"net.Listen":                  true,
+		"http.Get":                    true,
+		"http.Post":                   true,
+		"http.PostForm":               true,
+		"json.Marshal":                true,
+		"json.Unmarshal":              true,
+		"xml.Marshal":                 true,
+		"xml.Unmarshal":               true,
+		"fmt.Sscanf":                  true,
+		"fmt.Scanf":                   true,
+		"fmt.Scan":                    true,
+		"fmt.Scanln":                  true,
+		"fmt.Fscanf":                  true,
+		"fmt.Fscan":                   true,
+		"fmt.Fscanln":                 true,
+		"fmt.Sprint":                  false,
+		"fmt.Sprintf":                 false,
+		"fmt.Println":                 false,
+		"fmt.Printf":                  false,
+	}
+	var pkg, name string
+	if ident, ok := expr.X.(*ast.Ident); ok {
+		pkg = ident.Name
+		name = expr.Sel.Name
+		fullName := pkg + "." + name
+		if v, ok := knownErrorReturningFuncs[fullName]; ok {
+			return v
+		}
+	}
+	return false
 }
 
 func getLastReturnType(assignStmt *ast.AssignStmt) (lastReturnType string, b bool) {

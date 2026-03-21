@@ -37,7 +37,7 @@ func main() {
 	os.MkdirAll("patches", 0o755)
 
 	// 清空旧补丁
-	files, _ := filepath.Glob("patches/*.patch")
+	files := mylog.Check2(filepath.Glob("patches/*.patch"))
 	for _, f := range files {
 		os.Remove(f)
 	}

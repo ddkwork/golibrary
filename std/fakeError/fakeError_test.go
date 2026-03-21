@@ -14,130 +14,6 @@ import (
 	"github.com/ddkwork/golibrary/std/stream"
 )
 
-func TestName(t *testing.T) {
-	bad := `package stream
-
-import (
-	"fmt"
-	"net"
-
-	"github.com/ddkwork/golibrary/std/mylog"
-)
-
-// GetAvailablePort 获取可用端口
-func GetAvailablePort() int {
-	listener := mylog.Check2(net.ListenTCP("tcp", mylog.Check2(net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", "0.0.0.0")))))
-	defer func() { mylog.Check(listener.Close()) }()
-	return listener.Addr().(*net.TCPAddr).Port
-}
-
-// IsPortAvailable 判断端口是否可以（未被占用）
-func IsPortAvailable(port int) bool {
-	address := fmt.Sprintf("%s:%d", "0.0.0.0", port)
-	listener := mylog.Check2(net.Listen("tcp", address))
-
-	defer mylog.Check(listener.Close())
-	return true
-}
-`
-	ok := `package stream
-
-import (
-	"fmt"
-	"net"
-
-	"github.com/ddkwork/golibrary/std/mylog"
-)
-
-// GetAvailablePort 获取可用端口
-func GetAvailablePort() int {
-	listener := mylog.Check2(net.ListenTCP("tcp", mylog.Check2(net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", "0.0.0.0")))))
-	defer func() { mylog.Check(listener.Close()) }()
-	return listener.Addr().(*net.TCPAddr).Port
-}
-
-// IsPortAvailable 判断端口是否可以（未被占用）
-func IsPortAvailable(port int) bool {
-	address := fmt.Sprintf("%s:%d", "0.0.0.0", port)
-	listener := mylog.Check2(net.Listen("tcp", address))
-
-	defer mylog.Check(listener.Close())
-	return true
-}
-`
-	assert.Equal(t, ok, get("testName", bad))
-
-}
-
-func Test111(t *testing.T) {
-	bad := `package udp
-
-import "github.com/ddkwork/golibrary/std/mylog"
-
-func (o *object) TransportUDP(DstIP string, DstPort int) {
-	o.reset(DstIP, DstPort)
-	o.GetSrcAddrConn()
-	defer func() {
-		mylog.Check(o.SrcConn == nil)
-		mylog.Check(o.SrcConn.Close())
-		mylog.Check(o.DstConn == nil)
-		mylog.Check(o.DstConn.Close())
-	}()
-	for {
-		SrcBufChan <- o.Bytes()[:o.BufSize]
-		o.SetDstAddrConn()
-		go o.readDstBuf()
-		mylog.Check2(o.SrcConn.WriteToUDP(<-DstBufChan, o.SrcAddr))
-	}
-}
-
-func (o *object) readDstBuf() {
-	select {
-	case b := <-SrcBufChan:
-		mylog.Check2(o.DstConn.Write(b))
-		o.Reset()
-		o.BufSize = mylog.Check2(o.DstConn.Read(o.Bytes()))
-		DstBufChan <- o.Bytes()[:o.BufSize]
-	default:
-	}
-}`
-
-	ok := `package udp
-
-import "github.com/ddkwork/golibrary/std/mylog"
-
-func (o *object) TransportUDP(DstIP string, DstPort int) {
-	o.reset(DstIP, DstPort)
-	o.GetSrcAddrConn()
-	defer func() {
-		mylog.Check(o.SrcConn == nil)
-		mylog.Check(o.SrcConn.Close())
-		mylog.Check(o.DstConn == nil)
-		mylog.Check(o.DstConn.Close())
-	}()
-	for {
-		SrcBufChan <- o.Bytes()[:o.BufSize]
-		o.SetDstAddrConn()
-		go o.readDstBuf()
-		mylog.Check2(o.SrcConn.WriteToUDP(<-DstBufChan, o.SrcAddr))
-	}
-}
-
-func (o *object) readDstBuf() {
-	select {
-	case b := <-SrcBufChan:
-		mylog.Check2(o.DstConn.Write(b))
-		o.Reset()
-		o.BufSize = mylog.Check2(o.DstConn.Read(o.Bytes()))
-		DstBufChan <- o.Bytes()[:o.BufSize]
-	default:
-	}
-}
-`
-
-	assert.Equal(t, ok, get("testName", bad))
-}
-
 func TestAll(t *testing.T) {
 	t.Run("test1", func(t *testing.T) { assert.Equal(t, m.GetMust("test1").want, get("test1", m.GetMust("test1").code)) })
 	t.Run("test2", func(t *testing.T) { assert.Equal(t, m.GetMust("test2").want, get("test2", m.GetMust("test2").code)) })
@@ -149,6 +25,14 @@ func TestAll(t *testing.T) {
 	t.Run("test8", func(t *testing.T) { t.Skip("不确定是否应该删除") })
 	t.Run("test9", func(t *testing.T) { assert.Equal(t, m.GetMust("test9").want, get("test9", m.GetMust("test9").code)) })
 	t.Run("test10", func(t *testing.T) { t.Skip("todo bug") })
+	t.Run("test11", func(t *testing.T) { assert.Equal(t, m.GetMust("test11").want, get("test11", m.GetMust("test11").code)) })
+	t.Run("test12", func(t *testing.T) { assert.Equal(t, m.GetMust("test12").want, get("test12", m.GetMust("test12").code)) })
+	t.Run("test13", func(t *testing.T) {
+		assert.Equal(t, m.GetMust("test13").want, get("test13", m.GetMust("test13").code))
+	})
+	t.Run("test14", func(t *testing.T) {
+		assert.Equal(t, m.GetMust("test14").want, get("test14", m.GetMust("test14").code))
+	})
 }
 
 func get(path, text string) string {
@@ -799,6 +683,174 @@ func bug() error {
 	mylog.Check(apkw.Close())
 	defer mylog.Check(io.Close(nil))
 	defer func() { mylog.Check(io.Close(nil)) }()
+}
+`,
+	})
+	yield("test11", testData{
+		code: `package tmp
+
+import (
+	"syscall"
+)
+
+func test() {
+	var GetLogicalDrives *syscall.LazyProc
+	n, _ := GetLogicalDrives.Call()
+	_ = n
+}
+`,
+		want: `package tmp
+
+import (
+	"syscall"
+)
+
+func test() {
+	var GetLogicalDrives *syscall.LazyProc
+	n, _ := GetLogicalDrives.Call()
+	_ = n
+}
+`,
+	})
+	yield("test12", testData{
+		code: `package tmp
+
+import (
+	"path/filepath"
+)
+
+func test() {
+	files, _ := filepath.Glob("*.go")
+	_ = files
+}
+`,
+		want: `package tmp
+
+import (
+	"github.com/ddkwork/golibrary/std/mylog"
+	"path/filepath"
+)
+
+func test() {
+	files := mylog.Check2(filepath.Glob("*.go"))
+	_ = files
+}
+`,
+	})
+	yield("test13", testData{
+		code: `package stream
+
+import (
+	"fmt"
+	"net"
+
+	"github.com/ddkwork/golibrary/std/mylog"
+)
+
+// GetAvailablePort 获取可用端口
+func GetAvailablePort() int {
+	listener := mylog.Check2(net.ListenTCP("tcp", mylog.Check2(net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", "0.0.0.0")))))
+	defer func() { mylog.Check(listener.Close()) }()
+	return listener.Addr().(*net.TCPAddr).Port
+}
+
+// IsPortAvailable 判断端口是否可以（未被占用）
+func IsPortAvailable(port int) bool {
+	address := fmt.Sprintf("%s:%d", "0.0.0.0", port)
+	listener := mylog.Check2(net.Listen("tcp", address))
+
+	defer mylog.Check(listener.Close())
+	return true
+}
+`,
+		want: `package stream
+
+import (
+	"fmt"
+	"net"
+
+	"github.com/ddkwork/golibrary/std/mylog"
+)
+
+// GetAvailablePort 获取可用端口
+func GetAvailablePort() int {
+	listener := mylog.Check2(net.ListenTCP("tcp", mylog.Check2(net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", "0.0.0.0")))))
+	defer func() { mylog.Check(listener.Close()) }()
+	return listener.Addr().(*net.TCPAddr).Port
+}
+
+// IsPortAvailable 判断端口是否可以（未被占用）
+func IsPortAvailable(port int) bool {
+	address := fmt.Sprintf("%s:%d", "0.0.0.0", port)
+	listener := mylog.Check2(net.Listen("tcp", address))
+
+	defer mylog.Check(listener.Close())
+	return true
+}
+`,
+	})
+	yield("test14", testData{
+		code: `package udp
+
+import "github.com/ddkwork/golibrary/std/mylog"
+
+func (o *object) TransportUDP(DstIP string, DstPort int) {
+	o.reset(DstIP, DstPort)
+	o.GetSrcAddrConn()
+	defer func() {
+		mylog.Check(o.SrcConn == nil)
+		mylog.Check(o.SrcConn.Close())
+		mylog.Check(o.DstConn == nil)
+		mylog.Check(o.DstConn.Close())
+	}()
+	for {
+		SrcBufChan <- o.Bytes()[:o.BufSize]
+		o.SetDstAddrConn()
+		go o.readDstBuf()
+		mylog.Check2(o.SrcConn.WriteToUDP(<-DstBufChan, o.SrcAddr))
+	}
+}
+
+func (o *object) readDstBuf() {
+	select {
+	case b := <-SrcBufChan:
+		mylog.Check2(o.DstConn.Write(b))
+		o.Reset()
+		o.BufSize = mylog.Check2(o.DstConn.Read(o.Bytes()))
+		DstBufChan <- o.Bytes()[:o.BufSize]
+	default:
+	}
+}`,
+		want: `package udp
+
+import "github.com/ddkwork/golibrary/std/mylog"
+
+func (o *object) TransportUDP(DstIP string, DstPort int) {
+	o.reset(DstIP, DstPort)
+	o.GetSrcAddrConn()
+	defer func() {
+		mylog.Check(o.SrcConn == nil)
+		mylog.Check(o.SrcConn.Close())
+		mylog.Check(o.DstConn == nil)
+		mylog.Check(o.DstConn.Close())
+	}()
+	for {
+		SrcBufChan <- o.Bytes()[:o.BufSize]
+		o.SetDstAddrConn()
+		go o.readDstBuf()
+		mylog.Check2(o.SrcConn.WriteToUDP(<-DstBufChan, o.SrcAddr))
+	}
+}
+
+func (o *object) readDstBuf() {
+	select {
+	case b := <-SrcBufChan:
+		mylog.Check2(o.DstConn.Write(b))
+		o.Reset()
+		o.BufSize = mylog.Check2(o.DstConn.Read(o.Bytes()))
+		DstBufChan <- o.Bytes()[:o.BufSize]
+	default:
+	}
 }
 `,
 	})
