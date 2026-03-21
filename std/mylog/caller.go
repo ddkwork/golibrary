@@ -2,7 +2,6 @@ package mylog
 
 import (
 	"fmt"
-	"github.com/ddkwork/golibrary/std/mylog"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -39,8 +38,8 @@ func getPackageName(f string) string {
 
 func initModuleInfo() {
 	moduleInitOnce.Do(func() {
-		data := mylog.Check2(os.ReadFile("go.mod"))
-		if err == nil {
+		data, e := os.ReadFile("go.mod")
+		if e == nil {
 			lines := strings.Split(string(data), "\n")
 			for _, line := range lines {
 				if strings.HasPrefix(line, "module ") {
@@ -56,10 +55,14 @@ func initModuleInfo() {
 }
 
 func findModuleRoot() string {
-	dir := mylog.Check2(os.Getwd())
+	dir, e := os.Getwd()
+	if e != nil {
+		return ""
+	}
 
 	for {
-		if mylog.Check2(os.Stat(filepath.Join(dir, "go.mod"))); err == nil {
+		_, e := os.Stat(filepath.Join(dir, "go.mod"))
+		if e == nil {
 			return dir
 		}
 		parent := filepath.Dir(dir)
@@ -76,8 +79,10 @@ func shortenPath(fullPath string) string {
 	if moduleRoot == "" {
 		return filepath.Base(fullPath)
 	}
-	relPath := mylog.Check2(filepath.Rel(moduleRoot, fullPath))
-
+	relPath, e := filepath.Rel(moduleRoot, fullPath)
+	if e != nil {
+		return filepath.Base(fullPath)
+	}
 	return filepath.ToSlash(relPath)
 }
 
