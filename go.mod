@@ -1,6 +1,6 @@
 module github.com/ddkwork/golibrary
 
-go 1.26
+go 1.26.1
 
 require (
 	github.com/google/go-cmp v0.7.0

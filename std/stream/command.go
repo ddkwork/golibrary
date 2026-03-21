@@ -108,7 +108,7 @@ func runCommand(dir string, silent bool, arg ...string) (stdOut *GeneratedFile) 
 
 			cmdMerge := strings.Join(arg, " ")
 			if !silent {
-				mylog.SuccessNoCaller(cmdKey, cmdMerge)
+				mylog.Success(cmdKey, cmdMerge)
 			}
 			WriteAppend("cmd.cmd", cmdMerge+"\n")
 
