@@ -464,10 +464,13 @@ type Edit struct {
 }
 
 func simplifyNestedChecks(text string) string {
+	endsWithNewline := strings.HasSuffix(text, "\n")
 	lines := strings.Split(text, "\n")
 	for i, line := range lines {
-		count := strings.Count(line, "mylog.Check")
-		if count < 2 {
+		if !strings.Contains(line, "mylog.Check") {
+			continue
+		}
+		if !hasDirectNestedCheck(line) {
 			continue
 		}
 		innerArg := findInnermostCheckArg(line)
@@ -483,7 +486,44 @@ func simplifyNestedChecks(text string) string {
 			lines[i] = indent + "mylog.Check(" + innerArg + ")"
 		}
 	}
-	return strings.Join(lines, "\n")
+	result := strings.Join(lines, "\n")
+	if !endsWithNewline && strings.HasSuffix(result, "\n") {
+		result = strings.TrimSuffix(result, "\n")
+	}
+	return result
+}
+
+func hasDirectNestedCheck(line string) bool {
+	checkPattern := regexp.MustCompile(`mylog\.Check\d*\s*\(`)
+	locs := checkPattern.FindAllStringIndex(line, -1)
+	if len(locs) < 2 {
+		return false
+	}
+	for _, loc := range locs {
+		parenStart := loc[1] - 1
+		for parenStart < len(line) && line[parenStart] != '(' {
+			parenStart++
+		}
+		if parenStart >= len(line) {
+			continue
+		}
+		depth := 1
+		j := parenStart + 1
+		for j < len(line) && depth > 0 {
+			if line[j] == '(' {
+				depth++
+			} else if line[j] == ')' {
+				depth--
+			}
+			j++
+		}
+		arg := line[parenStart+1 : j-1]
+		arg = strings.TrimSpace(arg)
+		if strings.HasPrefix(arg, "mylog.Check") {
+			return true
+		}
+	}
+	return false
 }
 
 func findInnermostCheckArg(line string) string {

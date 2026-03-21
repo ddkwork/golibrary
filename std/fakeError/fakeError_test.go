@@ -63,7 +63,8 @@ func IsPortAvailable(port int) bool {
 
 	defer mylog.Check(listener.Close())
 	return true
-}`
+}
+`
 	assert.Equal(t, ok, get("testName", bad))
 
 }
