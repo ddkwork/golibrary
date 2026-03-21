@@ -23,6 +23,10 @@ const (
 	knownLogrusFrames  int = 4
 )
 
+var pcsPool = NewPool(func() []uintptr {
+	return make([]uintptr, maximumCallerDepth)
+})
+
 func getPackageName(f string) string {
 	for {
 		lastPeriod := strings.LastIndex(f, ".")
@@ -105,7 +109,8 @@ func caller() string {
 
 func getCaller() *runtime.Frame {
 	callerInitOnce.Do(func() {
-		pcs := make([]uintptr, maximumCallerDepth)
+		pcs := pcsPool.Get()
+		defer pcsPool.Put(pcs)
 		runtime.Callers(0, pcs)
 		for i := range maximumCallerDepth {
 			funcName := runtime.FuncForPC(pcs[i]).Name()
@@ -116,7 +121,8 @@ func getCaller() *runtime.Frame {
 		}
 		minimumCallerDepth = knownLogrusFrames
 	})
-	pcs := make([]uintptr, maximumCallerDepth)
+	pcs := pcsPool.Get()
+	defer pcsPool.Put(pcs)
 	depth := runtime.Callers(minimumCallerDepth, pcs)
 	frames := runtime.CallersFrames(pcs[:depth])
 	for f, again := frames.Next(); again; f, again = frames.Next() {

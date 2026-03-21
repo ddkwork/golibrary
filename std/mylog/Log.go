@@ -133,6 +133,7 @@ func (l *log) DumpRequest(Request *http.Request, body bool) string {
 	b := strings.TrimSuffix(string(dumpRequest), "\n")
 	if Request.Header.Get("Content-Type") == "application/json" {
 		buf := strings.Builder{}
+		buf.Grow(len(b) + 64)
 		for s := range strings.Lines(b) {
 			if strings.TrimSpace(s) == "" {
 				continue
@@ -178,6 +179,7 @@ func (l *log) DumpResponse(Response *http.Response, body bool) string {
 	b := strings.TrimSuffix(string(dumpResponse), "\n")
 	if Response.Header.Get("Content-Type") == "application/json" {
 		buf := strings.Builder{}
+		buf.Grow(len(b) + 64)
 		for s := range strings.Lines(b) {
 			if strings.TrimSpace(s) == "" {
 				continue

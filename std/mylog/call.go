@@ -65,6 +65,7 @@ func layoutStack(k kind, value string, child bool) string {
 	leftIndent := hexDumpIndentLen // - align.StringWidth[int](key)
 	if strings.Contains(value, "\n") {
 		b := strings.Builder{}
+		b.Grow(len(value) + 64)
 		b.WriteString("\n")
 		for s := range strings.Lines(value) {
 			if s == "" || s == "\n" {
@@ -110,6 +111,7 @@ func (l *log) printAndWrite2() {
 	}
 
 	b := strings.Builder{}
+	b.Grow(len(l.row.Value()) + len(stackChildren)*128 + 256)
 	if l.row.Value() == "" {
 		l.row.value = `""`
 	}
@@ -144,7 +146,5 @@ var RuntimePrefixesToFilter = []string{
 func callStack() []uintptr {
 	var pcs [512]uintptr
 	n := runtime.Callers(6, pcs[:])
-	cs := make([]uintptr, n)
-	copy(cs, pcs[:n])
-	return cs
+	return pcs[:n]
 }

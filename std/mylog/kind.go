@@ -1,8 +1,6 @@
 package mylog
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type kind int
 
@@ -18,29 +16,20 @@ const (
 	errorKind
 )
 
+var kindStrings = map[kind]string{
+	hexKind:     "    Hex ->",
+	hexDumpKind: "HexDump ->",
+	jsonKind:    "   Json ->",
+	structKind:  " Struct ->",
+	infoKind:    "   Info ->",
+	traceKind:   "  Trace ->",
+	successKind: "Success ->",
+	warningKind: "Warning ->",
+	errorKind:   "  Error ->",
+}
+
 func (k kind) String() string {
-	fnFmtLevel := func(l string) string { return fmt.Sprintf("%8s ->", l) }
-	switch k {
-	case hexKind:
-		return fnFmtLevel("Hex")
-	case hexDumpKind:
-		return fnFmtLevel("HexDump")
-	case jsonKind:
-		return fnFmtLevel("Json")
-	case structKind:
-		return fnFmtLevel("Struct")
-	case infoKind:
-		return fnFmtLevel("Info")
-	case traceKind:
-		return fnFmtLevel("Trace")
-	case successKind:
-		return fnFmtLevel("Success")
-	case warningKind:
-		return fnFmtLevel("Warning")
-	case errorKind:
-		return fnFmtLevel("Error")
-	}
-	return ""
+	return kindStrings[k]
 }
 
 const (
@@ -74,66 +63,8 @@ func (l *log) printColorBody(s string) {
 	}
 }
 
-// "github.com/fatih/color"
-// attribute defines a single SGR Code
-
 type attribute int
 
-// const escape = "\x1b"
-
-// Base attributes
-// const (
-//	Reset attribute = iota
-//	Bold
-//	Faint
-//	Italic
-//	Underline
-//	BlinkSlow
-//	BlinkRapid
-//	ReverseVideo
-//	Concealed
-//	CrossedOut
-// )
-
-// const (
-//	ResetBold attribute = iota + 22
-//	ResetItalic
-//	ResetUnderline
-//	ResetBlinking
-//	_
-//	ResetReversed
-//	ResetConcealed
-//	ResetCrossedOut
-// )
-
-// var mapResetAttributes map[attribute]attribute = map[attribute]attribute{
-//	Bold:         ResetBold,
-//	Faint:        ResetBold,
-//	Italic:       ResetItalic,
-//	Underline:    ResetUnderline,
-//	BlinkSlow:    ResetBlinking,
-//	BlinkRapid:   ResetBlinking,
-//	ReverseVideo: ResetReversed,
-//	Concealed:    ResetConcealed,
-//	CrossedOut:   ResetCrossedOut,
-// }
-
-// Foreground text colors
-// const (
-//	FgBlack attribute = iota + 30
-//	FgRed
-//	FgGreen
-//	FgYellow
-//	FgBlue
-//	FgMagenta
-//	FgCyan
-//	FgWhite
-//
-//	// used internally for 256 and 24-bit coloring
-//	foreground
-// )
-
-// Foreground Hi-Intensity text colors
 const (
 	FgHiBlack attribute = iota + 90
 	FgHiRed
@@ -144,31 +75,3 @@ const (
 	FgHiCyan
 	FgHiWhite
 )
-
-//
-// // Background text colors
-// const (
-//	BgBlack attribute = iota + 40
-//	BgRed
-//	BgGreen
-//	BgYellow
-//	BgBlue
-//	BgMagenta
-//	BgCyan
-//	BgWhite
-//
-//	// used internally for 256 and 24-bit coloring
-//	background
-// )
-//
-// // Background Hi-Intensity text colors
-// const (
-//	BgHiBlack attribute = iota + 100
-//	BgHiRed
-//	BgHiGreen
-//	BgHiYellow
-//	BgHiBlue
-//	BgHiMagenta
-//	BgHiCyan
-//	BgHiWhite
-// )

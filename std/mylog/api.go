@@ -51,6 +51,7 @@ type keyValue struct {
 
 func (k keyValue) Value() string {
 	b := strings.Builder{}
+	b.Grow(len(k.value))
 	for s := range strings.Lines(k.value) {
 		if s == "" || s == "\n" {
 			continue
