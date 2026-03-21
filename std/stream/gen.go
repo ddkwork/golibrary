@@ -261,7 +261,8 @@ import (
 		g.P("")
 		path := name + "_types_gen.go"
 		WriteGoFile(filepath.Join(g.filePath, path), g.Buffer)
-		Fix(".")
+		Fmt(g.filePath)
+		Fix(g.filePath)
 		g.Reset()
 	})
 }
