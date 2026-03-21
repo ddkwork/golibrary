@@ -51,12 +51,10 @@ var (
 )
 
 func TestPrettyPrint(test *testing.T) {
-	test.Skip()
 	Print(array)
 }
 
 func TestPrettyFormat(test *testing.T) {
-	test.Skip()
 	test.Log(Format(bag))
 }
 
