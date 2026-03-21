@@ -17,15 +17,15 @@ const (
 )
 
 var kindStrings = map[kind]string{
-	hexKind:     "    Hex ->",
-	hexDumpKind: "HexDump ->",
-	jsonKind:    "   Json ->",
-	structKind:  " Struct ->",
-	infoKind:    "   Info ->",
-	traceKind:   "  Trace ->",
-	successKind: "Success ->",
-	warningKind: "Warning ->",
-	errorKind:   "  Error ->",
+	hexKind:     " HexV ",
+	hexDumpKind: " Dump ",
+	jsonKind:    " Json ",
+	structKind:  " Stru ",
+	infoKind:    " Info ",
+	traceKind:   " Trac ",
+	successKind: " Succ ",
+	warningKind: " Warn ",
+	errorKind:   " Erro ",
 }
 
 func (k kind) String() string {

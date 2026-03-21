@@ -23,7 +23,7 @@ type (
 )
 
 const (
-	keyLen   = 10
+	keyLen   = 15
 	separate = ` │ `
 )
 
