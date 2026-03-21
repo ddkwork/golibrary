@@ -16,6 +16,44 @@ import (
 	"github.com/ddkwork/golibrary/std/mylog"
 )
 
+// Package fakeError provides automatic error handling transformation for Go code.
+//
+// This package uses AST (Abstract Syntax Tree) analysis to convert traditional
+// error handling patterns into simplified mylog.Check* function calls.
+//
+// Supported transformations:
+//
+//  1. Simple error checking with panic/log.Fatal:
+//     if err != nil { log.Fatal(err); return } → mylog.Check(...)
+//
+//  2. Error checking with panic:
+//     if err != nil { panic(err) } → mylog.Check(...)
+//
+//  3. Error checking with continue:
+//     if err != nil { continue } → mylog.CheckIgnore(err); continue
+//
+//  4. Defer error handling:
+//     defer func() { if err := x.Close(); err != nil { ... } }()
+//     → defer mylog.Check(x.Close())
+//
+//  5. Multiple return value handling:
+//     result, err := someFunc()
+//     if err != nil { return err }
+//     → result := mylog.Check2(someFunc())
+//
+// The tool automatically:
+//   - Removes redundant "var err error" declarations
+//   - Adds necessary mylog package imports
+//   - Preserves //go: build tags and comments
+//
+// Usage:
+//
+//   fakeError.Walk(".", true)  // Walk directory and remove comments
+//
+// Note: This tool transforms code in-place. Use version control to preserve original code.
+// The transformation is designed to reduce boilerplate error handling while maintaining
+// error visibility through the mylog package.
+
 func Walk(path string, removeComments ...bool) {
 	if path == "" {
 		path = "."
