@@ -1,6 +1,7 @@
 package mylog
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httputil"
@@ -152,7 +153,7 @@ func (l *log) DumpRequest(Request *http.Request, body bool) string {
 	return s
 }
 
-func (l *log) Response(Response *http.Response, body bool) {
+func (l *log) Response(Response *http.Response, body bool) *bytes.Buffer {
 	*l = log{
 		callBack: l.callBack,
 		kind:     jsonKind,
@@ -163,6 +164,7 @@ func (l *log) Response(Response *http.Response, body bool) {
 		debug: l.debug,
 	}
 	l.print()
+	return bytes.NewBufferString(l.row.Value())
 }
 
 func (l *log) DumpResponse(Response *http.Response, body bool) string {

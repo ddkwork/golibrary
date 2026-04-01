@@ -149,17 +149,17 @@ func Todo(body any) {
 func Hex[V types.Unsigned](v V) string {
 	return l.hex(callerFuncName(), types.FormatInteger(v))
 }
-func Info(msg ...any)                                 { l.Info(msg...) }
-func Trace(msg ...any)                                { l.Trace(msg...) }
-func Warning(msg ...any)                              { l.Warning(msg...) }
-func MarshalJson(msg any)                             { l.MarshalJson(msg) }
-func Json(msg ...any)                                 { l.Json(msg...) }
-func Success(msg ...any)                              { l.Success(msg...) }
-func Struct(object any)                               { l.Struct(object) }
-func SetDebug(debug bool)                             { l.debug = debug }
-func Request(Request *http.Request, body bool)        { l.Request(Request, body) }
-func Response(Response *http.Response, body bool)     { l.Response(Response, body) }
-func DumpRequest(req *http.Request, body bool) string { return l.DumpRequest(req, body) }
+func Info(msg ...any)                                           { l.Info(msg...) }
+func Trace(msg ...any)                                          { l.Trace(msg...) }
+func Warning(msg ...any)                                        { l.Warning(msg...) }
+func MarshalJson(msg any)                                       { l.MarshalJson(msg) }
+func Json(msg ...any)                                           { l.Json(msg...) }
+func Success(msg ...any)                                        { l.Success(msg...) }
+func Struct(object any)                                         { l.Struct(object) }
+func SetDebug(debug bool)                                       { l.debug = debug }
+func Request(Request *http.Request, body bool)                  { l.Request(Request, body) }
+func Response(Response *http.Response, body bool) *bytes.Buffer { return l.Response(Response, body) }
+func DumpRequest(req *http.Request, body bool) string           { return l.DumpRequest(req, body) }
 func DumpResponse(resp *http.Response, body bool) string {
 	return l.DumpResponse(resp, body)
 }
