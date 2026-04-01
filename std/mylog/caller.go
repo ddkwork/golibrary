@@ -111,6 +111,9 @@ func callerFuncName() string {
 	frame := getCaller()
 	CheckNil(frame)
 	funcName := shortenFunction(frame.Function)
+	if start := strings.Index(funcName, "["); start != -1 {
+		funcName = funcName[:start]
+	}
 	if idx := strings.LastIndex(funcName, "."); idx != -1 {
 		funcName = funcName[idx+1:]
 	}
