@@ -110,7 +110,7 @@ func runCommand(dir string, silent bool, arg ...string) (stdOut *GeneratedFile) 
 			if !silent {
 				mylog.Success(cmdKey, cmdMerge)
 			}
-			WriteAppend("cmd.cmd", cmdMerge+"\n")
+			WriteAppend("cmds.cmd", cmdMerge+"\n")
 
 			stdoutPipe = mylog.Check2(cmd.StdoutPipe())
 			stderrPipe = mylog.Check2(cmd.StderrPipe())
