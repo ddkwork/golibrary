@@ -121,8 +121,8 @@ jobs:
         run: |
           # Delete existing latest tag if it exists
           if git tag -l "latest"; then
-            git push origin --delete latest
-            git tag -d latest
+            git push origin --delete latest || true
+            git tag -d latest || true
           fi
           # Delete existing latest release using GitHub API
           if curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases/tags/latest" | grep -q "id";
