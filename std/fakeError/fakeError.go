@@ -122,15 +122,15 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 		// 只有一个返回值需要删除 ,
 		left = strings.TrimRight(left, ",")
 
-		right := ""
+		var right strings.Builder
 		tk := x.Tok.String()
 		if left == "" {
 			tk = ""
 		}
 		for i, v := range x.Rhs {
-			right += getNodeCode(v, fileSet, text)
+			right.WriteString(getNodeCode(v, fileSet, text))
 			if i < len(x.Rhs)-1 {
-				right += ","
+				right.WriteString(",")
 			}
 		}
 
@@ -139,7 +139,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 			EndPos:     x.End(),
 			LineNumber: fileSet.Position(x.Pos()).Line,
 			filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
-			NewContent: left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
+			NewContent: left + tk + fnCall(len(x.Lhs)) + "(" + right.String() + ")",
 			edge:       edge(x),
 			isContinue: false,
 		}
@@ -149,7 +149,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 				EndPos:     e.EndPos,
 				LineNumber: e.LineNumber,
 				filePath:   e.filePath,
-				NewContent: left + tk + fnCall(len(x.Lhs)) + "(" + right + ")",
+				NewContent: left + tk + fnCall(len(x.Lhs)) + "(" + right.String() + ")",
 				edge:       e.edge,
 				isContinue: false,
 			}
@@ -199,11 +199,11 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 					}
 					left = strings.TrimRight(left, ",")
 
-					right := ""
+					var right strings.Builder
 					for i, v := range assignStmt.Rhs {
-						right += getNodeCode(v, fileSet, text)
+						right.WriteString(getNodeCode(v, fileSet, text))
 						if i < len(assignStmt.Rhs)-1 {
-							right += ","
+							right.WriteString(",")
 						}
 					}
 
@@ -212,7 +212,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 						tk = ""
 					}
 
-					checkStmts = append(checkStmts, left+tk+fnCall(len(assignStmt.Lhs))+"("+right+")")
+					checkStmts = append(checkStmts, left+tk+fnCall(len(assignStmt.Lhs))+"("+right.String()+")")
 					deferProcessedIfStmts[currentIf.Pos()] = true
 					deferProcessedIfStmts[assignStmt.Pos()] = true
 
@@ -265,22 +265,22 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 			}
 		}
 
-		var newContent string
+		var newContent strings.Builder
 		for _, s := range checkStmts {
-			newContent += "\t" + s + "\n"
+			newContent.WriteString("\t" + s + "\n")
 		}
 		if remainingIfContent != "" {
-			newContent += "\t" + remainingIfContent + "\n"
+			newContent.WriteString("\t" + remainingIfContent + "\n")
 		}
 		for _, s := range finalElseStmts {
-			newContent += "\tmylog.Check(" + s + ")\n"
+			newContent.WriteString("\tmylog.Check(" + s + ")\n")
 		}
 
 		endPos := getIfElseChainEnd(rootIfStmt)
 		Replaces = append(Replaces, Edit{
 			StartPos:   rootIfStmt.Pos(),
 			EndPos:     endPos,
-			NewContent: newContent,
+			NewContent: newContent.String(),
 		})
 	}
 
@@ -496,19 +496,19 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 											}
 											left = strings.TrimRight(left, ",")
 
-											right := ""
+											var right strings.Builder
 											tk := assignStmt.Tok.String()
 											if left == "" {
 												tk = ""
 											}
 											for i, v := range assignStmt.Rhs {
-												right += getNodeCode(v, fileSet, text)
+												right.WriteString(getNodeCode(v, fileSet, text))
 												if i < len(assignStmt.Rhs)-1 {
-													right += ","
+													right.WriteString(",")
 												}
 											}
 
-											newContent := left + tk + fnCall(len(assignStmt.Lhs)) + "(" + right + ")"
+											newContent := left + tk + fnCall(len(assignStmt.Lhs)) + "(" + right.String() + ")"
 											deferProcessedIfStmts[ifStmt.Pos()] = true
 											deferProcessedIfStmts[assignStmt.Pos()] = true
 											Replaces = append(Replaces, Edit{
@@ -695,15 +695,15 @@ func simplifyNestedChecks(text string) string {
 		}
 		innerArg := findInnermostCheckArg(line)
 		if innerArg != "" {
-			indent := ""
+			var indent strings.Builder
 			for _, c := range line {
 				if c == ' ' || c == '\t' {
-					indent += string(c)
+					indent.WriteString(string(c))
 				} else {
 					break
 				}
 			}
-			lines[i] = indent + "mylog.Check(" + innerArg + ")"
+			lines[i] = indent.String() + "mylog.Check(" + innerArg + ")"
 		}
 	}
 	result := strings.Join(lines, "\n")

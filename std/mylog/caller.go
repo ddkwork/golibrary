@@ -44,10 +44,10 @@ func initModuleInfo() {
 	moduleInitOnce.Do(func() {
 		data, e := os.ReadFile("go.mod")
 		if e == nil {
-			lines := strings.Split(string(data), "\n")
-			for _, line := range lines {
-				if strings.HasPrefix(line, "module ") {
-					modulePath = strings.TrimSpace(strings.TrimPrefix(line, "module "))
+			lines := strings.SplitSeq(string(data), "\n")
+			for line := range lines {
+				if after, ok := strings.CutPrefix(line, "module "); ok {
+					modulePath = strings.TrimSpace(after)
 					break
 				}
 			}

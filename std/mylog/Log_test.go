@@ -36,6 +36,22 @@ func TestFix(t *testing.T) {
 	})
 }
 
+func TestPrettyFormat2(test *testing.T) {
+	key := "Path"
+	value := `C:\Program Files\Eclipse Adoptium\jdk-23.0.2.7-hotspot\bin;D:\todo\ewdk\dist\sdk\bin\Hostx64\x64;E:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64;E:\Program Files\Windows Kits\10\bin\10.0.28000.0\x64;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Go\bin;C:\Program Files\Git\cmd;C:\Program Files\CMake\bin;C:\TDM-GCC-64\bin;C:\Program Files\LLVM\bin;C:\Program Files\CodeArts Agent\bin`
+	m := map[string]string{key: value}
+	type Struct struct {
+		Path  string
+		Value string
+	}
+	obj := Struct{
+		Path:  key,
+		Value: value,
+	}
+	mylog.Struct(m)
+	mylog.Struct(obj)
+}
+
 func TestLog(t *testing.T) {
 	mylog.Call(func() {
 		xx()
