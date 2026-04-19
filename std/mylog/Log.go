@@ -252,7 +252,9 @@ func (l *log) print() {
 	}
 
 	if strings.Contains(l.row.value, "%") {
-		panic("log value cannot contain format syntax like %s, %d, etc. Value is auto-formatted by mylog")
+		if hasGoFormatVerb(l.row.value) {
+			panic("log value cannot contain format syntax like %s, %d, etc. Value is auto-formatted by mylog")
+		}
 	}
 
 	l.row = keyValue{
@@ -271,4 +273,58 @@ func (l *log) print() {
 		return
 	}
 	WriteAppend(logPath(), s)
+}
+
+func hasGoFormatVerb(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] != '%' {
+			continue
+		}
+		if i+1 >= len(s) {
+			return false
+		}
+		if s[i+1] == '%' {
+			i++
+			continue
+		}
+		j := i + 1
+		for j < len(s) && (s[j] == '-' || s[j] == '+' || s[j] == ' ' || s[j] == '#' || s[j] == '0') {
+			j++
+		}
+		for j < len(s) && s[j] >= '0' && s[j] <= '9' {
+			j++
+		}
+		if j < len(s) && s[j] == '.' {
+			j++
+			for j < len(s) && s[j] >= '0' && s[j] <= '9' {
+				j++
+			}
+		}
+		for j < len(s) && s[j] >= '0' && s[j] <= '9' {
+			j++
+		}
+		if j >= len(s) {
+			return false
+		}
+		c := s[j]
+		if isValidGoVerb(c) {
+			if j+1 < len(s) && isLetter(s[j+1]) {
+				continue
+			}
+			return true
+		}
+	}
+	return false
+}
+
+func isValidGoVerb(c byte) bool {
+	switch c {
+	case 'v', 'd', 'i', 'o', 'x', 'X', 'u', 'f', 'F', 'e', 'E', 'g', 'G', 's', 'q', 'c', 'b', 'p', 'T', 'w', 'W', 'S', 'L', 'l':
+		return true
+	}
+	return false
+}
+
+func isLetter(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 }
