@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	r "reflect"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -116,7 +117,28 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 		io.WriteString(p.Out, strconv.FormatFloat(val.Float(), 'f', -1, 64))
 		p.checkStringer(val)
 	case r.String:
-		io.WriteString(p.Out, strconv.Quote(val.String()))
+		s := val.String()
+		if strings.Contains(s, ";") {
+			parts := strings.Split(s, ";")
+			sort.Strings(parts)
+			io.WriteString(p.Out, "\n")
+			for i, part := range parts {
+				part = strings.TrimSpace(part)
+				if part == "" {
+					continue
+				}
+				io.WriteString(p.Out, next)
+				io.WriteString(p.Out, strconv.Quote(part))
+				if i < len(parts)-1 {
+					io.WriteString(p.Out, ","+newLine)
+				} else {
+					io.WriteString(p.Out, newLine)
+				}
+			}
+			io.WriteString(p.Out, cur)
+		} else {
+			io.WriteString(p.Out, strconv.Quote(s))
+		}
 		p.checkStringer(val)
 	case r.Bool:
 		io.WriteString(p.Out, strconv.FormatBool(val.Bool()))
@@ -193,7 +215,6 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 					io.WriteString(p.Out, "{}")
 				} else {
 					io.WriteString(p.Out, sOpen+newLine)
-					// 计算最大字段名长度，以便对齐
 					maxKeyLen := 0
 					for i := range l {
 						keyLen := len(val.Type().Field(i).Name)
@@ -204,15 +225,13 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 					for i := range l {
 						io.WriteString(p.Out, next)
 						fieldName := val.Type().Field(i).Name
-
-						// 计算当前键名后需要的空格数
 						spaces := strings.Repeat(" ", maxKeyLen-len(fieldName))
-						io.WriteString(p.Out, spaces) // 填充空格实现对齐
+						io.WriteString(p.Out, spaces)
 						io.WriteString(p.Out, fieldName)
 						io.WriteString(p.Out, ": ")
 						p.PrintValue(val.Field(i), level+1)
 						if i < l-1 {
-							io.WriteString(p.Out, ","+newLine) // todo 整数格式化后已经有 , 了，需要移除
+							io.WriteString(p.Out, ","+newLine)
 						} else {
 							io.WriteString(p.Out, newLine)
 						}
