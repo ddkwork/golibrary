@@ -1,44 +1,21 @@
 package cmake
 
 import (
-	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/ddkwork/golibrary/std/mylog"
 	"github.com/ddkwork/golibrary/std/stream"
 )
 
-type Info struct {
-	Root   string
-	Bin    string
-	Module string
-}
+const BinDir = "C:/Program Files/CMake/bin"
 
-func InstallInfo() Info {
-	// 1. 检查cmake是否安装
-	cmd := exec.Command("cmake", "--version")
-	mylog.Check(cmd.Run())
+var (
+	EwdkCmakeFile = filepath.Join(BinDir, "ewdk.cmake")
+	EwdkEnvFile   = filepath.Join(BinDir, "ewdk.env.json")
+)
 
-	// 2. 查询cmake实际所在路径
-	cmd = exec.Command("where", "cmake")
-	out := mylog.Check2(cmd.CombinedOutput())
-	cmakeExePath := strings.TrimSpace(string(out))
-
-	for s := range strings.Lines(cmakeExePath) {
-		if strings.Contains(s, "Program") {
-			cmakeExePath = s
-			break
-		}
-	}
-	// 3. 截取CMake安装根目录
-	dir := filepath.Dir(cmakeExePath) // xxx/bin
-	cmakeRoot := filepath.Dir(dir)    // xxx/CMake
-
-	// 4. Windows原生全局cmake搜索路径
-	// C:\Program Files\CMake\share\cmake-*\Modules
-	shareDir := filepath.Join(cmakeRoot, "share")
-	matches, e := filepath.Glob(filepath.Join(shareDir, "cmake-*"))
+func Module() string {
+	matches, e := filepath.Glob(filepath.Join(filepath.Join(filepath.Dir(BinDir), "share"), "cmake-*"))
 	if e != nil || len(matches) == 0 {
 		mylog.Warning("未找到 cmake 模块目录")
 		mylog.Check(e)
@@ -47,10 +24,5 @@ func InstallInfo() Info {
 	if !stream.IsDir(globalModuleDir) {
 		panic("模块路径不存在: " + globalModuleDir)
 	}
-
-	return Info{
-		Root:   cmakeRoot,
-		Bin:    dir,
-		Module: globalModuleDir,
-	}
+	return globalModuleDir
 }
