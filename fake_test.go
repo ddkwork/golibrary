@@ -9,6 +9,6 @@ import (
 
 func TestName(t *testing.T) {
 	fakeError.Walk(".", true)
-	stream.Fmt(".")
-	stream.Fix(".")
+	stream.FmtDir(".")
+	stream.FixDir(".")
 }
