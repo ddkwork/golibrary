@@ -2,18 +2,13 @@ package stream
 
 import (
 	"os"
+	"path/filepath"
 )
 
-func Fix(dir string) {
-	// 保存原始值
+func fix(dir string, args ...string) {
 	oldGOOS := os.Getenv("GOOS")
-
-	// 设置 GOOS=windows 跳过 Linux 特定的 cgo 依赖
 	os.Setenv("GOOS", "windows")
-
-	RunCommandWithDir(dir, "go fix ./...")
-
-	// 恢复原始值
+	RunCommandWithDir(dir, args...)
 	if oldGOOS == "" {
 		os.Unsetenv("GOOS")
 	} else {
@@ -21,7 +16,30 @@ func Fix(dir string) {
 	}
 }
 
-func Fmt(dir string) {
-	// stream.RunCommandWithDir(repoDir, "go", "run", "mvdan.cc/gofumpt@latest", "-l", "-w", ".")
-	RunCommandWithDir(dir, "go", "run", "mvdan.cc/gofumpt@latest", "-w", ".")
+func FixDir(dir string) { fix(dir, "go", "fix", "./...") }
+
+func FixFile(file string) { fix(filepath.Dir(file), "go", "fix", file) }
+
+func FmtDir(dir string) {
+	RunCommandWithDir(dir, "go", "run", "mvdan.cc/gofumpt@latest", "-l", "-w", ".")
+}
+
+func FmtFile(file string) {
+	RunCommandWithDir(filepath.Dir(file), "go", "run", "mvdan.cc/gofumpt@latest", "-l", "-w", file)
+}
+
+func Fix(path string) {
+	if IsDir(path) {
+		FixDir(path)
+	} else {
+		FixFile(path)
+	}
+}
+
+func Fmt(path string) {
+	if IsDir(path) {
+		FmtDir(path)
+	} else {
+		FmtFile(path)
+	}
 }

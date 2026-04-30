@@ -828,7 +828,7 @@ func dirCopy(srcDir, dstDir string, srcMode, mask fs.FileMode) {
 }
 
 func linkCopy(src, dst string) {
-	os.Symlink(Check2(os.Readlink(src)), dst)
+	Check(os.Symlink(Check2(os.Readlink(src)), dst))
 }
 
 func CopyFile(path, dstPath string) {

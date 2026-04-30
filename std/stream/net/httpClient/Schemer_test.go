@@ -1,13 +1,11 @@
 package httpClient
 
 import (
-	"go/format"
 	"testing"
 
 	"github.com/ddkwork/golibrary/std/safemap"
 
 	"github.com/ddkwork/golibrary/std/assert"
-	"github.com/ddkwork/golibrary/std/mylog"
 	"github.com/ddkwork/golibrary/std/stream"
 )
 
@@ -36,8 +34,8 @@ func TestGeneratedFile_Iota(t *testing.T) {
 	stream.NewGeneratedFile().EnumTypes("Schemer", m)
 	b := stream.NewBuffer("Schemer_types_gen.go")
 	b.WriteStringLn(expansions)
-	f := mylog.Check2(format.Source(b.Bytes()))
-	stream.WriteTruncate("Schemer_types_gen.go", f)
+	stream.WriteTruncate("Schemer_types_gen.go", b.String())
+	stream.FmtFile("Schemer_types_gen.go")
 }
 
 var expansions = `

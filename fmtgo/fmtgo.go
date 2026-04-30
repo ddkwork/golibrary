@@ -8,6 +8,6 @@ func main() {
 	if stream.IsAndroid() {
 		return
 	}
-	stream.Fmt(".")
-	stream.Fix(".")
+	stream.FmtDir(".")
+	stream.FixDir(".")
 }
