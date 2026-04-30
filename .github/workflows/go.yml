@@ -5,10 +5,9 @@ on:
     branches:
       - master
       - dev
-    tags:
-      - 'v*'
 
 env:
+  RELEASE_TAG: v0.0.0
   RELEASE_ZIP_FILE_NAME: golibrary
 
 jobs:
@@ -22,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.tk }}
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -35,14 +36,18 @@ jobs:
       - name: Run tests
         run: go fix ./...
 
-  package-and-release:
-    if: startsWith(github.ref, 'refs/tags/v')
+  deploy-latest:
+    name: Deploy Latest Release
     needs: test-on-multiple-os
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.tk }}
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -62,50 +67,24 @@ jobs:
         run: gem install github_changelog_generator
 
       - name: Generate Changelog
-        run: github_changelog_generator --user ${{ github.repository_owner }} --project ${{ github.event.repository.name }} --token ${{ secrets.GITHUB_TOKEN }}
+        run: github_changelog_generator --user ${{ github.repository_owner }} --project ${{ github.event.repository.name }} --token ${{ secrets.tk }}
+
+      # 删除旧tag 授权用你的tk
+      - name: Delete old tag ${{ env.RELEASE_TAG }}
+        run: |
+          git config user.name CI
+          git config user.email ci@github.com
+          git fetch origin
+          git tag -d ${{ env.RELEASE_TAG }} || true
+          git push origin --delete ${{ env.RELEASE_TAG }} || true
+
+      - name: Create new tag ${{ env.RELEASE_TAG }}
+        run: |
+          git tag ${{ env.RELEASE_TAG }}
+          git push origin ${{ env.RELEASE_TAG }}
 
       - name: Create source code archive
-        run: zip -r ${{ env.RELEASE_ZIP_FILE_NAME }}-${{ github.ref_name }}.zip . -x '.git/**'
-
-      - name: Delete existing release
-        uses: dev-drprasad/delete-older-releases@v0.3.4
-        with:
-          keep_latest: 0
-          delete_tag_pattern: v*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: |
-            ${{ env.RELEASE_ZIP_FILE_NAME }}-${{ github.ref_name }}.zip
-          body_path: CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.tk }}
-
-  deploy-latest:
-    name: Deploy Latest Release
-    needs: test-on-multiple-os
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: '1.26.1'
-          check-latest: true
-
-      - name: Install dependencies
-        run: go mod tidy
-
-      - name: Create source code archive
-        run: zip -r ${{ env.RELEASE_ZIP_FILE_NAME }}-latest.zip . -x '.git/**'
+        run: zip -r ${{ env.RELEASE_ZIP_FILE_NAME }}-${{ env.RELEASE_TAG }}.zip . -x '.git/**'
 
       - name: Get commit info
         id: commit_info
@@ -113,30 +92,23 @@ jobs:
           echo "commit=${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
-      - name: Delete existing latest release
+      - name: Delete old release
         uses: dev-drprasad/delete-older-releases@v0.3.4
         with:
           keep_latest: 0
-          delete_tag_pattern: latest
+          delete_tag_pattern: ${{ env.RELEASE_TAG }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.tk }}
 
-      - name: Create Latest Release
+      - name: Publish Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: latest
-          name: golibrary - Latest Build
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: golibrary Latest Stable
           files: |
-            ${{ env.RELEASE_ZIP_FILE_NAME }}-latest.zip
-          body: |
-            golibrary - Latest Build
-            
-            Build Date: ${{ steps.commit_info.outputs.date }}
-            Commit: ${{ steps.commit_info.outputs.commit }}
-            Branch: ${{ github.ref_name }}
-            
-            This release is automatically updated with each successful build.
+            ${{ env.RELEASE_ZIP_FILE_NAME }}-${{ env.RELEASE_TAG }}.zip
+          body_path: CHANGELOG.md
           draft: false
-          prerelease: true
+          prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.tk }}
