@@ -7,7 +7,6 @@ on:
       - dev
 
 env:
-  RELEASE_TAG: v0.0.0
   RELEASE_ZIP_FILE_NAME: golibrary
 
 jobs:
@@ -69,22 +68,29 @@ jobs:
       - name: Generate Changelog
         run: github_changelog_generator --user ${{ github.repository_owner }} --project ${{ github.event.repository.name }} --token ${{ secrets.tk }}
 
-      # 删除旧tag 授权用你的tk
-      - name: Delete old tag ${{ env.RELEASE_TAG }}
+      # 自动生成 Go 标准伪版本 tag
+      - name: Build dynamic tag
+        id: tag
+        run: |
+          echo "tag=v0.0.0-$(date +%Y%m%d%H%M)-${{ github.sha:0:12 }}" >> $GITHUB_OUTPUT
+
+      - name: Delete old same prefix tags
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        with:
+          keep_latest: 1
+          delete_tag_pattern: v0.0.0-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.tk }}
+
+      - name: Create new tag
         run: |
           git config user.name CI
           git config user.email ci@github.com
-          git fetch origin
-          git tag -d ${{ env.RELEASE_TAG }} || true
-          git push origin --delete ${{ env.RELEASE_TAG }} || true
-
-      - name: Create new tag ${{ env.RELEASE_TAG }}
-        run: |
-          git tag ${{ env.RELEASE_TAG }}
-          git push origin ${{ env.RELEASE_TAG }}
+          git tag ${{ steps.tag.outputs.tag }}
+          git push origin ${{ steps.tag.outputs.tag }}
 
       - name: Create source code archive
-        run: zip -r ${{ env.RELEASE_ZIP_FILE_NAME }}-${{ env.RELEASE_TAG }}.zip . -x '.git/**'
+        run: zip -r ${{ env.RELEASE_ZIP_FILE_NAME }}-${{ steps.tag.outputs.tag }}.zip . -x '.git/**'
 
       - name: Get commit info
         id: commit_info
@@ -92,21 +98,13 @@ jobs:
           echo "commit=${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
-      - name: Delete old release
-        uses: dev-drprasad/delete-older-releases@v0.3.4
-        with:
-          keep_latest: 0
-          delete_tag_pattern: ${{ env.RELEASE_TAG }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.tk }}
-
       - name: Publish Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
+          tag_name: ${{ steps.tag.outputs.tag }}
           name: golibrary Latest Stable
           files: |
-            ${{ env.RELEASE_ZIP_FILE_NAME }}-${{ env.RELEASE_TAG }}.zip
+            ${{ env.RELEASE_ZIP_FILE_NAME }}-${{ steps.tag.outputs.tag }}.zip
           body_path: CHANGELOG.md
           draft: false
           prerelease: false
