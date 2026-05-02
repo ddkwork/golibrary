@@ -237,7 +237,7 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 		if val.CanInterface() {
 			i := val.Interface()
 			if i, ok := i.(fmt.Stringer); ok {
-				io.WriteString(p.Out, i.String())
+				io.WriteString(p.Out, "\n"+i.String())
 			}
 		}
 	default:
