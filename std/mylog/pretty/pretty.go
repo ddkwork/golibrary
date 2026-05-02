@@ -201,47 +201,44 @@ func (p *Pretty) PrintValue(val r.Value, level int) {
 		p.PrintValue(val.Elem(), level)
 
 	case r.Struct:
+		l := val.NumField()
+		sOpen := val.Type().String() + " {"
+		if p.Compact {
+			sOpen = "{"
+		}
+		if p.Compact && l == 0 {
+			io.WriteString(p.Out, "{}")
+		} else {
+			io.WriteString(p.Out, sOpen+newLine)
+			maxKeyLen := 0
+			for i := range l {
+				keyLen := len(val.Type().Field(i).Name)
+				if keyLen > maxKeyLen {
+					maxKeyLen = keyLen
+				}
+			}
+			for i := range l {
+				io.WriteString(p.Out, next)
+				fieldName := val.Type().Field(i).Name
+				spaces := strings.Repeat(" ", maxKeyLen-len(fieldName))
+				io.WriteString(p.Out, spaces)
+				io.WriteString(p.Out, fieldName)
+				io.WriteString(p.Out, ": ")
+				p.PrintValue(val.Field(i), level+1)
+				if i < l-1 {
+					io.WriteString(p.Out, ","+newLine)
+				} else {
+					io.WriteString(p.Out, newLine)
+				}
+			}
+			io.WriteString(p.Out, cur)
+			io.WriteString(p.Out, "}")
+		}
 		if val.CanInterface() {
 			i := val.Interface()
 			if i, ok := i.(fmt.Stringer); ok {
 				io.WriteString(p.Out, i.String())
-			} else {
-				l := val.NumField()
-				sOpen := val.Type().String() + " {"
-				if p.Compact {
-					sOpen = "{"
-				}
-				if p.Compact && l == 0 {
-					io.WriteString(p.Out, "{}")
-				} else {
-					io.WriteString(p.Out, sOpen+newLine)
-					maxKeyLen := 0
-					for i := range l {
-						keyLen := len(val.Type().Field(i).Name)
-						if keyLen > maxKeyLen {
-							maxKeyLen = keyLen
-						}
-					}
-					for i := range l {
-						io.WriteString(p.Out, next)
-						fieldName := val.Type().Field(i).Name
-						spaces := strings.Repeat(" ", maxKeyLen-len(fieldName))
-						io.WriteString(p.Out, spaces)
-						io.WriteString(p.Out, fieldName)
-						io.WriteString(p.Out, ": ")
-						p.PrintValue(val.Field(i), level+1)
-						if i < l-1 {
-							io.WriteString(p.Out, ","+newLine)
-						} else {
-							io.WriteString(p.Out, newLine)
-						}
-					}
-					io.WriteString(p.Out, cur)
-					io.WriteString(p.Out, "}")
-				}
 			}
-		} else {
-			io.WriteString(p.Out, "protected")
 		}
 	default:
 		io.WriteString(p.Out, "unsupported:")
