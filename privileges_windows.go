@@ -24,10 +24,10 @@ func (p *Privilege) Enable(name string) bool {
 
 	var luid windows.LUID
 	mylog.Check(windows.LookupPrivilegeValue(nil, windows.StringToUTF16Ptr(name), &luid))
-	mylog.Check(windows.AdjustTokenPrivileges(token, false, &windows.Tokenprivileges{
+	windows.AdjustTokenPrivileges(token, false, &windows.Tokenprivileges{ //忽略无效句柄？不要检查错误？
 		PrivilegeCount: 1,
 		Privileges:     [1]windows.LUIDAndAttributes{{Luid: luid, Attributes: windows.SE_PRIVILEGE_ENABLED}},
-	}, 0, nil, nil))
+	}, 0, nil, nil)
 	p.adjusted[name] = true
 	return true
 }
