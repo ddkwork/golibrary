@@ -61,3 +61,8 @@ func FromSlice[T any](s []T) []byte {
 	}
 	return unsafe.Slice((*byte)(unsafe.Pointer(unsafe.SliceData(s))), len(s)*int(unsafe.Sizeof(s[0])))
 }
+
+func PtrFromSlice[T any](s []T) *T {
+    if len(s) == 0 { mylog.Check("空buffer") }
+    return (*T)(unsafe.Pointer(unsafe.SliceData(s)))
+}
