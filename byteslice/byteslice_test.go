@@ -4,7 +4,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/ddkwork/bindgen/byteslice"
+	"github.com/ddkwork/golibrary/byteslice"
 )
 
 func int8Slice(s string) []int8 {
