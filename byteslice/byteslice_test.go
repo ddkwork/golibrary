@@ -206,7 +206,7 @@ func TestToStruct(t *testing.T) {
 func TestFromSlice(t *testing.T) {
 	t.Run("uint32", func(t *testing.T) {
 		s := []uint32{0x01020304, 0x05060708}
-		b := byteslice.FromSlice(s)
+		b := byteslice.FromAnySlice(s)
 		if len(b) != len(s)*int(unsafe.Sizeof(s[0])) {
 			t.Fatalf("got len %d, want %d", len(b), len(s)*int(unsafe.Sizeof(s[0])))
 		}
@@ -217,7 +217,7 @@ func TestFromSlice(t *testing.T) {
 
 	t.Run("uint16", func(t *testing.T) {
 		s := []uint16{0x0102, 0x0304}
-		b := byteslice.FromSlice(s)
+		b := byteslice.FromAnySlice(s)
 		if len(b) != 4 {
 			t.Fatalf("got len %d, want 4", len(b))
 		}
@@ -229,15 +229,40 @@ func TestFromSlice(t *testing.T) {
 				t.Error("expected panic")
 			}
 		}()
-		byteslice.FromSlice[uint32](nil)
+		byteslice.FromAnySlice[uint32](nil)
 	})
 
 	t.Run("struct slice", func(t *testing.T) {
 		type pair struct{ A, B uint16 }
 		s := []pair{{1, 2}, {3, 4}}
-		b := byteslice.FromSlice(s)
+		b := byteslice.FromAnySlice(s)
 		if len(b) != len(s)*int(unsafe.Sizeof(pair{})) {
 			t.Fatalf("got len %d, want %d", len(b), len(s)*int(unsafe.Sizeof(pair{})))
 		}
 	})
+}
+
+func TestPtrFromSlice(t *testing.T) {
+	b := []byte{'h', 'e', 'l', 'l', 'o'}
+	p := byteslice.PtrFromAnySlice[byte](b)
+	if p == nil {
+		t.Fatal("nil pointer")
+	}
+	if *p != 'h' {
+		t.Fatalf("expected 'h', got %c", *p)
+	}
+	*p = 'H'
+	if b[0] != 'H' {
+		t.Fatal("not same underlying memory")
+	}
+
+	i8 := []int8{1, 2, 3}
+	q := byteslice.PtrFromAnySlice[int8](i8)
+	if *q != 1 {
+		t.Fatalf("expected 1, got %d", *q)
+	}
+	*q = -1
+	if i8[0] != -1 {
+		t.Fatal("int8 not same memory")
+	}
 }

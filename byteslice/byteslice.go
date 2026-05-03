@@ -55,14 +55,16 @@ func ToStruct[T any](b []byte) *T {
 	return (*T)(unsafe.Pointer(unsafe.SliceData(b)))
 }
 
-func FromSlice[T any](s []T) []byte {
+func FromAnySlice[T any](s []T) []byte {
 	if len(s) == 0 {
 		mylog.Check("空buffer")
 	}
 	return unsafe.Slice((*byte)(unsafe.Pointer(unsafe.SliceData(s))), len(s)*int(unsafe.Sizeof(s[0])))
 }
 
-func PtrFromSlice[T any](s []T) *T {
-    if len(s) == 0 { mylog.Check("空buffer") }
-    return (*T)(unsafe.Pointer(unsafe.SliceData(s)))
+func PtrFromAnySlice[T any](s []T) *T {
+	if len(s) == 0 {
+		mylog.Check("空buffer")
+	}
+	return unsafe.SliceData(s)
 }
