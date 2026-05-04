@@ -40,11 +40,11 @@ func TestRTCore64_DSEBypass_ReadCiOptions(t *testing.T) {
 	f := NewKernelModuleFinder()
 	dse := NewDSEBypass(f, km)
 
-	addr := mylog.Check2(dse.FindCiOptions())
+	addr := dse.FindCiOptions()
 
 	t.Logf("g_CiOptions address: %s", mylog.Hex(addr))
 
-	val := mylog.Check2(dse.ReadCiOptions())
+	val := dse.ReadCiOptions()
 
 	t.Logf("g_CiOptions value: 0x%08X", val)
 	t.Logf("DSE enabled: %v", dse.DSEEnabled())

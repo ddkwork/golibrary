@@ -375,7 +375,7 @@ func (s *SysCall) ReadSSDTFromKernel(km *KernelMemory) ([]uint64, error) {
 	}
 
 	buf := make([]byte, numEntries*4)
-	mylog.Check(km.ReadMemory(ssdtAddr, buf))
+	km.ReadMemory(ssdtAddr, buf)
 
 	entries := make([]uint64, numEntries)
 	for i := 0; i < numEntries; i++ {

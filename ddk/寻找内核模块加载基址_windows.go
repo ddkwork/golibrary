@@ -36,13 +36,13 @@ func NewKernelModuleFinder() *KernelModuleFinder {
 func (f *KernelModuleFinder) Modules() ([]KernelModuleInfo, error) {
 	for size := uint32(128 * 1024); ; {
 		buf := make([]byte, size)
-		err := windows.NtQuerySystemInformation(
+		e := windows.NtQuerySystemInformation(
 			windows.SystemModuleInformation,
 			unsafe.Pointer(&buf[0]),
 			size,
 			&size,
 		)
-		switch err {
+		switch e {
 		case windows.STATUS_INFO_LENGTH_MISMATCH:
 			continue
 		case nil:
@@ -61,7 +61,7 @@ func (f *KernelModuleFinder) Modules() ([]KernelModuleInfo, error) {
 			}
 			return result, nil
 		default:
-			return nil, fmt.Errorf("NtQuerySystemInformation failed: %v", err)
+			return nil, fmt.Errorf("NtQuerySystemInformation failed: %v", e)
 		}
 	}
 }
@@ -82,12 +82,12 @@ func (f *KernelModuleFinder) ModuleBaseByName(name string) uint64 {
 	return f.ModuleByName(name).ImageBase
 }
 
-func (f *KernelModuleFinder) FindExportedSymbolAddress(moduleName string, symbolName string) (uint64, error) {
+func (f *KernelModuleFinder) FindExportedSymbolAddress(moduleName string, symbolName string) uint64 {
 	base := f.ModuleBaseByName(moduleName)
 	rva := mylog.Check2(f.FindExportedSymbolRVA(moduleName, symbolName))
 	addr := base + uint64(rva)
 	mylog.Success("exported symbol found: " + symbolName + " at " + mylog.Hex(addr))
-	return addr, nil
+	return addr
 }
 
 func (f *KernelModuleFinder) FindExportedSymbolRVA(moduleName string, symbolName string) (uint32, error) {
@@ -104,12 +104,12 @@ func (f *KernelModuleFinder) FindExportedSymbolRVA(moduleName string, symbolName
 	return 0, fmt.Errorf("export %q not found in %s", symbolName, path)
 }
 
-func (f *KernelModuleFinder) FindNonExportedSymbolAddress(moduleName string, entryExportName string, tracer InstructionTracer) (uint64, error) {
+func (f *KernelModuleFinder) FindNonExportedSymbolAddress(moduleName string, entryExportName string, tracer InstructionTracer) uint64 {
 	base := f.ModuleBaseByName(moduleName)
 	rva := mylog.Check2(f.FindNonExportedSymbolRVA(moduleName, entryExportName, tracer))
 	addr := base + uint64(rva)
 	mylog.Success("non-exported symbol found at " + mylog.Hex(addr))
-	return addr, nil
+	return addr
 }
 
 func (f *KernelModuleFinder) FindNonExportedSymbolRVA(moduleName string, entryExportName string, tracer InstructionTracer) (uint32, error) {

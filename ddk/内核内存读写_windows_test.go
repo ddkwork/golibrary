@@ -161,11 +161,11 @@ func TestRTCore64_ReadKernelExportedFunction(t *testing.T) {
 	km := NewKernelMemory(rt)
 	f := NewKernelModuleFinder()
 
-	addr := mylog.Check2(f.FindExportedSymbolAddress("ntoskrnl.exe", "NtDeviceIoControlFile"))
+	addr := f.FindExportedSymbolAddress("ntoskrnl.exe", "NtDeviceIoControlFile")
 
 	t.Logf("NtDeviceIoControlFile address: %s", mylog.Hex(addr))
 
-	code := mylog.Check2(km.ReadCode(addr, 256))
+	code := km.ReadCode(addr, 256)
 
 	t.Logf("read %d bytes from kernel", len(code))
 
@@ -201,11 +201,11 @@ func TestRTCore64_ReadKernelNonExported_IopXxxControlFile(t *testing.T) {
 		return 0, false
 	}
 
-	addr := mylog.Check2(f.FindNonExportedSymbolAddress("ntoskrnl.exe", "NtDeviceIoControlFile", tracer))
+	addr := f.FindNonExportedSymbolAddress("ntoskrnl.exe", "NtDeviceIoControlFile", tracer)
 
 	t.Logf("IopXxxControlFile address: %s", mylog.Hex(addr))
 
-	code := mylog.Check2(km.ReadCode(addr, 512))
+	code := km.ReadCode(addr, 512)
 
 	disasm := disassembleCode(code, addr)
 	t.Logf("IopXxxControlFile disassembly:\n%s", disasm)
@@ -221,7 +221,7 @@ func TestRTCore64_ParsePESectionsFromKernel(t *testing.T) {
 
 	t.Logf("ntoskrnl.exe base: %s", mylog.Hex(base))
 
-	sections := mylog.Check2(km.ParsePESections(base))
+	sections := km.ParsePESections(base)
 
 	t.Logf("ntoskrnl.exe has %d sections:", len(sections))
 	for _, sec := range sections {
@@ -247,11 +247,11 @@ func TestRTCore64_MultipleKernelModules(t *testing.T) {
 
 	for _, m := range modules {
 		t.Run(m.name, func(t *testing.T) {
-			addr := mylog.Check2(f.FindExportedSymbolAddress(m.name, m.exportSym))
+			addr := f.FindExportedSymbolAddress(m.name, m.exportSym)
 
 			t.Logf("%s!%s address: %s", m.name, m.exportSym, mylog.Hex(addr))
 
-			code := mylog.Check2(km.ReadCode(addr, 64))
+			code := km.ReadCode(addr, 64)
 
 			disasm := disassembleCode(code, addr)
 			t.Logf("%s!%s disassembly:\n%s", m.name, m.exportSym, disasm)
@@ -265,7 +265,7 @@ func TestRTCore64_DisassembleKernelAPI(t *testing.T) {
 	km := NewKernelMemory(rt)
 	f := NewKernelModuleFinder()
 
-	addr := mylog.Check2(f.FindExportedSymbolAddress("ntoskrnl.exe", "NtClose"))
+	addr := f.FindExportedSymbolAddress("ntoskrnl.exe", "NtClose")
 
 	t.Logf("NtClose address: %s", mylog.Hex(addr))
 
@@ -279,11 +279,11 @@ func TestRTCore64_ReadCiDllCiInitialize(t *testing.T) {
 	km := NewKernelMemory(rt)
 	f := NewKernelModuleFinder()
 
-	addr := mylog.Check2(f.FindExportedSymbolAddress("ci.dll", "CiInitialize"))
+	addr := f.FindExportedSymbolAddress("ci.dll", "CiInitialize")
 
 	t.Logf("CiInitialize address: %s", mylog.Hex(addr))
 
-	code := mylog.Check2(km.ReadCode(addr, 256))
+	code := km.ReadCode(addr, 256)
 
 	disasm := disassembleCode(code, addr)
 	t.Logf("CiInitialize disassembly:\n%s", disasm)

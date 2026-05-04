@@ -42,7 +42,7 @@ func (d *Driver) Install() bool {
 		driverNamePtr := mylog.Check2(windows.UTF16PtrFromString(d.Name))
 		serviceExePtr := mylog.Check2(windows.UTF16PtrFromString(d.Path))
 
-		schService, err := windows.CreateService(
+		schService := mylog.Check2(windows.CreateService(
 			sc,
 			driverNamePtr,
 			driverNamePtr,
@@ -52,19 +52,7 @@ func (d *Driver) Install() bool {
 			windows.SERVICE_ERROR_NORMAL,
 			serviceExePtr,
 			nil, nil, nil, nil, nil,
-		)
-		if err != nil {
-			if err == windows.ERROR_SERVICE_EXISTS {
-				mylog.Warning("service already exists", "name", d.Name)
-				return false
-			}
-			if err == windows.ERROR_SERVICE_MARKED_FOR_DELETE {
-				mylog.Warning("previous instance of the service is not fully deleted. Try again...")
-				return false
-			}
-			mylog.Warning("CreateService failed", "error", err)
-			return false
-		}
+		))
 
 		if schService != 0 {
 			windows.CloseServiceHandle(schService)
@@ -134,28 +122,13 @@ func (d *Driver) Stop() bool {
 	return d.withSCManager(func(handle windows.Handle) bool {
 		driverNamePtr := mylog.Check2(windows.UTF16PtrFromString(d.Name))
 
-		schService, err := windows.OpenService(handle, driverNamePtr, windows.SERVICE_ALL_ACCESS)
-		if err != nil {
-			if err == windows.ERROR_SERVICE_DOES_NOT_EXIST {
-				return true
-			}
-			mylog.Warning("OpenService failed in stop", "error", err)
-			return false
-		}
+		schService := mylog.Check2(windows.OpenService(handle, driverNamePtr, windows.SERVICE_ALL_ACCESS))
+
 		defer func() { mylog.Check(windows.CloseServiceHandle(schService)) }()
 
 		var serviceStatus windows.SERVICE_STATUS
 		mylog.Check(windows.ControlService(schService, windows.SERVICE_CONTROL_STOP, &serviceStatus))
-		if err != nil {
-			if err.Error() == "The service has not been started." {
-				mylog.Info("service is not started, no need to stop")
-			} else {
-				mylog.Warning("ControlService failed", "error", err)
-				return false
-			}
-		} else {
-			mylog.Success("driver stopped successfully")
-		}
+		mylog.Success("driver stopped successfully")
 		return true
 	})
 }
@@ -200,11 +173,11 @@ func (r *RTCore64) Load() bool {
 	}
 
 	namePtr, _ := windows.UTF16PtrFromString(fmt.Sprintf(`\\.\%s`, RTCORE_DEVICE_NAME))
-	h, err := windows.CreateFile(namePtr,
+	h, e := windows.CreateFile(namePtr,
 		windows.GENERIC_READ|windows.GENERIC_WRITE,
 		0, nil, windows.OPEN_EXISTING, 0, 0)
-	if err != nil {
-		mylog.Warning("CreateFile for RTCore64 failed", "error", err)
+	if e != nil {
+		mylog.Warning("CreateFile for RTCore64 failed", "error", e)
 		r.driver.Stop()
 		r.driver.Remove()
 		r.driver = nil
@@ -250,13 +223,13 @@ type rtcPacket struct {
 	pad3  [16]byte
 }
 
-func (r *RTCore64) ReadMemory(addr uint64, buf []byte) error {
+func (r *RTCore64) ReadMemory(addr uint64, buf []byte) {
 	for offset := 0; offset < len(buf); {
 		readAddr := addr + uint64(offset)
 		remaining := len(buf) - offset
 
 		if remaining >= 4 && (readAddr&3) == 0 {
-			val := mylog.Check2(r.readDword(readAddr))
+			val := r.readDword(readAddr)
 
 			buf[offset] = byte(val)
 			buf[offset+1] = byte(val >> 8)
@@ -264,22 +237,21 @@ func (r *RTCore64) ReadMemory(addr uint64, buf []byte) error {
 			buf[offset+3] = byte(val >> 24)
 			offset += 4
 		} else if remaining >= 2 && (readAddr&1) == 0 {
-			val := mylog.Check2(r.readWord(readAddr))
+			val := r.readWord(readAddr)
 
 			buf[offset] = byte(val)
 			buf[offset+1] = byte(val >> 8)
 			offset += 2
 		} else {
-			val := mylog.Check2(r.readByte(readAddr))
+			val := r.readByte(readAddr)
 
 			buf[offset] = val
 			offset += 1
 		}
 	}
-	return nil
 }
 
-func (r *RTCore64) readDword(addr uint64) (uint32, error) {
+func (r *RTCore64) readDword(addr uint64) uint32 {
 	var pkt rtcPacket
 	pkt.addr = addr
 	pkt.size = 4
@@ -291,10 +263,10 @@ func (r *RTCore64) readDword(addr uint64) (uint32, error) {
 		byteslice.PtrFromAnySlice(pktBytes), uint32(len(pktBytes)),
 		&bytesReturned, nil))
 
-	return pkt.value, nil
+	return pkt.value
 }
 
-func (r *RTCore64) readWord(addr uint64) (uint16, error) {
+func (r *RTCore64) readWord(addr uint64) uint16 {
 	var pkt rtcPacket
 	pkt.addr = addr
 	pkt.size = 2
@@ -306,10 +278,10 @@ func (r *RTCore64) readWord(addr uint64) (uint16, error) {
 		byteslice.PtrFromAnySlice(pktBytes), uint32(len(pktBytes)),
 		&bytesReturned, nil))
 
-	return uint16(pkt.value), nil
+	return uint16(pkt.value)
 }
 
-func (r *RTCore64) readByte(addr uint64) (byte, error) {
+func (r *RTCore64) readByte(addr uint64) byte {
 	var pkt rtcPacket
 	pkt.addr = addr
 	pkt.size = 1
@@ -321,7 +293,7 @@ func (r *RTCore64) readByte(addr uint64) (byte, error) {
 		byteslice.PtrFromAnySlice(pktBytes), uint32(len(pktBytes)),
 		&bytesReturned, nil))
 
-	return byte(pkt.value), nil
+	return byte(pkt.value)
 }
 
 func (r *RTCore64) WriteMemory(addr uint64, buf []byte) error {
@@ -340,28 +312,28 @@ func (r *RTCore64) WriteMemory(addr uint64, buf []byte) error {
 	return nil
 }
 
-func (r *RTCore64) ReadUint64(addr uint64) (uint64, error) {
+func (r *RTCore64) ReadUint64(addr uint64) uint64 {
 	buf := make([]byte, 8)
-	mylog.Check(r.ReadMemory(addr, buf))
-	return binaryLittleEndianUint64(buf), nil
+	r.ReadMemory(addr, buf)
+	return binaryLittleEndianUint64(buf)
 }
 
-func (r *RTCore64) ReadUint32(addr uint64) (uint32, error) {
+func (r *RTCore64) ReadUint32(addr uint64) uint32 {
 	buf := make([]byte, 4)
-	mylog.Check(r.ReadMemory(addr, buf))
-	return binaryLittleEndianUint32(buf), nil
+	r.ReadMemory(addr, buf)
+	return binaryLittleEndianUint32(buf)
 }
 
-func (r *RTCore64) ReadUint16(addr uint64) (uint16, error) {
+func (r *RTCore64) ReadUint16(addr uint64) uint16 {
 	buf := make([]byte, 2)
-	mylog.Check(r.ReadMemory(addr, buf))
-	return binaryLittleEndianUint16(buf), nil
+	r.ReadMemory(addr, buf)
+	return binaryLittleEndianUint16(buf)
 }
 
-func (r *RTCore64) WriteUint32(addr uint64, val uint32) error {
+func (r *RTCore64) WriteUint32(addr uint64, val uint32) {
 	buf := make([]byte, 4)
 	putBinaryLittleEndianUint32(buf, val)
-	return r.WriteMemory(addr, buf)
+	r.WriteMemory(addr, buf)
 }
 
 func binaryLittleEndianUint32(b []byte) uint32 {

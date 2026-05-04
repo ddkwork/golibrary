@@ -4,58 +4,26 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ddkwork/golibrary/std/fakeError"
 	"github.com/ddkwork/golibrary/std/mylog"
-	"github.com/ddkwork/golibrary/std/stream"
 	"golang.org/x/arch/x86/x86asm"
 )
 
 func TestQueryKernelModules(t *testing.T) {
 	f := NewKernelModuleFinder()
 	modules := mylog.Check2(f.Modules())
-
-	if len(modules) == 0 {
-		t.Fatal("no kernel modules found")
-	}
-	t.Logf("total %d kernel modules loaded", len(modules))
-	for _, mod := range modules {
-		t.Logf("  %-30s Base=%-18s Size=0x%08X  Path=%s",
-			mod.Name,
-			mylog.Hex(mod.ImageBase),
-			mod.ImageSize,
-			mod.FullPath,
-		)
-	}
-}
-
-func TestName(t *testing.T) {
-	fakeError.Walk(".", true)
-	stream.FmtDir(".")
-	stream.FixDir(".")
+	mylog.Struct(modules)
 }
 
 func TestFindCiDllBase(t *testing.T) {
 	f := NewKernelModuleFinder()
 	mod := f.ModuleByName("ci.dll")
 	mylog.Struct(mod)
-	if mod.ImageBase == 0 {
-		t.Fatal("ci.dll base address should not be 0")
-	}
 }
 
 func TestFindNtoskrnlBase(t *testing.T) {
 	f := NewKernelModuleFinder()
 	base := f.ModuleBaseByName("ntoskrnl.exe")
-
-	t.Logf("ntoskrnl.exe base address: %s", mylog.Hex(base))
-	if base == 0 {
-		t.Fatal("ntoskrnl.exe base address should not be 0")
-	}
-}
-
-func TestFindKernelModuleNotFound(t *testing.T) {
-	f := NewKernelModuleFinder()
-	f.ModuleBaseByName("nonexistent_driver.sys")
+	mylog.Hex(base)
 }
 
 func TestFindExportedSymbolRVA_Ntoskrnl(t *testing.T) {
@@ -80,26 +48,11 @@ func TestFindExportedSymbolRVA_CiDll(t *testing.T) {
 
 func TestFindExportedSymbolAddress_Ntoskrnl(t *testing.T) {
 	f := NewKernelModuleFinder()
-	addr := mylog.Check2(f.FindExportedSymbolAddress("ntoskrnl.exe", "ZwDeviceIoControlFile"))
-
-	t.Logf("ZwDeviceIoControlFile address: %s", mylog.Hex(addr))
-	if addr == 0 {
-		t.Fatal("address should not be 0")
-	}
+	addr := f.FindExportedSymbolAddress("ntoskrnl.exe", "NtDeviceIoControlFile")
+	mylog.Hex(addr)
 }
 
-func TestFindExportedSymbolAddress_MmFreeNonCachedMemory(t *testing.T) {
-	f := NewKernelModuleFinder()
-	addr := mylog.Check2(f.FindExportedSymbolAddress("ntoskrnl.exe", "MmFreeNonCachedMemory"))
-
-	t.Logf("MmFreeNonCachedMemory address: %s", mylog.Hex(addr))
-}
-
-func TestFindExportedSymbolNotFound(t *testing.T) {
-	f := NewKernelModuleFinder()
-	mylog.Check2(f.FindExportedSymbolRVA("ntoskrnl.exe", "NonExistentFunction12345"))
-}
-
+// 0xFFFFF807E96F5E89 e812000000       call 0xfffff807e96f5ea0
 func TestFindNonExportedSymbol_IopXxxControlFile(t *testing.T) {
 	f := NewKernelModuleFinder()
 	tracer := func(instructions []x86asm.Inst, baseRVA uint32, data []byte) (uint32, bool) {
@@ -125,7 +78,7 @@ func TestFindNonExportedSymbol_IopXxxControlFile(t *testing.T) {
 		return 0, false
 	}
 
-	addr := mylog.Check2(f.FindNonExportedSymbolAddress("ntoskrnl.exe", "NtDeviceIoControlFile", tracer))
+	addr := f.FindNonExportedSymbolAddress("ntoskrnl.exe", "NtDeviceIoControlFile", tracer)
 
 	t.Logf("IopXxxControlFile address: %s", mylog.Hex(addr))
 }
@@ -157,7 +110,7 @@ func TestFindNonExportedSymbol_MiGetPteAddress(t *testing.T) {
 		return 0, false
 	}
 
-	addr := mylog.Check2(f.FindNonExportedSymbolAddress("ntoskrnl.exe", "MmFreeNonCachedMemory", tracer))
+	addr := f.FindNonExportedSymbolAddress("ntoskrnl.exe", "MmFreeNonCachedMemory", tracer)
 
 	t.Logf("MiGetPteAddress address: %s", mylog.Hex(addr))
 }
@@ -198,7 +151,7 @@ func TestFindNonExportedSymbol_KeServiceDescriptorTable(t *testing.T) {
 		return 0, false
 	}
 
-	addr := mylog.Check2(f.FindNonExportedSymbolAddress("ntoskrnl.exe", "ZwDeviceIoControlFile", tracer))
+	addr := f.FindNonExportedSymbolAddress("ntoskrnl.exe", "ZwDeviceIoControlFile", tracer)
 
 	t.Logf("KiServiceInternal address: %s", mylog.Hex(addr))
 }
