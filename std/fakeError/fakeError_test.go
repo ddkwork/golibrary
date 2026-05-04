@@ -39,6 +39,9 @@ func TestAll(t *testing.T) {
 	t.Run("test16", func(t *testing.T) {
 		assert.Equal(t, m.GetMust("test16").want, get("test16", m.GetMust("test16").code))
 	})
+	t.Run("test17", func(t *testing.T) {
+		assert.Equal(t, m.GetMust("test17").want, get("test17", m.GetMust("test17").code))
+	})
 }
 
 func get(path, text string) string {
@@ -911,6 +914,32 @@ func main() {
 	for _, config := range configs {
 		mylog.Check(generateMCPServer(interfacePath, config))
 	}
+}
+`,
+	})
+	yield("test17", testData{
+		code: `package tmp
+
+import "os"
+
+func main() {
+	f, err := os.Open("")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+}`,
+		want: `package tmp
+
+import (
+	"github.com/ddkwork/golibrary/std/mylog"
+	"os"
+)
+
+func main() {
+	f := mylog.Check2(os.Open(""))
+
+	defer func() { mylog.Check(f.Close()) }()
 }
 `,
 	})

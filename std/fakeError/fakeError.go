@@ -542,7 +542,28 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 							EndPos:     x.End(),
 							LineNumber: fileSet.Position(x.Pos()).Line,
 							filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
-							NewContent: "mylog.Check(" + c + ")",
+							NewContent: "defer func() { mylog.Check(" + c + ") }()",
+							edge:       edge(x),
+							isContinue: false,
+						})
+					}
+				}
+			case *ast.SelectorExpr:
+				if strings.Contains(c, "Close") && !strings.Contains(c, "mylog.Check") {
+					skip := false
+					for pos := range deferProcessedIfStmts {
+						if x.Pos() > pos {
+							skip = true
+							break
+						}
+					}
+					if !skip {
+						Replaces = append(Replaces, Edit{
+							StartPos:   x.Pos(),
+							EndPos:     x.End(),
+							LineNumber: fileSet.Position(x.Pos()).Line,
+							filePath:   fileSet.Position(x.Pos()).Filename + ":" + strconv.Itoa(fileSet.Position(x.Pos()).Line),
+							NewContent: "defer func() { mylog.Check(" + c + ") }()",
 							edge:       edge(x),
 							isContinue: false,
 						})
@@ -808,8 +829,16 @@ func Apply(text string, replaces []Edit) string {
 	text = strings.ReplaceAll(text, `var err error`, "")
 	lib := "github.com/ddkwork/golibrary/std/mylog"
 	if !strings.Contains(text, lib) {
-		text = strings.Replace(text, `import (`, `import (
-			"github.com/ddkwork/golibrary/std/mylog"`, 1)
+		if strings.Contains(text, `import (`) {
+			text = strings.Replace(text, `import (`, `import (
+	"github.com/ddkwork/golibrary/std/mylog"`, 1)
+		} else {
+			re := regexp.MustCompile(`import\s+"([^"]*)"`)
+			text = re.ReplaceAllString(text, `import (
+	"github.com/ddkwork/golibrary/std/mylog"
+	"$1"
+)`)
+		}
 	}
 	return text
 }

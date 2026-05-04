@@ -33,7 +33,7 @@ func NewDriver(driverPath string) *Driver {
 func (d *Driver) withSCManager(fn func(windows.Handle) bool) bool {
 	scManager := mylog.Check2(windows.OpenSCManager(nil, nil, windows.SC_MANAGER_ALL_ACCESS))
 
-	defer windows.CloseServiceHandle(scManager)
+	defer func() { mylog.Check(windows.CloseServiceHandle(scManager)) }()
 	return fn(scManager)
 }
 
@@ -87,7 +87,7 @@ func (d *Driver) Remove() bool {
 			mylog.Warning("OpenService failed in remove", "error", e)
 			return false
 		}
-		defer windows.CloseServiceHandle(schService)
+		defer func() { mylog.Check(windows.CloseServiceHandle(schService)) }()
 
 		mylog.Check(windows.DeleteService(schService))
 		if e != nil && e != windows.ERROR_SERVICE_MARKED_FOR_DELETE {
@@ -113,7 +113,7 @@ func (d *Driver) Start() bool {
 			mylog.Warning("OpenService failed in start", "error", e)
 			return false
 		}
-		defer windows.CloseServiceHandle(schService)
+		defer func() { mylog.Check(windows.CloseServiceHandle(schService)) }()
 
 		mylog.Check(windows.StartService(schService, 0, nil))
 		if e != nil {
@@ -142,7 +142,7 @@ func (d *Driver) Stop() bool {
 			mylog.Warning("OpenService failed in stop", "error", e)
 			return false
 		}
-		defer windows.CloseServiceHandle(schService)
+		defer func() { mylog.Check(windows.CloseServiceHandle(schService)) }()
 
 		var serviceStatus windows.SERVICE_STATUS
 		mylog.Check(windows.ControlService(schService, windows.SERVICE_CONTROL_STOP, &serviceStatus))

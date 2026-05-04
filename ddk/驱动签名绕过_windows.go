@@ -41,11 +41,11 @@ func NewDSEBypass(finder *KernelModuleFinder, km *KernelMemory) *DSEBypass {
 func (d *DSEBypass) FindCiOptionsRVAFromDisk() (uint32, error) {
 	f := mylog.Check2(os.Open(`C:\Windows\System32\ci.dll`))
 
-	defer f.Close()
+	defer func() { mylog.Check(f.Close()) }()
 
 	peFile := mylog.Check2(pe.NewFile(f, &pe.Options{}))
 
-	defer peFile.Close()
+	defer func() { mylog.Check(peFile.Close()) }()
 	mylog.Check(peFile.Parse())
 
 	var ciInitRVA uint32

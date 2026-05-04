@@ -52,7 +52,7 @@ func (s *SysCall) DecodeNtApiFromDLL(filename string) []NtApi {
 	f := mylog.Check2(pe.New(filename, &pe.Options{}))
 
 	mylog.Check(f.Parse())
-	defer f.Close()
+	defer func() { mylog.Check(f.Close()) }()
 
 	var apis []NtApi
 	ntCount := 0
@@ -123,7 +123,7 @@ func (s *SysCall) DecodeNtApiFromDLL(filename string) []NtApi {
 func (s *SysCall) DecodeByDisassembly(ntoskrnlPath string) bool {
 	f := mylog.Check2(pe.New(ntoskrnlPath, &pe.Options{}))
 	mylog.Check(f.Parse())
-	defer f.Close()
+	defer func() { mylog.Check(f.Close()) }()
 
 	var zwDevIoCtrlRVA uint32
 	for _, entry := range f.Export.Functions {

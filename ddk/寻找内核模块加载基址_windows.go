@@ -95,7 +95,7 @@ func (f *KernelModuleFinder) FindExportedSymbolRVA(moduleName string, symbolName
 
 	peFile := mylog.Check2(pe.New(path, &pe.Options{}))
 
-	defer peFile.Close()
+	defer func() { mylog.Check(peFile.Close()) }()
 	mylog.Check(peFile.Parse())
 	for _, fn := range peFile.Export.Functions {
 		if fn.Name == symbolName {
@@ -119,7 +119,7 @@ func (f *KernelModuleFinder) FindNonExportedSymbolRVA(moduleName string, entryEx
 
 	peFile := mylog.Check2(pe.New(path, &pe.Options{}))
 
-	defer peFile.Close()
+	defer func() { mylog.Check(peFile.Close()) }()
 	mylog.Check(peFile.Parse())
 
 	var entryRVA uint32

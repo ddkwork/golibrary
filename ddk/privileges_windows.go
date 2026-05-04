@@ -20,7 +20,7 @@ func (p *Privilege) Enable(name string) bool {
 	var token windows.Token
 	currentProcess := windows.CurrentProcess()
 	mylog.Check(windows.OpenProcessToken(currentProcess, windows.TOKEN_ADJUST_PRIVILEGES|windows.TOKEN_QUERY, &token))
-	defer func() { mylog.Check(token.Close()) }()//没有func 函数体会被立即执行导致token.Close()被调用，AdjustTokenPrivileges是无效句柄， 所以defer 必须有func
+	defer func() { mylog.Check(token.Close()) }() // 没有func 函数体会被立即执行导致token.Close()被调用，AdjustTokenPrivileges是无效句柄， 所以defer 必须有func
 
 	var luid windows.LUID
 	mylog.Check(windows.LookupPrivilegeValue(nil, windows.StringToUTF16Ptr(name), &luid))
