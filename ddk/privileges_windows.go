@@ -22,11 +22,11 @@ func (p *Privilege) Enable(name string) bool {
 	mylog.Check(windows.OpenProcessToken(currentProcess, windows.TOKEN_ADJUST_PRIVILEGES|windows.TOKEN_QUERY, &token))
 	defer func() { mylog.Check(token.Close()) }() // 没有func 函数体会被立即执行导致token.Close()被调用，AdjustTokenPrivileges是无效句柄， 所以defer 必须有func
 
-	var luid windows.LUID
-	mylog.Check(windows.LookupPrivilegeValue(nil, windows.StringToUTF16Ptr(name), &luid))
+	var id windows.LUID
+	mylog.Check(windows.LookupPrivilegeValue(nil, windows.StringToUTF16Ptr(name), &id))
 	mylog.Check(windows.AdjustTokenPrivileges(token, false, &windows.Tokenprivileges{
 		PrivilegeCount: 1,
-		Privileges:     [1]windows.LUIDAndAttributes{{Luid: luid, Attributes: windows.SE_PRIVILEGE_ENABLED}},
+		Privileges:     [1]windows.LUIDAndAttributes{{Luid: id, Attributes: windows.SE_PRIVILEGE_ENABLED}},
 	}, 0, nil, nil))
 	p.adjusted[name] = true
 	return true

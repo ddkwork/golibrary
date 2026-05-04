@@ -3,7 +3,6 @@ package ddk
 import (
 	"encoding/binary"
 	"fmt"
-	"strings"
 
 	"github.com/ddkwork/golibrary/byteslice"
 	"github.com/ddkwork/golibrary/std/mylog"
@@ -106,30 +105,10 @@ func (k *KernelMemory) ReadCode(addr uint64, size int) ([]byte, error) {
 
 func (k *KernelMemory) Disassemble(addr uint64, size int) ([]x86asm.Inst, error) {
 	code := mylog.Check2(k.ReadCode(addr, size))
-
-	var instructions []x86asm.Inst
-	for i := 0; i < len(code); {
-		inst := mylog.Check2(x86asm.Decode(code[i:], 64))
-		if inst.Len == 0 {
-			i++
-			continue
-		}
-		instructions = append(instructions, inst)
-		if inst.Op == x86asm.RET {
-			break
-		}
-		i += inst.Len
-	}
-	return instructions, nil
+	return Disassemble(code), nil
 }
 
 func (k *KernelMemory) DisassembleToString(addr uint64, size int) string {
-	insts := mylog.Check2(k.Disassemble(addr, size))
-
-	var sb strings.Builder
-	for i, inst := range insts {
-		syntax := x86asm.IntelSyntax(inst, uint64(addr), nil)
-		sb.WriteString(fmt.Sprintf("0x%X: %s\n", addr+uint64(i), syntax))
-	}
-	return sb.String()
+	code := mylog.Check2(k.ReadCode(addr, size))
+	return DisassembleToString(code, addr)
 }

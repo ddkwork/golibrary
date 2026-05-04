@@ -72,11 +72,7 @@ func (s *SysCall) DecodeNtApiFromDLL(filename string) []NtApi {
 
 		var index uint32
 		found := false
-		for off := 0; off < len(data); {
-			inst, e := x86asm.Decode(data[off:], 64)
-			if e != nil || inst.Len == 0 {
-				break
-			}
+		for _, inst := range DisassembleAll(data) {
 			if inst.Op == x86asm.MOV {
 				for i, arg := range inst.Args {
 					if reg, ok := arg.(x86asm.Reg); ok && reg == x86asm.EAX {
@@ -93,7 +89,6 @@ func (s *SysCall) DecodeNtApiFromDLL(filename string) []NtApi {
 			if found {
 				break
 			}
-			off += inst.Len
 			if inst.Op == x86asm.SYSCALL || inst.Op == x86asm.RET {
 				break
 			}

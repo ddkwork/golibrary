@@ -42,7 +42,7 @@ func (d *Driver) Install() bool {
 		driverNamePtr := mylog.Check2(windows.UTF16PtrFromString(d.Name))
 		serviceExePtr := mylog.Check2(windows.UTF16PtrFromString(d.Path))
 
-		schService, e := windows.CreateService(
+		schService, err := windows.CreateService(
 			sc,
 			driverNamePtr,
 			driverNamePtr,
@@ -53,16 +53,16 @@ func (d *Driver) Install() bool {
 			serviceExePtr,
 			nil, nil, nil, nil, nil,
 		)
-		if e != nil {
-			if e == windows.ERROR_SERVICE_EXISTS {
+		if err != nil {
+			if err == windows.ERROR_SERVICE_EXISTS {
 				mylog.Warning("service already exists", "name", d.Name)
 				return false
 			}
-			if e == windows.ERROR_SERVICE_MARKED_FOR_DELETE {
+			if err == windows.ERROR_SERVICE_MARKED_FOR_DELETE {
 				mylog.Warning("previous instance of the service is not fully deleted. Try again...")
 				return false
 			}
-			mylog.Warning("CreateService failed", "error", e)
+			mylog.Warning("CreateService failed", "error", err)
 			return false
 		}
 
@@ -79,7 +79,7 @@ func (d *Driver) Remove() bool {
 	return d.withSCManager(func(handle windows.Handle) bool {
 		driverNamePtr := mylog.Check2(windows.UTF16PtrFromString(d.Name))
 
-		schService, e := (windows.OpenService(handle, driverNamePtr, windows.SERVICE_ALL_ACCESS))
+		schService, e := windows.OpenService(handle, driverNamePtr, windows.SERVICE_ALL_ACCESS)
 		if e != nil {
 			if e == windows.ERROR_SERVICE_DOES_NOT_EXIST {
 				return true
@@ -104,23 +104,23 @@ func (d *Driver) Start() bool {
 	return d.withSCManager(func(handle windows.Handle) bool {
 		driverNamePtr := mylog.Check2(windows.UTF16PtrFromString(d.Name))
 
-		schService, e := (windows.OpenService(handle, driverNamePtr, windows.SERVICE_ALL_ACCESS))
-		if e != nil {
-			if e == windows.ERROR_SERVICE_DOES_NOT_EXIST {
+		schService, err := windows.OpenService(handle, driverNamePtr, windows.SERVICE_ALL_ACCESS)
+		if err != nil {
+			if err == windows.ERROR_SERVICE_DOES_NOT_EXIST {
 				mylog.Info("service does not exist, trying to install")
 				return false
 			}
-			mylog.Warning("OpenService failed in start", "error", e)
+			mylog.Warning("OpenService failed in start", "error", err)
 			return false
 		}
 		defer func() { mylog.Check(windows.CloseServiceHandle(schService)) }()
 
 		mylog.Check(windows.StartService(schService, 0, nil))
-		if e != nil {
-			if e == windows.ERROR_SERVICE_ALREADY_RUNNING {
+		if err != nil {
+			if err == windows.ERROR_SERVICE_ALREADY_RUNNING {
 				mylog.Info("service is already running")
 			} else {
-				mylog.Warning(e)
+				mylog.Warning(err)
 				return false
 			}
 		} else {
@@ -134,23 +134,23 @@ func (d *Driver) Stop() bool {
 	return d.withSCManager(func(handle windows.Handle) bool {
 		driverNamePtr := mylog.Check2(windows.UTF16PtrFromString(d.Name))
 
-		schService, e := windows.OpenService(handle, driverNamePtr, windows.SERVICE_ALL_ACCESS)
-		if e != nil {
-			if e == windows.ERROR_SERVICE_DOES_NOT_EXIST {
+		schService, err := windows.OpenService(handle, driverNamePtr, windows.SERVICE_ALL_ACCESS)
+		if err != nil {
+			if err == windows.ERROR_SERVICE_DOES_NOT_EXIST {
 				return true
 			}
-			mylog.Warning("OpenService failed in stop", "error", e)
+			mylog.Warning("OpenService failed in stop", "error", err)
 			return false
 		}
 		defer func() { mylog.Check(windows.CloseServiceHandle(schService)) }()
 
 		var serviceStatus windows.SERVICE_STATUS
 		mylog.Check(windows.ControlService(schService, windows.SERVICE_CONTROL_STOP, &serviceStatus))
-		if e != nil {
-			if e.Error() == "The service has not been started." {
+		if err != nil {
+			if err.Error() == "The service has not been started." {
 				mylog.Info("service is not started, no need to stop")
 			} else {
-				mylog.Warning("ControlService failed", "error", e)
+				mylog.Warning("ControlService failed", "error", err)
 				return false
 			}
 		} else {
@@ -200,11 +200,11 @@ func (r *RTCore64) Load() bool {
 	}
 
 	namePtr, _ := windows.UTF16PtrFromString(fmt.Sprintf(`\\.\%s`, RTCORE_DEVICE_NAME))
-	h, e := windows.CreateFile(namePtr,
+	h, err := windows.CreateFile(namePtr,
 		windows.GENERIC_READ|windows.GENERIC_WRITE,
 		0, nil, windows.OPEN_EXISTING, 0, 0)
-	if e != nil {
-		mylog.Warning("CreateFile for RTCore64 failed", "error", e)
+	if err != nil {
+		mylog.Warning("CreateFile for RTCore64 failed", "error", err)
 		r.driver.Stop()
 		r.driver.Remove()
 		r.driver = nil

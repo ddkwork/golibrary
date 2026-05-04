@@ -12,10 +12,10 @@ require (
 )
 
 require (
-	github.com/aquasecurity/table v1.10.0 // indirect
+	github.com/aquasecurity/table v1.11.0 // indirect
 	github.com/ayoubfaouzi/pkcs7 v0.2.3 // indirect
 	github.com/edsrzf/mmap-go v1.2.0 // indirect
-	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/term v0.42.0 // indirect

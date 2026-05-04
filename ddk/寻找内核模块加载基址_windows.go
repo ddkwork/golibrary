@@ -36,13 +36,13 @@ func NewKernelModuleFinder() *KernelModuleFinder {
 func (f *KernelModuleFinder) Modules() ([]KernelModuleInfo, error) {
 	for size := uint32(128 * 1024); ; {
 		buf := make([]byte, size)
-		e := windows.NtQuerySystemInformation(
+		err := windows.NtQuerySystemInformation(
 			windows.SystemModuleInformation,
 			unsafe.Pointer(&buf[0]),
 			size,
 			&size,
 		)
-		switch e {
+		switch err {
 		case windows.STATUS_INFO_LENGTH_MISMATCH:
 			continue
 		case nil:
@@ -61,7 +61,7 @@ func (f *KernelModuleFinder) Modules() ([]KernelModuleInfo, error) {
 			}
 			return result, nil
 		default:
-			return nil, fmt.Errorf("NtQuerySystemInformation failed: %v", e)
+			return nil, fmt.Errorf("NtQuerySystemInformation failed: %v", err)
 		}
 	}
 }
@@ -92,9 +92,7 @@ func (f *KernelModuleFinder) FindExportedSymbolAddress(moduleName string, symbol
 
 func (f *KernelModuleFinder) FindExportedSymbolRVA(moduleName string, symbolName string) (uint32, error) {
 	path := mylog.Check2(f.resolveModulePath(moduleName))
-
 	peFile := mylog.Check2(pe.New(path, &pe.Options{}))
-
 	defer func() { mylog.Check(peFile.Close()) }()
 	mylog.Check(peFile.Parse())
 	for _, fn := range peFile.Export.Functions {
@@ -116,12 +114,9 @@ func (f *KernelModuleFinder) FindNonExportedSymbolAddress(moduleName string, ent
 
 func (f *KernelModuleFinder) FindNonExportedSymbolRVA(moduleName string, entryExportName string, tracer InstructionTracer) (uint32, error) {
 	path := mylog.Check2(f.resolveModulePath(moduleName))
-
 	peFile := mylog.Check2(pe.New(path, &pe.Options{}))
-
 	defer func() { mylog.Check(peFile.Close()) }()
 	mylog.Check(peFile.Parse())
-
 	var entryRVA uint32
 	for _, fn := range peFile.Export.Functions {
 		if fn.Name == entryExportName {
@@ -145,19 +140,7 @@ func (f *KernelModuleFinder) FindNonExportedSymbolRVA(moduleName string, entryEx
 		end := min(funcOff+maxDecodeSize, len(data))
 		code := data[funcOff:end]
 
-		var instructions []x86asm.Inst
-		for i := 0; i < len(code); {
-			inst, e := x86asm.Decode(code[i:], 64)
-			if e != nil || inst.Len == 0 {
-				i++
-				continue
-			}
-			instructions = append(instructions, inst)
-			if inst.Op == x86asm.RET {
-				break
-			}
-			i += inst.Len
-		}
+		instructions := Disassemble(code)
 
 		targetRVA, found := tracer(instructions, entryRVA, code)
 		if !found {

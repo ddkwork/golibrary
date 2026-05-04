@@ -20,19 +20,19 @@ func loadRTCore64(t *testing.T) *RTCore64 {
 
 func disassembleCode(code []byte, baseAddr uint64) string {
 	var sb strings.Builder
-	for i := 0; i < len(code); {
-		inst := mylog.Check2(x86asm.Decode(code[i:], 64))
+	offset := 0
+	for _, inst := range DisassembleAll(code) {
 		if inst.Len == 0 {
-			sb.WriteString(fmt.Sprintf("0x%X: ??\n", baseAddr+uint64(i)))
-			i++
+			sb.WriteString(fmt.Sprintf("0x%X: ??\n", baseAddr+uint64(offset)))
+			offset++
 			continue
 		}
-		syntax := x86asm.IntelSyntax(inst, baseAddr+uint64(i), nil)
-		sb.WriteString(fmt.Sprintf("0x%X: %s\n", baseAddr+uint64(i), syntax))
+		syntax := x86asm.IntelSyntax(inst, baseAddr+uint64(offset), nil)
+		sb.WriteString(fmt.Sprintf("0x%X: %s\n", baseAddr+uint64(offset), syntax))
+		offset += inst.Len
 		if inst.Op == x86asm.RET {
 			break
 		}
-		i += inst.Len
 	}
 	return sb.String()
 }
@@ -217,7 +217,7 @@ func TestRTCore64_ParsePESectionsFromKernel(t *testing.T) {
 	km := NewKernelMemory(rt)
 	f := NewKernelModuleFinder()
 
-	base := (f.ModuleBaseByName("ntoskrnl.exe"))
+	base := f.ModuleBaseByName("ntoskrnl.exe")
 
 	t.Logf("ntoskrnl.exe base: %s", mylog.Hex(base))
 

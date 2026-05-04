@@ -65,6 +65,7 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 	text := string(b)
 	Replaces := make([]Edit, 0)
 	deferProcessedIfStmts := make(map[token.Pos]bool)
+	businessLogicSkipInits := make(map[token.Pos]bool)
 
 	fnCall := func(n int) string {
 		switch n {
@@ -77,6 +78,9 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 
 	fnHandleAssign := func(x *ast.AssignStmt, e *Edit) {
 		if deferProcessedIfStmts[x.Pos()] {
+			return
+		}
+		if businessLogicSkipInits[x.Pos()] {
 			return
 		}
 		last := len(x.Lhs) - 1
@@ -285,6 +289,127 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 	}
 
 	for n := range ast.Preorder(file) {
+		if ifStmt, ok := n.(*ast.IfStmt); ok {
+			if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") {
+				hasBusinessLogic := false
+				isWarningReturnMode := false
+				if len(ifStmt.Body.List) >= 2 {
+					firstExpr, firstOk := ifStmt.Body.List[0].(*ast.ExprStmt)
+					_, lastOk := ifStmt.Body.List[len(ifStmt.Body.List)-1].(*ast.ReturnStmt)
+					if firstOk && lastOk {
+						if strings.HasPrefix(getNodeCode(firstExpr, fileSet, text), "mylog.Warning") {
+							isWarningReturnMode = true
+						}
+					}
+				}
+				if !isWarningReturnMode {
+					for _, stmt := range ifStmt.Body.List {
+					switch s := stmt.(type) {
+					case *ast.AssignStmt, *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt:
+						hasBusinessLogic = true
+				case *ast.IfStmt:
+						isPureReturn := true
+						for _, bs := range s.Body.List {
+							if _, ok := bs.(*ast.ReturnStmt); !ok {
+								isPureReturn = false
+								break
+							}
+						}
+						if isPureReturn {
+							break
+						}
+						isWarningReturnPattern := len(s.Body.List) == 2
+						if isWarningReturnPattern {
+							hasW, hasR := false, false
+							for _, bs := range s.Body.List {
+								if es, ok := bs.(*ast.ExprStmt); ok {
+									if strings.HasPrefix(getNodeCode(es, fileSet, text), "mylog.Warning") {
+										hasW = true
+									}
+								}
+								if _, ok := bs.(*ast.ReturnStmt); ok {
+									hasR = true
+								}
+							}
+							isWarningReturnPattern = hasW && hasR
+						}
+						if !isWarningReturnPattern {
+							hasBusinessLogic = true
+						}
+					}
+				}
+				}
+				if hasBusinessLogic {
+					if ifStmt.Init != nil {
+						businessLogicSkipInits[ifStmt.Init.Pos()] = true
+					}
+					ast.Inspect(file, func(node ast.Node) bool {
+						if block, ok := node.(*ast.BlockStmt); ok {
+							for i, stmt := range block.List {
+								if stmt == ifStmt && i > 0 {
+									if prevAssign, ok := block.List[i-1].(*ast.AssignStmt); ok {
+										if len(prevAssign.Lhs) > 0 {
+											if lastIdent, ok := prevAssign.Lhs[len(prevAssign.Lhs)-1].(*ast.Ident); ok && lastIdent.Name == "err" {
+												businessLogicSkipInits[prevAssign.Pos()] = true
+											}
+										}
+									}
+								}
+							}
+						}
+						return true
+					})
+				}
+				if isInsideLoop(ifStmt, file) {
+					hasBreak := false
+					hasContinue := false
+					isTerminatingCall := false
+					for _, stmt := range ifStmt.Body.List {
+						if bs, ok := stmt.(*ast.BranchStmt); ok {
+							if bs.Tok == token.BREAK {
+								hasBreak = true
+							}
+							if bs.Tok == token.CONTINUE {
+								hasContinue = true
+							}
+						}
+						if es, ok := stmt.(*ast.ExprStmt); ok {
+							c := getNodeCode(es, fileSet, text)
+							if strings.HasPrefix(c, "log.Fatal") || strings.HasPrefix(c, "panic(") || strings.HasPrefix(c, "os.Exit") {
+								isTerminatingCall = true
+							}
+						}
+						if _, ok := stmt.(*ast.ReturnStmt); ok {
+							isTerminatingCall = true
+						}
+					}
+					if hasBreak || (!hasContinue && !isTerminatingCall) {
+						if ifStmt.Init != nil {
+							businessLogicSkipInits[ifStmt.Init.Pos()] = true
+						}
+						ast.Inspect(file, func(node ast.Node) bool {
+							if block, ok := node.(*ast.BlockStmt); ok {
+								for i, stmt := range block.List {
+									if stmt == ifStmt && i > 0 {
+										if prevAssign, ok := block.List[i-1].(*ast.AssignStmt); ok {
+											if len(prevAssign.Lhs) > 0 {
+												if lastIdent, ok := prevAssign.Lhs[len(prevAssign.Lhs)-1].(*ast.Ident); ok && lastIdent.Name == "err" {
+													businessLogicSkipInits[prevAssign.Pos()] = true
+												}
+											}
+										}
+									}
+								}
+							}
+							return true
+						})
+					}
+				}
+			}
+		}
+	}
+
+	for n := range ast.Preorder(file) {
 		switch x := n.(type) {
 		case *ast.IfStmt: // if err := backendConn.Close(); err != nil {
 			if deferProcessedIfStmts[x.Pos()] {
@@ -349,14 +474,70 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 				if strings.HasPrefix(getNodeCode(ifStmt, fileSet, text), "if err != nil {") {
 					hasBusinessLogic := false
 					for _, stmt := range ifStmt.Body.List {
-						switch stmt.(type) {
-						case *ast.AssignStmt, *ast.IfStmt, *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt:
+						switch s := stmt.(type) {
+						case *ast.AssignStmt, *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt:
 							hasBusinessLogic = true
+						case *ast.IfStmt:
+							isPureReturn := true
+							for _, bs := range s.Body.List {
+								if _, ok := bs.(*ast.ReturnStmt); !ok {
+									isPureReturn = false
+									break
+								}
+							}
+							if isPureReturn {
+								break
+							}
+							isWarningReturnPattern := len(s.Body.List) == 2
+							if isWarningReturnPattern {
+								hasW, hasR := false, false
+								for _, bs := range s.Body.List {
+									if es, ok := bs.(*ast.ExprStmt); ok {
+										if strings.HasPrefix(getNodeCode(es, fileSet, text), "mylog.Warning") {
+											hasW = true
+										}
+									}
+									if _, ok := bs.(*ast.ReturnStmt); ok {
+										hasR = true
+									}
+								}
+								isWarningReturnPattern = hasW && hasR
+							}
+							if !isWarningReturnPattern {
+								hasBusinessLogic = true
+							}
 						}
 					}
 					if hasBusinessLogic {
+					break
+				}
+				if isInsideLoop(ifStmt, file) {
+					hasBreak := false
+					hasContinue := false
+					isTerminatingCall := false
+					for _, stmt := range ifStmt.Body.List {
+						if bs, ok := stmt.(*ast.BranchStmt); ok {
+							if bs.Tok == token.BREAK {
+								hasBreak = true
+							}
+							if bs.Tok == token.CONTINUE {
+								hasContinue = true
+							}
+						}
+						if es, ok := stmt.(*ast.ExprStmt); ok {
+							c := getNodeCode(es, fileSet, text)
+							if strings.HasPrefix(c, "log.Fatal") || strings.HasPrefix(c, "panic(") || strings.HasPrefix(c, "os.Exit") {
+								isTerminatingCall = true
+							}
+						}
+						if _, ok := stmt.(*ast.ReturnStmt); ok {
+							isTerminatingCall = true
+						}
+					}
+					if hasBreak || (!hasContinue && !isTerminatingCall) {
 						break
 					}
+				}
 					b := `if err != nil {
 					mylog.CheckIgnore(err)
 					continue
@@ -432,6 +613,9 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 			}
 			if skipAssign {
 				skipAssign = false
+				continue
+			}
+			if businessLogicSkipInits[x.Pos()] {
 				continue
 			}
 			fnHandleAssign(x, nil)
@@ -570,6 +754,116 @@ func handle[T string | []byte](fileSet *token.FileSet, file *ast.File, b T) stri
 					}
 				}
 			}
+		case *ast.GenDecl:
+			if x.Tok == token.TYPE {
+				for _, spec := range x.Specs {
+					if ts, ok := spec.(*ast.TypeSpec); ok {
+						if it, ok := ts.Type.(*ast.InterfaceType); ok {
+							for _, method := range it.Methods.List {
+								if ft, ok := method.Type.(*ast.FuncType); ok && ft.Results != nil && len(ft.Results.List) >= 1 {
+									lastResult := ft.Results.List[len(ft.Results.List)-1]
+									if result, ok := lastResult.Type.(*ast.Ident); ok && result.Name == "error" {
+										if len(ft.Results.List) == 1 {
+											Replaces = append(Replaces, Edit{
+												StartPos:   ft.Results.Pos(),
+												EndPos:     ft.Results.End(),
+												NewContent: "",
+											})
+										} else {
+											Replaces = append(Replaces, Edit{
+												StartPos:   lastResult.Pos(),
+												EndPos:     lastResult.End(),
+												NewContent: "",
+											})
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		case *ast.FuncDecl:
+			if x.Type.Results != nil && len(x.Type.Results.List) >= 1 {
+				lastResult := x.Type.Results.List[len(x.Type.Results.List)-1]
+				if result, ok := lastResult.Type.(*ast.Ident); ok && result.Name == "error" {
+					if x.Body != nil && len(x.Body.List) >= 1 {
+						hasControlFlow := false
+						for i, stmt := range x.Body.List {
+							if i == len(x.Body.List)-1 {
+								break
+							}
+							switch stmt.(type) {
+							case *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt, *ast.SelectStmt, *ast.IfStmt:
+								hasControlFlow = true
+							}
+						}
+						if hasControlFlow {
+							continue
+						}
+						lastStmt := x.Body.List[len(x.Body.List)-1]
+						if retStmt, ok := lastStmt.(*ast.ReturnStmt); ok {
+							isSingleReturn := len(x.Type.Results.List) == 1
+							isMultiReturn := len(x.Type.Results.List) > 1
+							if isSingleReturn && len(retStmt.Results) == 1 {
+								if callExpr, ok := retStmt.Results[0].(*ast.CallExpr); ok {
+									newContent := getNodeCode(callExpr, fileSet, text)
+									Replaces = append(Replaces, Edit{
+										StartPos:   x.Type.Results.Pos(),
+										EndPos:     x.Type.Results.End(),
+										NewContent: "",
+									})
+									Replaces = append(Replaces, Edit{
+										StartPos:   retStmt.Pos(),
+										EndPos:     retStmt.End(),
+										NewContent: newContent,
+									})
+								}
+							}
+							if isMultiReturn && len(retStmt.Results) == len(x.Type.Results.List) {
+								allSimpleReturn := true
+								for i, r := range retStmt.Results {
+									if i < len(retStmt.Results)-1 {
+									} else {
+										isNil := false
+										if id, ok := r.(*ast.Ident); ok && id.Name == "nil" {
+											isNil = true
+										}
+										if bl, ok := r.(*ast.BasicLit); ok && bl.Value == "nil" {
+											isNil = true
+										}
+										if !isNil {
+											allSimpleReturn = false
+										}
+									}
+								}
+								if allSimpleReturn {
+									Replaces = append(Replaces, Edit{
+										StartPos:   lastResult.Pos(),
+										EndPos:     lastResult.End(),
+										NewContent: "",
+									})
+									newRetContent := ""
+									for i, r := range retStmt.Results {
+										if i > 0 {
+											newRetContent += ", "
+										}
+										if i < len(retStmt.Results)-1 {
+											newRetContent += getNodeCode(r, fileSet, text)
+										}
+									}
+									newRetContent = strings.TrimRight(newRetContent, ", ")
+									Replaces = append(Replaces, Edit{
+										StartPos:   retStmt.Pos(),
+										EndPos:   retStmt.End(),
+										NewContent: "\treturn " + newRetContent,
+									})
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	return simplifyNestedChecks(Apply(text, Replaces))
@@ -582,22 +876,48 @@ func getNodeCode(astNode ast.Node, f *token.FileSet, code string) string {
 }
 
 // todo 这种是否应该删除 if err != nil && !errors.Is(err, fs.ErrNotExist) {
+func isInsideLoop(n ast.Node, file *ast.File) bool {
+	inside := false
+	ast.Inspect(file, func(node ast.Node) bool {
+		if inside {
+			return false
+		}
+		switch node.(type) {
+		case *ast.ForStmt, *ast.RangeStmt:
+			if node.Pos() <= n.Pos() && n.End() <= node.End() {
+				inside = true
+				return false
+			}
+		}
+		return true
+	})
+	return inside
+}
+
 func findIfErrNotNil(n ast.Node, deferProcessedIfStmts map[token.Pos]bool) iter.Seq[*ast.IfStmt] {
 	return func(yield func(*ast.IfStmt) bool) {
 		if stmt, ok := n.(*ast.IfStmt); ok {
 			if deferProcessedIfStmts[stmt.Pos()] {
 				return
 			}
-			if b, ok := stmt.Cond.(*ast.BinaryExpr); ok {
-				if b.Op == token.NEQ {
-					if x, ok := b.X.(*ast.Ident); ok && x.Name == "err" {
-						if y, ok := b.Y.(*ast.Ident); ok && y.Name == "nil" {
-							if !yield(stmt) {
-								return
+			cond := stmt.Cond
+			for {
+				if b, ok := cond.(*ast.BinaryExpr); ok {
+					if b.Op == token.NEQ {
+						if x, ok := b.X.(*ast.Ident); ok && x.Name == "err" {
+							if y, ok := b.Y.(*ast.Ident); ok && y.Name == "nil" {
+								if !yield(stmt) {
+									return
+								}
 							}
 						}
 					}
+					if b.Op == token.LAND {
+						cond = b.X
+						continue
+					}
 				}
+				break
 			}
 		}
 	}
